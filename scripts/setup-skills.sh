@@ -11,7 +11,7 @@
 # 什么这个向导而不是手动复制？
 #   - 自动检查 Node.js 版本（npx skills 需要 ≥ 18）
 #   - 自动 clone 或更新仓库
-#   - 自动 npx skills@latest sync 同步到你的 agent
+#   - 自动从 skills-lock.json 还原 38 个锁定 skill
 #   - 自动验证 40 个 skill 全部就位
 #   - 每一步都可以 Ctrl-C 暂停、随时重跑（幂等）
 
@@ -286,22 +286,22 @@ fi
 cd "$INSTALL_DIR"
 printf '  %s→%s 当前目录: %s\n' "$BLUE" "$RESET" "$INSTALL_DIR"
 
-# ── Stage 3: npx skills sync ───────────────────────────────────────────
-stage "同步 40 个 skill 到 AI agent"
-say "把仓库里的 skills-lock.json 指向的 40 个 skill 正确链接到"
-say "你本地 AI agent（Claude Code / Cursor / Codex / Gemini CLI）的 skills 目录。"
-note "如果你还没确定用哪个 agent，可以先跳过 sync，以后再运行。"
+# ── Stage 3: 从 skills-lock.json 还原 ──────────────────────────────────
+stage "从 skills-lock.json 还原 38 个锁定 skill"
+say "把 skills-lock.json 锁定的 38 个 Pocock skill 还原到 .agents/skills。"
+say "另外 2 个自定义 skill（dev-gating、health-scoring）随仓库自带，不经过 lock。"
+note "如果 .agents/skills 已经完整（clone 下来就是 40 个），这一步可以跳过。"
 
-if confirm "现在运行 npx skills@latest sync"; then
-  if npx --yes skills@latest sync 2>&1 | head -20; then
-    printf '  %s✓%s npx skills sync 完成\n' "$GREEN" "$RESET"
+if confirm "现在运行 npx skills@latest experimental_install"; then
+  if npx --yes skills@latest experimental_install 2>&1 | head -20; then
+    printf '  %s✓%s skills-lock.json 已还原\n' "$GREEN" "$RESET"
   else
-    warn "sync 遇到问题，可能是 network 或 agent 未安装"
-    note "你可以之后手动运行: npx skills@latest sync"
+    warn "还原遇到问题，可能是 network 或 npm 不可用"
+    note "你可以之后手动运行: npx skills@latest experimental_install"
     pause "继续下一步"
   fi
 else
-  note "跳过 sync — 以后可以手动运行: npx skills@latest sync"
+  note "跳过还原 — 以后可以手动运行: npx skills@latest experimental_install"
 fi
 
 # ── Stage 4: 验证安装 ──────────────────────────────────────────────────

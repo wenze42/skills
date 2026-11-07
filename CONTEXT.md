@@ -10,7 +10,7 @@
 
 - 包含 38 个 Pocock 开源 skill + 项目自定义 skill（dev-gating、health-scoring）；
 - 包含把协作纪律从人的脑子搬进 AI 上下文的四件套：CONTEXT.md、GLOSSARY.md、AGENTS.md + ADR、.agents/skills/；
-- 可随时被 `npx skills@latest sync` 同步到不同的 AI agent。
+- 38 个锁定 skill 可随时被 `npx skills@latest experimental_install` 还原；2 个自定义 skill 随仓库自带，不受 lock 管理。
 
 ## 产品定位不是什么？
 

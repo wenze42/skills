@@ -26,11 +26,13 @@ AI 编程技能集的项目级配置模板：把工程纪律从人的脑子搬�
 bash scripts/setup-skills.sh
 ```
 
-或手动同步到本地 agent：
+或手动从 lock 还原 38 个锁定 skill：
 
 ```bash
-npx skills@latest sync
+npx skills@latest experimental_install
 ```
+
+2 个自定义 skill（`dev-gating`、`health-scoring`）不在 lock 中，随仓库自带。
 
 ## 来源与许可
 

@@ -180,4 +180,4 @@ npx skills@latest update
 
 ### 自定义 Skill 同步
 
-本仓库的 2 个自定义 skill（dev-gating、health-scoring）在 `.agents/skills/` 下，通过 `npx skills@latest sync` 或手动复制同步到其他 AI agent 的 skills 目录。
+本仓库的 2 个自定义 skill（dev-gating、health-scoring）在 `.agents/skills/` 下，不在 `skills-lock.json` 中，需手动复制到其他 AI agent 的 skills 目录；其余 38 个锁定 skill 可用 `npx skills@latest experimental_install` 还原。
