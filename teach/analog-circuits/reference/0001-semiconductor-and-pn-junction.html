@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Reference — 半导体 & PN 结速查表</title>
+<link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+
+<h1>速查表：半导体 & PN 结</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">打印方便 · Lesson 0001-0002 的精华压缩</p>
+
+<div class="tip">
+  <span class="tip-label">使用方式</span>
+  这是<strong>参考文档</strong>，不是 lesson。看不懂就回到对应的 lesson。
+  打印出来贴在桌上，做模电题时随时查。
+</div>
+
+<h2>一、材料分类（按电阻率）</h2>
+
+<table>
+  <tr><th>类型</th><th>电阻率 ρ (Ω·cm)</th><th>典型</th><th>载流子浓度</th></tr>
+  <tr><td>导体</td><td>&lt; 10⁻⁴</td><td>铜 Cu</td><td>~ 10²² cm⁻³</td></tr>
+  <tr><td>半导体</td><td>10⁻² ~ 10⁹</td><td>硅 Si</td><td>~ 10¹⁰ cm⁻³（本征）</td></tr>
+  <tr><td>绝缘体</td><td>&gt; 10⁹</td><td>玻璃</td><td>≈ 0</td></tr>
+</table>
+
+<h2>二、本征半导体 vs 杂质半导体</h2>
+
+<table>
+  <tr><th>类型</th><th>掺杂</th><th>多子</th><th>少子</th><th>掺杂浓度</th></tr>
+  <tr><td>本征硅</td><td>无</td><td>自由电子 = 空穴</td><td>nᵢ ≈ 1.5×10¹⁰ cm⁻³（300K）</td><td>—</td></tr>
+  <tr><td><strong>N 型</strong></td><td>V 族（P、As、Sb）</td><td>自由电子 ≈ 掺杂浓度</td><td>空穴 ≈ nᵢ²/p ≈ 10⁴ cm⁻³</td><td>10¹⁵ ~ 10²⁰ cm⁻³</td></tr>
+  <tr><td><strong>P 型</strong></td><td>III 族（B、Ga、In）</td><td>空穴 ≈ 掺杂浓度</td><td>自由电子 ≈ nᵢ²/n ≈ 10⁴ cm⁻³</td><td>10¹⁵ ~ 10²⁰ cm⁻³</td></tr>
+</table>
+
+<div class="math">
+  ★ 关键公式：n · p = nᵢ²（质量作用定律，热平衡下恒成立）
+</div>
+
+<h2>三、PN 结物理过程</h2>
+
+<table>
+  <tr><th>阶段</th><th>发生的事</th><th>图示</th></tr>
+  <tr>
+    <td>接触前</td>
+    <td>N/P 各自电中性，载流子浓度差极大</td>
+    <td>N: 电子多 → 空穴少<br>P: 空穴多 → 电子少</td>
+  </tr>
+  <tr>
+    <td>接触瞬间</td>
+    <td>扩散运动：e⁻ N→P，空穴 P→N</td>
+    <td>浓度差驱动 → 类似墨水入清水</td>
+  </tr>
+  <tr>
+    <td>扩散产生电场</td>
+    <td>界面两侧积累不能移动的离子 → 内部电场</td>
+    <td>N 侧: ⊕⊕⊕ 正离子<br>P 侧: ⊖⊖⊖ 负离子</td>
+  </tr>
+  <tr>
+    <td>动态平衡</td>
+    <td>扩散 = 漂移（方向相反），耗尽层稳定</td>
+    <td>总电流 = 0，势垒 ≈ 0.7V（硅）</td>
+  </tr>
+</table>
+
+<h2>四、三种偏置状态</h2>
+
+<table>
+  <tr>
+    <th>状态</th><th>接线</th><th>耗尽层</th><th>势垒</th><th>PN 结行为</th>
+  </tr>
+  <tr>
+    <td><strong>正向偏置</strong></td>
+    <td>P (+) — N (−)</td>
+    <td>变窄</td>
+    <td>降低</td>
+    <td><strong>导通</strong>（电流大）<br>导通电压 ≈ 0.7V（硅）</td>
+  </tr>
+  <tr>
+    <td><strong>反向偏置</strong></td>
+    <td>P (−) — N (+)</td>
+    <td>变宽</td>
+    <td>升高</td>
+    <td><strong>截止</strong>（I ≈ Iₛ，nA 级）</td>
+  </tr>
+  <tr>
+    <td><strong>反向击穿</strong></td>
+    <td>反向电压足够大</td>
+    <td>—</td>
+    <td>—</td>
+    <td>电流急剧增大<br>齐纳击穿 &lt; 6V / 雪崩击穿 &gt; 6V</td>
+  </tr>
+</table>
+
+<h2>五、肖克利方程</h2>
+
+<div class="math">
+  I = Iₛ (e^(U / Uₜ) − 1)
+
+  Uₜ = kT/q ≈ 26 mV（300K 室温）
+  Iₛ ≈ 10⁻¹² ~ 10⁻¹⁵ A（硅）
+</div>
+
+<ul>
+  <li><strong>正向 U ≫ Uₜ</strong>：I ≈ Iₛ · e^(U/Uₜ) — 指数增长</li>
+  <li><strong>反向 |U| ≫ Uₜ</strong>：I ≈ −Iₛ — 饱和</li>
+</ul>
+
+<h2>六、必须记住的数字</h2>
+
+<table>
+  <tr><th>常数</th><th>数值（硅，300K）</th></tr>
+  <tr><td>势垒高度 φ</td><td>≈ 0.6 ~ 0.7 V</td></tr>
+  <tr><td>本征载流子浓度 nᵢ</td><td>≈ 1.5 × 10¹⁰ cm⁻³</td></tr>
+  <tr><td>温度当量电压 Uₜ</td><td>≈ 26 mV</td></tr>
+  <tr><td>反向饱和电流 Iₛ</td><td>≈ 10⁻¹² ~ 10⁻¹⁵ A</td></tr>
+  <tr><td>锗的势垒高度</td><td>≈ 0.2 ~ 0.3 V</td></tr>
+  <tr><td>雪崩/齐纳击穿分界线</td><td>≈ 6 V</td></tr>
+</table>
+
+<h2>七、学习路线图（模电）</h2>
+
+<table>
+  <tr><th>#</th><th>章节</th><th>状态</th><th>Lesson 编号</th></tr>
+  <tr><td>1</td><td>半导体基础</td><td>✅ 已完成</td><td>L0001</td></tr>
+  <tr><td>2</td><td>PN 结</td><td>✅ 已完成</td><td>L0002</td></tr>
+  <tr><td>3</td><td>二极管电路</td><td>⏭ 下一步</td><td>L0003</td></tr>
+  <tr><td>4</td><td>BJT 放大电路（重点 ★★★★★）</td><td>待学</td><td>L0004-L0008</td></tr>
+  <tr><td>5</td><td>FET 放大电路</td><td>待学</td><td>L0009-L0010</td></tr>
+  <tr><td>6</td><td>频率响应</td><td>待学</td><td>L0011</td></tr>
+  <tr><td>7</td><td>负反馈（重点 ★★★★★）</td><td>待学</td><td>L0012</td></tr>
+  <tr><td>8</td><td>差分放大</td><td>待学</td><td>L0013</td></tr>
+  <tr><td>9</td><td>集成运放（重点 ★★★★★）</td><td>待学</td><td>L0014-L0016</td></tr>
+  <tr><td>10</td><td>正弦波振荡 & 稳压电源</td><td>待学</td><td>L0017-L0018</td></tr>
+</table>
+
+<div class="footer-nav">
+  <span class="lesson-counter">模电 · Reference 01</span>
+  <span>
+    <a href="0001-landscape-and-semiconductor-intro.html">L0001</a> ·
+    <a href="0002-pn-junction.html">L0002</a> ·
+    <a href="../MISSION.md">Mission</a>
+  </span>
+</div>
+
+</body>
+</html>

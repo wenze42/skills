@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Lesson 0002 — PN 结：单向导电性的秘密</title>
+<link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+
+<h1>Lesson 0002 — PN 结：单向导电性的秘密</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0002 / ∞ · 约 25 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  如果你还没读过 <a href="0001-landscape-and-semiconductor-intro.html">Lesson 0001</a>，请先快速过一遍半导体、N 型、P 型的概念——这一课直接建立在那上面。
+</div>
+
+<h2>这一课为什么重要</h2>
+<p>
+  上一课我们学了：N 型半导体<strong>多电子</strong>，P 型半导体<strong>多空穴</strong>。
+  现在——把这两种材料<strong>紧密地贴在一起</strong>，会发生什么？
+</p>
+<p>
+  这个问题的答案，就是<strong>整个电子工业的起点</strong>。二极管、三极管、MOS 管、
+  你手机里几十亿个晶体管——<strong>本质上都是 PN 结的不同组合</strong>。
+</p>
+
+<h2>接触前 vs 接触后：一场"电荷难民潮"</h2>
+
+<h3>接触前：各安其位</h3>
+<p>
+  一块 N 型半导体，旁边放一块 P 型半导体。<strong>两块都是电中性的</strong>——
+  虽然 N 型里有很多自由电子，但也有等量的施主离子（带正电）；
+  虽然 P 型里有很多空穴，但也有等量的受主离子（带负电）。
+</p>
+
+<div class="circuit">
+  <pre>
+  接触前：
+
+  N 型半导体（左）          P 型半导体（右）
+  ┌──────────────┐          ┌──────────────┐
+  │ ⊕ e⁻ ⊕ e⁻ ⊕ │          │ ⊕ ⊕ ○ ⊕ ○ ⊕ │
+  │ e⁻ ⊕ e⁻ ⊕ e⁻│          │ ○ ⊕ ⊕ ○ ⊕ ○ │
+  │ ⊕ e⁻ ⊕ e⁻ ⊕ │          │ ⊕ ○ ⊕ ⊕ ○ ⊕ │
+  └──────────────┘          └──────────────┘
+    电子多，整体中性          空穴多，整体中性
+  </pre>
+</div>
+
+<p>
+  N 型里有<strong>高浓度自由电子</strong>（多数载流子浓度 ≈ 掺杂浓度 10¹⁵~10¹⁸ cm⁻³），
+  P 型里几乎没有自由电子（<strong>少数载流子</strong>，浓度 ≈ nᵢ²/p ≈ 10⁴~10⁷ cm⁻³）。
+  这种<strong>浓度差</strong>——就是一切的驱动力。
+</p>
+
+<h3>接触瞬间：扩散运动开始了</h3>
+<p>
+  当两块半导体真正接触时——<strong>浓度差导致扩散</strong>，就像一滴墨水滴入清水：
+</p>
+<ul>
+  <li>N 型中的大量自由电子 → 向 P 型区域<strong>扩散</strong></li>
+  <li>P 型中的大量空穴 → 向 N 型区域<strong>扩散</strong></li>
+</ul>
+
+<p>
+  但电子和空穴都是<strong>带电粒子</strong>，它们一扩散，就会在接触区域产生一个意想不到的东西：
+</p>
+
+<div class="circuit">
+  <pre>
+  接触后，扩散刚开始：
+
+  N 型半导体（左）    界面    P 型半导体（右）
+  ┌──────────────────┬──────┬──────────────────┐
+  │ ⊕ e⁻            │e⁻ →  │                  │
+  │                  │← ○  │ ○                │
+  │                  │     │                  │
+  └──────────────────┴──────┴──────────────────┘
+
+  注意：电子带负电，它"进入"P 型就相当于 P 型多了负电荷
+  空穴带正电，它"进入"N 型就相当于 N 型多了正电荷
+  </pre>
+</div>
+
+<h2>耗尽层与势垒：扩散被自己拦下了</h2>
+
+<h3>空间电荷区（耗尽层）形成</h3>
+<p>
+  扩散运动不是无限进行的——因为扩散的过程<strong>会产生一个反向电场</strong>，阻止扩散继续。
+  让我们看这个循环：
+</p>
+<ol>
+  <li>N 型中的电子扩散到 P 型 → P 型界面附近积累<strong>负离子</strong></li>
+  <li>P 型中的空穴扩散到 N 型 → N 型界面附近积累<strong>正离子</strong></li>
+  <li>这些离子<strong>不能移动</strong>（它们是掺杂原子，被共价键锁住了）</li>
+  <li>于是界面附近出现了一个<strong>正离子区 + 负离子区</strong>——形成内部电场</li>
+</ol>
+
+<p>
+  这个区域里，几乎<strong>没有可移动的载流子</strong>（都被扩散走了），所以叫<strong>耗尽层</strong>
+  或<strong>阻挡层</strong>。它的厚度通常在 <strong>1~10 μm</strong> 量级。
+</p>
+
+<div class="circuit">
+  <pre>
+  耗尽层形成后（静止状态）：
+
+  N 型半导体        耗尽层（空间电荷区）         P 型半导体
+  ┌──────────┬──────────────────────────┬──────────┐
+  │ e⁻ ⊕ e⁻ │  ⊕ ⊕ ⊕ │     无载流子    │ ⊖ ⊖ ⊖ │ ○ ⊕ ○ │
+  │          │  ⊕ ⊕ ⊕ │                  │ ⊖ ⊖ ⊖ │        │
+  │ 电中性   │  正离子 │ ← 内部电场 E → │ 负离子 │ 电中性  │
+  └──────────┴──────────────────────────┴──────────┘
+
+  内部电场方向：从正离子区指向负离子区（→ 向右）
+  </pre>
+</div>
+
+<h3>漂移运动 vs 扩散运动：动态平衡</h3>
+<p>
+  内部电场对载流子有<strong>电场力</strong>作用，导致它们做<strong>漂移运动</strong>——
+  和扩散运动<strong>方向相反</strong>：
+</p>
+<ul>
+  <li>扩散：电子从 N → P，空穴从 P → N</li>
+  <li>漂移（电场驱动）：电子从 P → N，空穴从 N → P</li>
+</ul>
+
+<p>
+  当耗尽层发展到某个厚度时，<strong>扩散电流 = 漂移电流</strong>，方向相反、大小相等，
+  PN 结达到<strong>动态平衡</strong>。此时总电流为零，耗尽层厚度稳定。
+</p>
+
+<h3>势垒高度（接触电位差）</h3>
+<p>
+  内部电场的存在意味着界面处有一个<strong>电位差</strong>——就像一个"小山丘"。
+  电子要从 N 型扩散到 P 型，必须爬过这个丘。这个电位差叫<strong>势垒高度</strong>
+  （也叫接触电位差或结电位）。
+</p>
+
+<div class="math">
+  势垒高度 φ ≈ (0.6 ~ 0.7) V （硅，室温）<br>
+  势垒高度 ≈ (0.2 ~ 0.3) V （锗，室温）
+</div>
+
+<div class="tip">
+  <span class="tip-label">记忆点</span>
+  硅的势垒 ≈ 0.7V，锗的势垒 ≈ 0.3V。这个数字后面会反复出现——
+  二极管导通电压、BJT 发射结电压，本质上就是这个势垒。
+</div>
+
+<h2>偏置：给 PN 结通电</h2>
+<p>
+  现在 PN 结在动态平衡状态，总电流为零。如果我们<strong>外接电压</strong>，
+  会发生什么？这就是<strong>单向导电性</strong>的来源。
+</p>
+
+<h3>正向偏置（Forward Bias）— 导通</h3>
+<p>
+  <strong>P 接正，N 接负</strong>。外加电压与内部电场方向<strong>相反</strong>，
+  削弱内部电场，势垒<strong>降低</strong>，耗尽层<strong>变窄</strong>。
+</p>
+
+<div class="circuit">
+  <pre>
+  正向偏置：
+
+  电池(+) ──── P 型 ──── 耗尽层 ──── N 型 ──── 电池(-)
+  │                                              │
+  │                                              │
+  └──── 外加电场 与 内部电场 方向相反 ──────────┘
+
+  效果：势垒从 0.7V 降到 ~0.2V，耗尽层变薄
+  → 扩散电流 >> 漂移电流
+  → 电子从 N 大量涌入 P，空穴从 P 大量涌入 N
+  → PN 结 <strong>导通</strong>，形成大电流
+  </pre>
+</div>
+
+<p>
+  当外加电压接近 0.7V（硅），势垒几乎消失，扩散运动畅通无阻——电流急剧增大。
+  这就是为什么硅二极管的<strong>导通电压 ≈ 0.7V</strong>。
+</p>
+
+<h3>反向偏置（Reverse Bias）— 截止</h3>
+<p>
+  <strong>P 接负，N 接正</strong>。外加电压与内部电场方向<strong>相同</strong>，
+  增强内部电场，势垒<strong>升高</strong>，耗尽层<strong>变宽</strong>。
+</p>
+
+<div class="circuit">
+  <pre>
+  反向偏置：
+
+  电池(-) ──── P 型 ──── 耗尽层 ──── N 型 ──── 电池(+)
+  │                                              │
+  │                                              │
+  └──── 外加电场 与 内部电场 方向相同 ──────────┘
+
+  效果：势垒升高，耗尽层变宽
+  → 扩散运动几乎完全被阻止（载流子不够爬高势垒）
+  → 只有 <strong>少数载流子</strong> 做漂移运动
+  → PN 结 <strong>截止</strong>，电流极小（nA 级别）
+  </pre>
+</div>
+
+<p>
+  少数载流子虽然少，但在反向电场下会被加速穿过耗尽层——
+  这形成了微小的<strong>反向饱和电流 Iₛ</strong>，基本与反向电压大小无关
+  （因为少数载流子数量有限，用完就没了）。
+</p>
+
+<h3>反向击穿</h3>
+<p>
+  反向偏置电压不是无限可以加的。当电压大到某个临界值时，
+  反向电流会<strong>突然急剧增大</strong>——这就是<strong>反向击穿</strong>。
+  有两种机制：
+</p>
+
+<table>
+  <tr>
+    <th>击穿类型</th>
+    <th>原理</th>
+    <th>发生条件</th>
+    <th>典型击穿电压</th>
+  </tr>
+  <tr>
+    <td><strong>齐纳击穿</strong></td>
+    <td>高电场使共价键电子被拉出（隧道效应）</td>
+    <td>高掺杂 PN 结，耗尽层薄</td>
+    <td>&lt; 6V</td>
+  </tr>
+  <tr>
+    <td><strong>雪崩击穿</strong></td>
+    <td>少数载流子被加速撞断更多共价键（倍增效应）</td>
+    <td>低掺杂 PN 结，耗尽层宽</td>
+    <td>&gt; 6V</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">稳压管</span>
+  反向击穿并不一定是坏事。<strong>稳压管（齐纳二极管）</strong>就是利用
+  <strong>反向击穿区的恒压特性</strong>工作的——击穿后电压基本不随电流变化。
+  只要不过热烧毁，击穿是<strong>可逆的</strong>。
+</div>
+
+<h2>伏安特性：把上面的东西画成曲线</h2>
+<p>
+  PN 结的电流-电压关系可以用<strong>肖克利方程</strong>描述：
+</p>
+
+<div class="math">
+  I = Iₛ (e^(U / Uₜ) − 1)
+
+  I：PN 结电流
+  Iₛ：反向饱和电流（常温下 ≈ 10⁻¹⁵ A 量级）
+  U：外加电压
+  Uₜ：温度当量电压，Uₜ = kT/q ≈ 26 mV（室温 300K）
+</div>
+
+<p>
+  这个方程揭示了单向导电性的本质：
+</p>
+<ul>
+  <li><strong>正向（U ≫ Uₜ）</strong>：e^(U/Uₜ) 指数增长，电流急剧增大 → <strong>导通</strong></li>
+  <li><strong>反向（|U| ≫ Uₜ）</strong>：e^(U/Uₜ) ≈ 0，I ≈ −Iₛ → <strong>截止</strong></li>
+  <li><strong>击穿（反向足够大）</strong>：方程不再适用，电流急剧增大</li>
+</ul>
+
+<h2>一张图总结 PN 结</h2>
+<div class="circuit">
+  <pre>
+  ★ PN 结核心知识图谱 ★
+
+  接触前          接触后（平衡）          正向偏置            反向偏置
+  ───────────    ──────────────         ─────────          ─────────
+  N: 多e⁻         耗尽层形成             势垒降低            势垒升高
+  P: 多○          扩散 = 漂移            耗尽层变薄          耗尽层变宽
+                  势垒 ≈ 0.7V           I 急剧增大          I ≈ Iₛ（极小）
+                                         → 导通              → 截止
+
+  关键公式：I = Iₛ (e^(U/Uₜ) − 1)
+  关键数字：φ ≈ 0.7V（硅）, Uₜ ≈ 26mV（室温）
+  击穿电压 < 6V → 齐纳击穿；> 6V → 雪崩击穿
+  </pre>
+</div>
+
+<h2>Quiz — 确认理解</h2>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>扩散 vs 漂移</strong>：接触后浓度差驱动扩散，扩散产生电场，电场驱动反向漂移，最终动态平衡</li>
+  <li><strong>耗尽层</strong>：界面附近无载流子的区域，内部电场就建立在这里</li>
+  <li><strong>单向导电性</strong>：正向偏置削弱势垒→导通；反向偏置增强势垒→截止</li>
+  <li><strong>反向击穿</strong>：齐纳击穿（低电压、高掺杂）和雪崩击穿（高电压、低掺杂）</li>
+</ol>
+
+<p>
+  理解了 PN 结，你就理解了所有半导体器件的<strong>心脏</strong>。下一课我们会看
+  <strong>二极管</strong>——它就是一个单独的 PN 结，是 PN 结原理的第一个实际应用。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第一章 §1.2~1.4。
+  PN 结的扩散电流、漂移电流、肖克利方程的完整推导建议直接读教材。
+  同时参考：康华光《电子技术基础（模拟部分）》第七版对应章节，两本书在 PN 结的讲解上风格不同，可以互补。
+</div>
+
+<div class="ask-agent">
+  不理解扩散和漂移怎么平衡？肖克利方程看不懂？想让我画更详细的图？<br>
+  <strong>直接问我</strong>——我就是你的老师，任何疑问都值得问。
+</div>
+
+<div class="footer-nav">
+  <span class="lesson-counter">模电 · Lesson 0002 / ∞</span>
+  <span>
+    <a href="0001-landscape-and-semiconductor-intro.html">← Lesson 0001</a> ·
+    <a href="../MISSION.md">Mission</a> · <a href="../RESOURCES.md">Resources</a>
+  </span>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "PN 结形成过程中，扩散运动和漂移运动是如何达到平衡的？",
+    options: [
+      "扩散电流始终大于漂移电流，只是逐渐减小",
+      "扩散产生内部电场，内部电场驱动漂移，两者方向相反，最终大小相等",
+      "温度降低导致扩散停止，只剩漂移运动",
+      "耗尽层无限变薄，最终消失"
+    ],
+    correct: 1,
+    explain: "扩散的结果是界面两侧积累不能移动的离子，形成内部电场。电场驱动漂移运动（方向与扩散相反）。当扩散电流=漂移电流时，达到动态平衡。"
+  },
+  {
+    q: "硅 PN 结的势垒高度（接触电位差）大约是多少？",
+    options: ["0.2 ~ 0.3 V", "0.6 ~ 0.7 V", "1.5 ~ 2.0 V", "5 ~ 6 V"],
+    correct: 1,
+    explain: "硅的势垒高度 ≈ 0.7V，这直接决定了硅二极管的导通电压。锗约 0.3V。记忆：硅0.7，锗0.3。"
+  },
+  {
+    q: "给 PN 结加正向偏置时（P 接正、N 接负），耗尽层会如何变化？",
+    options: ["变宽，势垒升高", "不变", "变窄，势垒降低", "完全消失"],
+    correct: 2,
+    explain: "正向偏置的外加电场与内部电场相反，削弱内部电场。耗尽层变窄，势垒降低，扩散运动得以继续，形成大电流——这就是导通。"
+  },
+  {
+    q: "当 PN 结反向击穿电压 < 6V 时，通常是什么击穿机制？",
+    options: ["雪崩击穿", "齐纳击穿", "热击穿", "隧道击穿（量子隧穿）"],
+    correct: 1,
+    explain: "< 6V 击穿通常是齐纳击穿（高掺杂导致耗尽层极薄，电子通过隧道效应穿越势垒）；> 6V 通常是雪崩击穿（碰撞电离倍增）。边界 6V 大致对应硅的能带宽度。"
+  },
+  {
+    q: "肖克利方程中，反向饱和电流 Iₛ 的典型量级是多少？",
+    options: ["10⁻³ A", "10⁻⁶ A", "10⁻¹² ~ 10⁻¹⁵ A", "1 A"],
+    correct: 2,
+    explain: "Iₛ 是由少数载流子的热激发产生的，数量极少。室温下硅 PN 结的 Iₛ ≈ 10⁻¹² ~ 10⁻¹⁵ A（pA ~ fA 量级）。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+});
+</script>
+
+</body>
+</html>
