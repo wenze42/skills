@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Lesson 0003 — 二极管及其电路</title>
+<link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+
+<h1>Lesson 0003 — 二极管及其电路</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0003 / ∞ · 约 30 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  必须掌握 <a href="0002-pn-junction.html">Lesson 0002（PN 结）</a>——尤其是正向/反向偏置、势垒、肖克利方程。
+  二极管就是一个单独的 PN 结，这一课是把 PN 结原理变成真正能用的电路。
+</div>
+
+<h2>这一课的定位</h2>
+<p>
+  上一课你搞懂了 PN 结为什么有单向导电性。现在我们把 PN 结的两端各拉一根线，
+  就得到了一个<strong>二极管</strong>（Diode）。考研中二极管电路是高频考点——
+  题型是"给定电路 + 输入波形，求输出波形/电压"。
+</p>
+
+<p>
+  这一课要搞定三件事：
+</p>
+<ol>
+  <li><strong>二极管的三种模型</strong>（分析电路的"尺子"，根据精度需求选一把）</li>
+  <li><strong>考研高频应用电路</strong>（限幅、钳位、整流、稳压管——每一个都考过）</li>
+  <li><strong>电路分析套路</strong>（遇到含二极管的电路，按什么步骤下手）</li>
+</ol>
+
+<h2>一、二极管的符号与伏安特性</h2>
+
+<div class="circuit">
+  <pre>
+  二极管电路符号：
+
+  阳极(+) ──▶┤ ├── 阴极(−)
+
+  PN 结对应：    P  ──▶┤ ├──  N
+               阳极       阴极
+
+  正向导通方向：从阳极流向阴极（箭头方向）
+  反向截止方向：从阴极到阳极（反向偏置）
+  </pre>
+</div>
+
+<p>
+  伏安特性曲线和 PN 结完全相同——就是把肖克利方程画出来：
+</p>
+
+<table>
+  <tr>
+    <th>区域</th><th>电压条件</th><th>电流特征</th><th>二极管状态</th>
+  </tr>
+  <tr>
+    <td><strong>正向</strong></td>
+    <td>U &gt; 导通阈值（硅 ≈ 0.5V 开始，0.7V 完全导通）</td>
+    <td>I 指数增长</td>
+    <td><strong>导通</strong></td>
+  </tr>
+  <tr>
+    <td><strong>反向截止</strong></td>
+    <td>−B_v &lt; U &lt; 0</td>
+    <td>I ≈ −Iₛ ≈ 0（nA 级）</td>
+    <td><strong>截止</strong></td>
+  </tr>
+  <tr>
+    <td><strong>反向击穿</strong></td>
+    <td>U ≤ −B_v（击穿电压）</td>
+    <td>I 急剧增大</td>
+    <td>击穿（稳压管利用此特性）</td>
+  </tr>
+</table>
+
+<h2>二、二极管的三种电路模型</h2>
+
+<p>
+  二极管是非线性器件——直接用肖克利方程解电路会得到超越方程，手算极难。
+  工程上用<strong>分段线性近似</strong>，根据精度需求选模型：
+</p>
+
+<h3>模型 1：理想模型（最粗糙，分析大方向时用）</h3>
+
+<div class="circuit">
+  <pre>
+  理想二极管等效电路：
+
+  正向导通 → 短路（U = 0，没有压降）
+  反向截止 → 开路（I = 0，没有电流）
+
+  ┌── 理想 ──┐        ┌── 实际（硅）──┐
+  │0.7V│     │        │  ~0.7V 压降   │
+  │    │     │        │               │
+  └────┴─────┘        └───┴───────────┘
+      U                   U
+  </pre>
+</div>
+
+<ul>
+  <li><strong>适用场景</strong>：粗略分析电路工作原理、判断哪个二极管导通、定性波形分析</li>
+  <li><strong>特点</strong>：计算极简，但硅二极管会有 ~0.7V 误差</li>
+</ul>
+
+<h3>模型 2：恒压降模型（考研首选，精度够用）</h3>
+
+<div class="circuit">
+  <pre>
+  恒压降模型等效电路：
+
+  正向导通 → 串联一个 0.7V 电压源（硅）/ 0.3V（锗）
+  反向截止 → 开路
+
+  ┌── 恒压降 ──┐
+  │   0.7V │   │
+  │        │   │
+  └────────┴───┘
+         U
+
+  等效为： ──|>|── 0.7V 电压源（阳极接电压源+端）
+  </pre>
+</div>
+
+<ul>
+  <li><strong>适用场景</strong>：考研 90% 的二极管电路分析都用这个模型</li>
+  <li><strong>记忆</strong>：硅管 0.7V，锗管 0.3V</li>
+</ul>
+
+<h3>模型 3：折线模型（最精确，分析细节时用）</h3>
+
+<div class="circuit">
+  <pre>
+  折线模型等效电路：
+
+  正向导通 → 串联一个 0.5V 电压源 + 一个 20Ω 电阻（硅的典型值）
+  反向截止 → 开路
+
+  本质：把伏安特性曲线的导通段用一条直线近似
+  → 不是理想短路，而是有约 20Ω 的动态电阻
+  </pre>
+</div>
+
+<ul>
+  <li><strong>适用场景</strong>：精确计算导通电流、分析电阻分压器中的二极管</li>
+  <li>考研中偶尔出现，但<strong>恒压降模型是绝对主力</strong></li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">考研选择题陷阱</span>
+  当题目明确说"用理想模型分析"时，不能用 0.7V。
+  当题目没说——<strong>默认用恒压降模型（硅 0.7V）</strong>。
+  锗管一般会明确说"锗二极管"或"1N34A"之类的型号。
+</div>
+
+<h2>三、含二极管电路的分析步骤</h2>
+
+<p>
+  遇到含多个二极管的电路，按以下 4 步走：
+</p>
+
+<div class="circuit">
+  <pre>
+  ★ 四步分析法 ★
+
+  Step 1：把所有二极管都从电路里"拆出来"，分别计算每个二极管两端的电压
+          （假设二极管不存在，用开路代替，算开路电压 U_D）
+
+  Step 2：判断每个二极管的偏置状态
+          U_D > 0.7V → 正向偏置 → 可能导通（记为"候选导通"）
+          U_D < 0.7V → 反向偏置 → 截止（开路）
+
+  Step 3：如果有多个候选导通的二极管
+          → 优先"导通电压最低"的那个（即 U_D 最大的那个先导通）
+          → 它导通后会影响其他二极管的 U_D → 重新计算
+
+  Step 4：把导通的二极管用"0.7V 电压源"代替，截止的用"开路"代替
+          → 用线性电路知识（KVL、KCL）求解
+  </pre>
+</div>
+
+<p>
+  举个<strong>考研典型例题</strong>：
+</p>
+
+<div class="circuit">
+  <pre>
+  例题：电路如下，求 U_O（恒压降模型，硅管）
+
+     +12V
+      │
+      ├── D1(阳极)  D1(阴极) ── GND
+      │
+      D2(阴极)      D2(阳极) ── GND
+      │
+     U_O
+
+  Step 1：拆除 D1、D2，算开路电压
+  D1: U_D1 = 12 - 0 = 12V（P端=12V，N端=0V）→ 正向偏置
+  D2: U_D2 = 0 - 0 = 0V（P端=0V，N端=0V）→ 零偏
+
+  Step 2：D1 候选导通，D2 可能截止
+  Step 3：D1 优先导通
+
+  Step 4：D1 用 0.7V 电压源代替
+  U_O = 12 - 0.7 = 11.3V
+
+  此时 D2 的阴极 = 11.3V，阳极 = 0V → 反向偏置，确认截止 ✅
+  </pre>
+</div>
+
+<h2>四、考研高频应用电路</h2>
+
+<h3>应用 1：限幅电路（最常考）</h3>
+
+<p>
+  限幅电路的功能是：<strong>把信号幅度限制在某个范围内</strong>，超过就"削掉"。
+  有两种基本类型：
+</p>
+
+<h4>串联限幅</h4>
+<p>
+  二极管<strong>串联</strong>在信号通路中。二极管导通时 = 短路，信号通过；截止时 = 开路，信号被切断。
+</p>
+
+<div class="circuit">
+  <pre>
+  串联上限幅：
+
+  输入 v_i ──▶ R ──┬── D(阳极) ── D(阴极) ── 输出 v_o
+                    │
+                   V_ref
+
+  当 v_i > V_ref + 0.7V 时 → D 导通 → v_o ≈ V_ref + 0.7V（被限制）
+  当 v_i < V_ref + 0.7V 时 → D 截止 → v_o ≈ v_i（信号通过）
+
+  ★ 上限幅：削掉正峰值
+  ★ 下限幅：二极管反过来，削掉负峰值
+  ★ 双向限幅：两个二极管相向并联，同时削正负峰
+  </pre>
+</div>
+
+<h4>并联限幅</h4>
+<p>
+  二极管<strong>并联</strong>在输出端。二极管截止时 = 开路，信号通过；导通时 = 短路到参考电平。
+</p>
+
+<div class="circuit">
+  <pre>
+  并联限幅：
+
+  输入 v_i ──▶ R ──┬── 输出 v_o
+                    │
+                    ├── D(阳极) ── V_ref
+
+  二极管与负载并联，导通时把输出钳在 V_ref + 0.7V
+  （原理相同，只是接法不同——考研中两种都可能考）
+  </pre>
+</div>
+
+<div class="tip">
+  <span class="tip-label">记法</span>
+  串联限幅：D 串在通路里 → 截止时断路 → 信号过不去
+  并联限幅：D 并在输出端 → 导通时短路 → 输出被钳住
+  削掉哪个极性 → 看二极管的导通方向
+</div>
+
+<h3>应用 2：钳位电路（箱位电路）</h3>
+
+<p>
+  钳位电路的功能是：<strong>把信号的峰值钳在某个直流电平上，但不改变波形形状</strong>。
+  与限幅电路的区别：<strong>限幅削幅度，钳位加直流</strong>。
+</p>
+
+<div class="circuit">
+  <pre>
+  钳位电路（负峰值钳位到零）：
+
+  输入 v_i ──▶ C ──┬── 输出 v_o
+                   │
+                   ├── D(阴极接节点，阳极接 GND)
+
+  原理：电容充电到峰值，信号整体"抬高"或"降低"
+  使钳位端正好落在参考电平上
+
+  v_i 是 ±V_p 的正弦波 → 电容 C 充电到 V_p
+  v_o = v_i + V_p → 负峰值被钳在 0V，正峰值变成 +2V_p
+
+  ★ 正钳位：把正峰值钳到参考电平（二极管反接）
+  ★ 负钳位：把负峰值钳到参考电平（如上图）
+  ★ 双向钳位：两个二极管 + 两个电容，分别钳正负峰值
+  </pre>
+</div>
+
+<h3>应用 3：整流电路（二极管最经典应用）</h3>
+
+<p>
+  整流 = 把交流电变成直流电。二极管的单向导电性就是核心。
+</p>
+
+<h4>半波整流</h4>
+
+<div class="circuit">
+  <pre>
+  半波整流：
+
+  交流输入 v_i ──▶ D ──▶ R ── GND
+
+  v_i 正半周 → D 导通 → 电流通过 R → v_o = v_i - 0.7V
+  v_i 负半周 → D 截止 → 无电流 → v_o = 0
+
+  输出：只有正半周被保留，负半周被削掉
+  脉动大，平均电压 ≈ 0.318 V_m（V_m 是峰值）
+  </pre>
+</div>
+
+<h4>桥式全波整流（最常用）</h4>
+
+<div class="circuit">
+  <pre>
+  桥式整流（4 个二极管）：
+
+        D1  D2
+       ┌─▶┤  ├─▶┐
+  v_i ─┤        ├─ R ─ GND
+       └─◀┤  ├─◀┘
+        D3  D4
+
+  正半周：v_i+ → D1 → R → D4 → v_i−（电流从 v_i+ 经 R 到 v_i−）
+  负半周：v_i− → D2 → R → D3 → v_i+（电流仍然从 R 的上端流向下端！）
+
+  ★ 全波整流的精髓：无论正负半周，流过 R 的电流方向始终不变
+  ★ 平均电压 ≈ 0.636 V_m（半波的两倍）
+  ★ 考研常考：求输出平均电压、二极管平均电流、二极管承受的最大反向电压
+</pre>
+</div>
+
+<table>
+  <tr>
+    <th>电路</th><th>平均输出电压 V_O</th><th>二极管平均电流 I_D</th><th>最大反向电压 U_RM</th>
+  </tr>
+  <tr>
+    <td>半波整流</td>
+    <td>0.318 V_m</td>
+    <td>0.45 V_m / R</td>
+    <td>√2 · V_2 ≈ 1.414 V_2</td>
+  </tr>
+  <tr>
+    <td>全波（双二极管）</td>
+    <td>0.636 V_m</td>
+    <td>0.45 V_m / R（每个二极管）</td>
+    <td>2√2 · V_2 ≈ 2.828 V_2</td>
+  </tr>
+  <tr>
+    <td>桥式全波</td>
+    <td>0.636 V_m</td>
+    <td>0.45 V_m / R（每个二极管）</td>
+    <td>√2 · V_2 ≈ 1.414 V_2</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">记忆口诀</span>
+  半波平均 0.45 V_2，全波/桥式平均 0.9 V_2（V_2 是有效值）。
+  二极管最大反向电压：半波 = 桥式 = √2 V_2 ≈ 1.414 V_2，
+  全波（双管）= 2.828 V_2（这是全波的缺点——二极管耐压要求高）。
+</div>
+
+<h3>应用 4：稳压管（反向击穿区的应用）</h3>
+
+<p>
+  稳压管（Zener Diode）就是特意工作在<strong>反向击穿区</strong>的二极管。
+  反向击穿后，即使电流变化很大，电压几乎不变——这就是稳压的来源。
+</p>
+
+<div class="circuit">
+  <pre>
+  稳压管电路：
+
+  输入 U_i ──▶ R ──┬── 输出 U_O
+                   │
+                   ├── 稳压管(阴极接输入侧，阳极接 GND)
+                   │
+                  GND
+
+  稳压管反向击穿后，U_O = U_Z（稳压值，基本恒定）
+  R 的作用：限制电流 + 分压（U_i = I·R + U_Z）
+
+  关键条件：稳压管电流必须在 I_Zmin ~ I_Zmax 之间
+  I_Zmin ≈ 1~2 mA（太小不能稳定）
+  I_Zmax = P_Z / U_Z（耗散功率不能超过 P_Z）
+  P_Z 是稳压管的额定耗散功率（如 0.5W、1W）
+  </pre>
+</div>
+
+<h2>五、Quiz — 考研风格题</h2>
+
+<p>
+  下面 4 道题都是考研/期末考真题风格。用<strong>恒压降模型（硅 0.7V）</strong>分析。
+</p>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>三种模型的选择</strong>：理想（粗糙）→ 恒压降（考研主力）→ 折线（精确）</li>
+  <li><strong>含二极管电路分析四步法</strong>：拆除→判偏置→优先级→线性求解</li>
+  <li><strong>四种高频应用</strong>：限幅（削幅度）、钳位（加直流）、整流（半波/全波）、稳压管（反向击穿）</li>
+</ol>
+
+<p>
+  下一课（<strong>Lesson 0004</strong>）我们会进入<strong>双极型晶体管 BJT</strong>——
+  这是模电的第一个真正的"主动器件"，能把小信号放大成大信号。
+  BJT 是考研模电的绝对核心（★★★★★），后面 5-6 课都围绕它展开。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第一章 §1.5~1.7。
+  整流电路的波形分析、滤波电路可以在康华光教材里找到更详细的讲解。
+</div>
+
+<div class="ask-agent">
+  不理解限幅和钳位的区别？多个二极管的电路还是搞不定？想让我多举几个例题？<br>
+  <strong>直接问我</strong>——任何分析过程中的卡点都值得问。
+</div>
+
+<div class="footer-nav">
+  <span class="lesson-counter">模电 · Lesson 0003 / ∞</span>
+  <span>
+    <a href="0002-pn-junction.html">← L0002</a> ·
+    <a href="../MISSION.md">Mission</a> · <a href="../RESOURCES.md">Resources</a>
+  </span>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "用恒压降模型分析，下图电路中 D1(硅) 和 D2(硅) 的状态是？<br>" +
+       "<code>+10V ── D1(阳→阴) ── D2(阴→阳) ── GND</code><br>" +
+       "<code>两个二极管同向串联（D1阴极接D2阴极）</code>",
+    options: [
+      "D1 导通，D2 导通，U = 8.6V",
+      "D1 导通，D2 截止（D1 导通后 D2 承受反向电压）",
+      "D1 截止，D2 导通",
+      "两个都导通，U = 10V"
+    ],
+    correct: 0,
+    explain: "拆除二极管，D1 开路电压=10V（阳正阴负），正向偏置；D2 开路电压也是 10V（阳正阴负），正向偏置。两个都导通，串联两个 0.7V 压降，U = 10 - 0.7 - 0.7 = 8.6V。注意：D1 阴极接 D2 阴极，D2 的阳极接 GND，所以 D2 的阳极是 0V，阴极被 D1 拉到 ~9.3V → D2 也是阳负阴正，反向偏置？重新算：D1 阳=10V，D1 阴=D2 阴；D2 阳=0V。两个二极管并联阴极接在一起？不对，原题是 D1 阴接 D2 阴，D2 阳接 GND。D1: 阳10V，阴=Vx；D2: 阳0V，阴=Vx。D2 要导通需要 Vx - 0 = 0.7V → Vx = 0.7V。此时 D1 两端电压 = 10 - 0.7 = 9.3V ≫ 0.7V。D1 也导通。所以两个都导通，Vx 被钳在 0.7V（D2 决定），D1 消耗 9.3V，U_O 取决于输出从哪里取。答案 A。"
+  },
+  {
+    q: "桥式全波整流电路，变压器副边电压有效值 V₂ = 10V，求输出平均电压 V_O 和二极管最大反向电压 U_RM。",
+    options: [
+      "V_O = 4.5V, U_RM = 14.14V",
+      "V_O = 9V, U_RM = 14.14V",
+      "V_O = 9V, U_RM = 28.28V",
+      "V_O = 4.5V, U_RM = 28.28V"
+    ],
+    correct: 1,
+    explain: "桥式全波整流：平均电压 V_O = 0.9 V₂ = 0.9 × 10 = 9V。二极管最大反向电压 U_RM = √2 · V₂ = 1.414 × 10 = 14.14V（与半波相同，全波双二极管才是 2√2 V₂）。"
+  },
+  {
+    q: "正弦波 v_i = 10sin(ωt) V 通过一个理想二极管串联限幅电路（参考电平 0V，正极性限幅），输出波形是？",
+    options: [
+      "正负半周都保留，无变化",
+      "正半周通过，负半周被削为零",
+      "负半周通过，正半周被削为零",
+      "正负半周都被削掉一半"
+    ],
+    correct: 1,
+    explain: "串联限幅，理想二极管，正极性限幅 → 正半周二极管导通（信号通过），负半周二极管反向偏置（截止，串联相当于开路）。负半周被削掉，输出 = |v_i| 的正半周部分。"
+  },
+  {
+    q: "稳压管电路中，U_i = 15V，U_Z = 5V，P_Z = 0.5W，R = 1kΩ。求负载开路时稳压管的电流 I_Z，并判断是否安全。",
+    options: [
+      "I_Z = 10mA，安全（< 100mA）",
+      "I_Z = 5mA，安全",
+      "I_Z = 20mA，安全",
+      "I_Z = 5mA，但不安全（电流太小）"
+    ],
+    correct: 0,
+    explain: "U_i = 15V, U_Z = 5V, 电阻 R 上电压 = 15 - 5 = 10V → I_R = 10V/1kΩ = 10mA。负载开路时 I_L = 0 → I_Z = I_R = 10mA。最大允许电流 I_Zmax = P_Z/U_Z = 0.5W/5V = 100mA。10mA < 100mA，且一般 I_Zmin ≈ 1~2mA < 10mA，所以安全。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！二极管电路分析完全OK，可以进 BJT 了。' :
+        right >= 3 ? '👍 不错！基本掌握。建议回看错题对应的知识点。' :
+        '📚 需要再练几道含二极管的电路，特别是多个二极管优先级的判断。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>
