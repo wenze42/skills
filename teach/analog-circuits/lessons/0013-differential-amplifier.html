@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0013 — 差分放大电路</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0013 — 差分放大电路</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0013 / 0020 · 约 40 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  必须已掌握：<a href="./0007-common-emitter-amplifier.html">Lesson 0007（共射放大电路的微变等效分析）</a>、
+  <a href="./0008-emitter-bias-and-q-stability.html">Lesson 0008（Q 点稳定）</a>、
+  <a href="./0012-multistage-amplifier.html">Lesson 0012（直接耦合与零点漂移）</a>。
+  本课的“半边电路法”就是把差分电路拆成两个熟悉的共射电路来算。
+</div>
+
+<h2>一、零点漂移：差分电路为什么存在</h2>
+
+<p>
+  上一课留下一个问题：直接耦合放大电路能放大直流，但第一级的零点漂移会被后面各级放大，
+  在输出端可能完全淹没真正的信号。温度每升高 1 ℃，U<sub>BE</sub> 约下降 2~2.5 mV，
+  这个变化经过几级放大就是伏特级的错误。
+</p>
+
+<p>
+  抑制零漂的最有效思路不是“把管子做得更稳”，而是<strong>用对称性把漂移抵消掉</strong>：
+  把两个完全相同的单管放大电路并排放置，让它们处在同样的温度、同样的电源下。
+  温度变化时，两管的漂移<strong>一模一样</strong>；把两个输出<strong>相减</strong>，漂移就消失了。
+</p>
+
+<div class="math">
+  Δu_o = (U_C1 + ΔU_漂移) − (U_C2 + ΔU_漂移) = U_C1 − U_C2
+</div>
+
+<p>
+  真正有用的信号则让两管<strong>反向</strong>变化，相减之后反而加倍。
+  这就是差分放大电路的全部思想：<strong>放大“差别”，抵消“共同”</strong>。
+</p>
+
+<h2>二、长尾式差分放大电路的结构</h2>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 340" role="img" aria-label="长尾式差分放大电路：两管完全对称，发射极共接长尾电阻 Re 到负电源">
+    <title>长尾式差分放大电路</title>
+    <line class="wire" x1="60" y1="34" x2="460" y2="34"/>
+    <text x="260" y="24" text-anchor="middle" class="lbl">+V_CC</text>
+    <line class="wire" x1="90" y1="290" x2="420" y2="290"/>
+    <text x="260" y="316" text-anchor="middle" class="lbl">−V_EE</text>
+
+    <text x="20" y="138" class="lbl">u_i1</text>
+    <line class="wire" x1="22" y1="150" x2="60" y2="150"/>
+    <rect class="area" x="60" y="132" width="50" height="36" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="85" y="124" text-anchor="middle" class="lbl">R_b1</text>
+    <line class="wire" x1="110" y1="150" x2="150" y2="150"/>
+
+    <line class="wire" x1="150" y1="122" x2="150" y2="178"/>
+    <line class="wire" x1="150" y1="130" x2="175" y2="105"/>
+    <line class="wire" x1="175" y1="105" x2="175" y2="98"/>
+    <line class="wire" x1="150" y1="170" x2="175" y2="195"/>
+    <line class="wire" x1="175" y1="195" x2="175" y2="205"/>
+    <polygon points="168,170 180,178 175,195" fill="#1a1a1a"/>
+    <text x="140" y="196" text-anchor="end" class="lbl">T1</text>
+
+    <line class="wire" x1="175" y1="34" x2="175" y2="48"/>
+    <rect class="area" x="163" y="48" width="24" height="50" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="196" y="76" class="lbl">R_c1</text>
+    <circle class="dot" cx="175" cy="105" r="4"/>
+
+    <text x="498" y="138" text-anchor="end" class="lbl">u_i2</text>
+    <line class="wire" x1="500" y1="150" x2="460" y2="150"/>
+    <rect class="area" x="410" y="132" width="50" height="36" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="435" y="124" text-anchor="middle" class="lbl">R_b2</text>
+    <line class="wire" x1="410" y1="150" x2="370" y2="150"/>
+
+    <line class="wire" x1="370" y1="122" x2="370" y2="178"/>
+    <line class="wire" x1="370" y1="130" x2="345" y2="105"/>
+    <line class="wire" x1="345" y1="105" x2="345" y2="98"/>
+    <line class="wire" x1="370" y1="170" x2="345" y2="195"/>
+    <line class="wire" x1="345" y1="195" x2="345" y2="205"/>
+    <polygon points="352,170 340,178 345,195" fill="#1a1a1a"/>
+    <text x="380" y="196" class="lbl">T2</text>
+
+    <line class="wire" x1="345" y1="34" x2="345" y2="48"/>
+    <rect class="area" x="333" y="48" width="24" height="50" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="300" y="76" text-anchor="end" class="lbl">R_c2</text>
+    <circle class="dot" cx="345" cy="105" r="4"/>
+
+    <line class="wire" x1="175" y1="205" x2="345" y2="205"/>
+    <circle class="dot" cx="250" cy="205" r="4"/>
+    <line class="wire" x1="250" y1="205" x2="250" y2="215"/>
+    <rect class="area" x="238" y="215" width="24" height="55" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="250" y1="270" x2="250" y2="290"/>
+    <text x="272" y="246" class="lbl">R_e（长尾）</text>
+
+    <line class="wire ideal thin" x1="175" y1="105" x2="345" y2="105"/>
+    <text x="260" y="96" text-anchor="middle" class="lbl">u_o 取自两集电极之间</text>
+  </svg>
+</div>
+
+<ul>
+  <li><strong>完全对称</strong>：T1、T2 同型号，R<sub>c1</sub> = R<sub>c2</sub>，R<sub>b1</sub> = R<sub>b2</sub>，这是差分电路能抑制零漂的前提；</li>
+  <li><strong>长尾电阻 R<sub>e</sub></strong>：两管发射极接在一起，共用一个 R<sub>e</sub> 到负电源 −V<sub>EE</sub>。
+      它给两管提供稳定的静态电流，也是抑制共模信号的关键元件；</li>
+  <li><strong>偏置电流</strong>：I<sub>E1</sub> + I<sub>E2</sub> ≈ (V<sub>EE</sub> − U<sub>BE</sub>) / R<sub>e</sub>，
+      由 R<sub>e</sub> 决定，几乎不随温度变；</li>
+  <li><strong>调零电位器 R<sub>p</sub></strong>：实际电路中两管不可能绝对对称，常在发射极串一个小电位器，
+      静态时调 R<sub>p</sub> 使 u<sub>o</sub> = 0；</li>
+  <li><strong>两个输入、两个输出</strong>：可以双端输入/输出，也可以单端，共四种接法（第五节）。</li>
+</ul>
+
+<h2>三、共模信号与差模信号</h2>
+
+<p>
+  差分电路的两个输入端电压 U<sub>i1</sub>、U<sub>i2</sub> 可以重新分解成两个分量：
+</p>
+
+<div class="math">
+  U_id = U_i1 − U_i2　（差模信号）　　U_ic = (U_i1 + U_i2) / 2　（共模信号）
+</div>
+
+<p>反过来也可以由这两个分量还原出原来的输入：</p>
+
+<div class="math">
+  U_i1 = U_ic + U_id / 2　　　U_i2 = U_ic − U_id / 2
+</div>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 240" role="img" aria-label="共模与差模信号分解示意：两个输入可分解为同向的共模分量与反向的差模分量">
+    <title>共模与差模信号的分解</title>
+    <text x="85" y="40" text-anchor="middle" class="lbl">共模分量</text>
+    <text x="255" y="40" text-anchor="middle" class="lbl">差模分量</text>
+    <text x="430" y="40" text-anchor="middle" class="lbl">实际输入</text>
+
+    <line class="wire thin" x1="30" y1="190" x2="480" y2="190"/>
+    <line class="wire thin" x1="85" y1="184" x2="85" y2="196"/>
+    <line class="wire thin" x1="255" y1="184" x2="255" y2="196"/>
+    <line class="wire thin" x1="430" y1="184" x2="430" y2="196"/>
+
+    <line class="wire" x1="70" y1="190" x2="70" y2="118"/>
+    <polygon points="63,124 77,124 70,110" fill="#1a1a1a"/>
+    <text x="56" y="104" text-anchor="end" class="lbl">U_ic</text>
+    <line class="wire" x1="100" y1="190" x2="100" y2="118"/>
+    <polygon points="93,124 107,124 100,110" fill="#1a1a1a"/>
+    <text x="114" y="104" class="lbl">U_ic</text>
+
+    <text x="178" y="196" class="lbl">+</text>
+
+    <line class="wire" x1="240" y1="190" x2="240" y2="132"/>
+    <polygon points="233,138 247,138 240,124" fill="#1a1a1a"/>
+    <text x="226" y="118" text-anchor="end" class="lbl">+U_id/2</text>
+    <line class="wire" x1="270" y1="190" x2="270" y2="240"/>
+    <polygon points="263,234 277,234 270,248" fill="#1a1a1a"/>
+    <text x="284" y="236" class="lbl">−U_id/2</text>
+
+    <text x="348" y="196" class="lbl">=</text>
+
+    <line class="wire" x1="415" y1="190" x2="415" y2="112"/>
+    <polygon points="408,118 422,118 415,104" fill="#1a1a1a"/>
+    <text x="400" y="98" text-anchor="end" class="lbl">U_i1</text>
+    <line class="wire" x1="445" y1="190" x2="445" y2="152"/>
+    <polygon points="438,158 452,158 445,144" fill="#1a1a1a"/>
+    <text x="459" y="138" class="lbl">U_i2</text>
+  </svg>
+</div>
+
+<p>
+  <strong>例</strong>：U<sub>i1</sub> = 3 mV，U<sub>i2</sub> = −1 mV。
+  则 U<sub>id</sub> = 3 − (−1) = 4 mV，U<sub>ic</sub> = (3 − 1)/2 = 1 mV。
+</p>
+
+<h3>为什么长尾电阻只抑制共模、不影响差模</h3>
+
+<p>
+  这是本课最重要的机理，务必理解而不是死记：
+</p>
+
+<ul>
+  <li><strong>共模</strong>：两管基极同时升高，两管电流<strong>同时增大</strong>。
+      流过 R<sub>e</sub> 的电流变化是 2Δi<sub>e</sub>，于是 R<sub>e</sub> 上的压降变化为
+      2Δi<sub>e</sub>R<sub>e</sub>，对两管都形成强烈的负反馈（等效为每管 2R<sub>e</sub>），
+      把共模增益压得很低；</li>
+  <li><strong>差模</strong>：一管电流增大、另一管等量减小，两者在 R<sub>e</sub> 中<strong>互相抵消</strong>，
+      R<sub>e</sub> 上总电流不变、压降不变。对差模信号而言，R<sub>e</sub> 相当于<strong>交流接地</strong>
+      （叫“虚地”），完全不起负反馈作用，差模增益不受影响。</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">一句话总结</span>
+  差模 → 发射极是虚地，半边电路就是普通共射；
+  共模 → 每管等效发射极电阻 2R<sub>e</sub>，增益被压到很低。
+  这就是“放大差别、抑制共同”的电路实现。
+</div>
+
+<h2>四、差模增益、共模增益与共模抑制比</h2>
+
+<h3>1. 差模增益（双端输入、双端输出）</h3>
+
+<p>
+  利用虚地，把差分电路沿中线劈开，取左半边：发射极接地，负载 R<sub>c</sub>，就是标准共射电路。
+</p>
+
+<div class="math">
+  A_ud = −β R_c / (R_b + r_be)
+</div>
+
+<p>
+  双端输出时 u<sub>o</sub> = u<sub>o1</sub> − u<sub>o2</sub>，两管输出大小相等、方向相反，所以
+  u<sub>o</sub> = 2u<sub>o1</sub>；而输入 U<sub>id</sub> = 2U<sub>i1</sub>，分子分母的 2 约掉，
+  最终仍等于单管的增益表达式。
+</p>
+
+<h3>2. 共模增益（单端输出）</h3>
+
+<p>
+  共模时每管发射极等效电阻为 2R<sub>e</sub>，用 Lesson 0008 的负反馈公式：
+</p>
+
+<div class="math">
+  A_uc = −β R_c / [R_b + r_be + 2(1+β)R_e] ≈ −R_c / (2R_e)
+</div>
+
+<p>
+  近似式成立是因为 (1+β)R<sub>e</sub> 通常远大于 R<sub>b</sub> + r<sub>be</sub>。
+  双端输出时，若电路<strong>完全对称</strong>，两个集电极的共模变化相同，相减为零，理想 A<sub>uc</sub> = 0；
+  实际因失配只能做到很小。
+</p>
+
+<h3>3. 共模抑制比 K<sub>CMR</sub></h3>
+
+<div class="math">
+  K_CMR = | A_ud / A_uc |　　　K_CMR(dB) = 20 lg | A_ud / A_uc |
+</div>
+
+<p>
+  K<sub>CMR</sub> 越大，说明电路对共模干扰（温漂、50 Hz 工频干扰、电源波动）的抑制越强。
+  理想双端输出 K<sub>CMR</sub> → ∞，实际 80~120 dB 都是常见值。
+</p>
+
+<h3>例题：单端输出差分电路</h3>
+
+<p>
+  已知 β = 50，R<sub>c</sub> = 10 kΩ，R<sub>b</sub> + r<sub>be</sub> = 2 kΩ，R<sub>e</sub> = 10 kΩ。
+  输入 U<sub>i1</sub> = 5 mV，U<sub>i2</sub> = 3 mV。求差模增益、共模增益、K<sub>CMR</sub>，
+  以及单端输出时的输出电压 u<sub>o1</sub>。
+</p>
+
+<p><strong>第 1 步：分解输入</strong></p>
+<div class="math">
+  U_id = 5 − 3 = 2 mV　　U_ic = (5 + 3)/2 = 4 mV
+</div>
+
+<p><strong>第 2 步：差模增益</strong></p>
+<div class="math">
+  A_ud = −β R_c / (R_b + r_be) = −50 × 10 k / 2 k = −250
+</div>
+
+<p><strong>第 3 步：共模增益</strong></p>
+<div class="math">
+  A_uc ≈ −R_c / (2R_e) = −10 k / (2 × 10 k) = −0.5
+</div>
+
+<p><strong>第 4 步：共模抑制比</strong></p>
+<div class="math">
+  K_CMR = |−250 / −0.5| = 500　　20 lg 500 ≈ 54 dB
+</div>
+
+<p><strong>第 5 步：叠加求输出</strong></p>
+<div class="math">
+  u_o1 = A_ud · U_id + A_uc · U_ic = (−250)(2 mV) + (−0.5)(4 mV)<br>
+  = −500 mV − 2 mV = −502 mV
+</div>
+
+<p>
+  可以看到：4 mV 的共模输入只贡献了 2 mV 输出，而 2 mV 的差模输入贡献了 500 mV。
+  共模被压制了 250 倍，这正是差分电路的价值。
+</p>
+
+<h2>五、四种接法、恒流源与失调</h2>
+
+<h3>1. 四种接法对比</h3>
+
+<table>
+  <tr>
+    <th>接法</th><th>A<sub>ud</sub></th><th>R<sub>i</sub></th><th>R<sub>o</sub></th><th>共模抑制</th>
+  </tr>
+  <tr>
+    <td>双端输入 · 双端输出</td>
+    <td>−βR<sub>c</sub>/(R<sub>b</sub>+r<sub>be</sub>)</td>
+    <td>2(R<sub>b</sub>+r<sub>be</sub>)</td>
+    <td>2R<sub>c</sub></td>
+    <td>理想为 ∞，实际靠对称性</td>
+  </tr>
+  <tr>
+    <td>双端输入 · 单端输出</td>
+    <td>−βR<sub>c</sub>/[2(R<sub>b</sub>+r<sub>be</sub>)]</td>
+    <td>2(R<sub>b</sub>+r<sub>be</sub>)</td>
+    <td>R<sub>c</sub></td>
+    <td>好（R<sub>e</sub> 起作用）</td>
+  </tr>
+  <tr>
+    <td>单端输入 · 双端输出</td>
+    <td>−βR<sub>c</sub>/(R<sub>b</sub>+r<sub>be</sub>)</td>
+    <td>R<sub>b</sub>+r<sub>be</sub></td>
+    <td>2R<sub>c</sub></td>
+    <td>较好</td>
+  </tr>
+  <tr>
+    <td>单端输入 · 单端输出</td>
+    <td>−βR<sub>c</sub>/[2(R<sub>b</sub>+r<sub>be</sub>)]</td>
+    <td>R<sub>b</sub>+r<sub>be</sub></td>
+    <td>R<sub>c</sub></td>
+    <td>好</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">记忆规律</span>
+  双端输出 → 增益是单端的两倍，R<sub>o</sub> = 2R<sub>c</sub>；
+  单端输出 → 增益减半，R<sub>o</sub> = R<sub>c</sub>；
+  双端输入 → R<sub>i</sub> 是单端的两倍；单端输入 → 另一输入端接地，R<sub>i</sub> 减半。
+</div>
+
+<h3>2. 恒流源偏置：把 K<sub>CMR</sub> 再抬一个数量级</h3>
+
+<p>
+  从 A<sub>uc</sub> ≈ −R<sub>c</sub>/(2R<sub>e</sub>) 看，R<sub>e</sub> 越大共模抑制越好。
+  但 R<sub>e</sub> 太大会吃掉大量电源电压，集成电路里也做不出大电阻。
+  工程上的办法是<strong>用恒流源代替 R<sub>e</sub></strong>：
+  恒流源的直流电阻很小（不占电压），交流等效电阻 r<sub>o</sub> 却高达几百 kΩ 甚至 MΩ。
+</p>
+
+<div class="math">
+  R_e → r_o（恒流源输出电阻） ⇒ A_uc ≈ −R_c / (2r_o) → 极小 ⇒ K_CMR 大幅提高
+</div>
+
+<p>
+  这就是集成运放输入级几乎一律采用“恒流源负载差分放大电路”的原因（0019 会再见到它）。
+</p>
+
+<h3>3. 失调与温漂</h3>
+
+<ul>
+  <li><strong>输入失调电压 U<sub>IO</sub></strong>：使输出为零所需在输入端加的补偿电压，
+      典型 1~10 mV，来源于两管 U<sub>BE</sub> 和 R<sub>c</sub> 的不匹配；</li>
+  <li><strong>输入失调电流 I<sub>IO</sub></strong>：两管基极电流之差，典型 nA~μA 级；</li>
+  <li><strong>温漂</strong>：U<sub>IO</sub>、I<sub>IO</sub> 随温度的变化率，单位 μV/℃。
+      它比失调本身更可怕，因为无法用一次调零解决；</li>
+  <li><strong>对策</strong>：调零电位器、提高对称性、恒流源偏置、斩波稳零（集成运放内部）。</li>
+</ul>
+
+<h3>速查：差分放大电路核心公式</h3>
+
+<table>
+  <tr><th>量</th><th>公式</th><th>说明</th></tr>
+  <tr><td>差模信号</td><td>U<sub>id</sub> = U<sub>i1</sub> − U<sub>i2</sub></td><td>两输入之差</td></tr>
+  <tr><td>共模信号</td><td>U<sub>ic</sub> = (U<sub>i1</sub> + U<sub>i2</sub>)/2</td><td>两输入的平均</td></tr>
+  <tr><td>差模增益</td><td>A<sub>ud</sub> = −βR<sub>c</sub>/(R<sub>b</sub>+r<sub>be</sub>)</td><td>双端输出；单端减半</td></tr>
+  <tr><td>共模增益</td><td>A<sub>uc</sub> ≈ −R<sub>c</sub>/(2R<sub>e</sub>)</td><td>单端输出</td></tr>
+  <tr><td>共模抑制比</td><td>K<sub>CMR</sub> = |A<sub>ud</sub>/A<sub>uc</sub>|</td><td>dB 值 = 20 lg K<sub>CMR</sub></td></tr>
+  <tr><td>输出电阻</td><td>双端 2R<sub>c</sub>，单端 R<sub>c</sub></td><td>与输入方式无关</td></tr>
+</table>
+
+<h2>六、Quiz — 考研风格题</h2>
+
+<div class="quiz" id="quiz-container"></div>
+
+<div class="footer-nav">
+  <a href="./0012-multistage-amplifier.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0013 / 0020</span>
+  <a href="./0014-frequency-response.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "差分放大电路的两个输入端电压为 U_i1 = 3 mV，U_i2 = −1 mV。差模信号 U_id 与共模信号 U_ic 分别是？",
+    options: [
+      "U_id = 4 mV，U_ic = 1 mV",
+      "U_id = 2 mV，U_ic = 1 mV",
+      "U_id = 4 mV，U_ic = 2 mV",
+      "U_id = 2 mV，U_ic = 2 mV"
+    ],
+    correct: 0,
+    explain: "U_id = U_i1 − U_i2 = 3 − (−1) = 4 mV；U_ic = (U_i1 + U_i2)/2 = (3 − 1)/2 = 1 mV。反向验证：U_i1 = U_ic + U_id/2 = 1 + 2 = 3 mV ✓，U_i2 = 1 − 2 = −1 mV ✓。常见错误是把共模算成两数之和而不是平均值。"
+  },
+  {
+    q: "某差分放大电路差模增益 A_ud = −200，共模增益 A_uc = −0.2，则共模抑制比 K_CMR 约为多少分贝？",
+    options: [
+      "60 dB",
+      "40 dB",
+      "1000 dB",
+      "54 dB"
+    ],
+    correct: 0,
+    explain: "K_CMR = |A_ud / A_uc| = 200 / 0.2 = 1000。换算成分贝：20 lg 1000 = 20 × 3 = 60 dB。注意 K_CMR 本身是无量纲的倍数（1000），写成分贝才是 60 dB，两个数值不能混答。"
+  },
+  {
+    q: "关于长尾电阻 R_e 的作用，下列说法正确的是？",
+    options: [
+      "它对共模信号引入强烈的负反馈，对差模信号相当于交流接地，因此只抑制共模而不降低差模增益",
+      "它同时降低共模增益和差模增益，所以越大越好",
+      "它对差模信号引入负反馈，对共模信号没有影响",
+      "它只决定静态工作点，对动态增益没有任何影响"
+    ],
+    correct: 0,
+    explain: "共模时两管电流同增同减，流过 R_e 的电流变化为 2Δi_e，等效每管发射极电阻 2R_e，产生强负反馈，把共模增益压低；差模时两管电流一增一减，在 R_e 中相互抵消，R_e 上总电流不变，对差模相当于交流接地（虚地），差模增益与普通共射相同。这就是差分电路“放大差别、抑制共同”的机理。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！差分电路的分解、增益和 Re 机理都掌握了。' :
+        right >= 2 ? '👍 不错！重点回看共模/差模的分解公式和 Re 的作用。' :
+        '📚 建议重读第三节，把“共模走 2Re、差模虚地”这条线理顺。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

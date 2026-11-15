@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0004 — 三极管：结构与电流放大原理</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0004 — 三极管：结构与电流放大原理</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0004 / 0020 · 约 35 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  必须掌握 <a href="./0002-pn-junction.html">Lesson 0002（PN 结）</a> 的正向/反向偏置，以及
+  <a href="./0003-diode-and-circuits.html">Lesson 0003（二极管及其电路）</a> 的恒压降模型。
+  三极管就是"两个 PN 结共用一层极薄的基区"拼起来的器件——你在 0002 学的两个结，在这里第一次被装进同一块硅片。
+</div>
+
+<h2>一、三极管长什么样：结构与符号</h2>
+
+<p>
+  双极型晶体管（Bipolar Junction Transistor，简称 BJT），中文习惯叫<strong>三极管</strong>。
+  做法是：在一块半导体上做两个背靠背的 PN 结，中间那一层做得极薄，再从三个区域各引出一个电极。
+</p>
+
+<ul>
+  <li><strong>发射极 E</strong>（Emitter）：负责向基区"发射"载流子，是电流的源头；</li>
+  <li><strong>基极 B</strong>（Base）：夹在中间，负责"控制"通过多少载流子；</li>
+  <li><strong>集电极 C</strong>（Collector）：负责"收集"穿过基区而来的载流子。</li>
+</ul>
+
+<p>
+  按三块半导体的排列顺序分两类：<strong>NPN</strong>（两块 N 夹一块 P）和 <strong>PNP</strong>（两块 P 夹一块 N）。
+  两个 PN 结各有名字：发射区与基区之间的叫<strong>发射结</strong>，基区与集电区之间的叫<strong>集电结</strong>。
+  这两个结的偏置状态，就是后面判断"工作在哪个区"的唯一依据。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 300" role="img" aria-label="NPN 三极管结构示意与电路符号">
+    <title>NPN 三极管：三块半导体、两个 PN 结、三个电极与电路符号</title>
+    <rect class="area" x="60" y="40" width="130" height="70" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="125" y="70" text-anchor="middle">N 集电区</text>
+    <text x="125" y="92" text-anchor="middle" class="lbl">Collector</text>
+
+    <rect class="area" x="60" y="110" width="130" height="30" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="125" y="131" text-anchor="middle" class="lbl">P 基区（极薄）</text>
+
+    <rect class="area" x="60" y="140" width="130" height="70" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="125" y="170" text-anchor="middle">N 发射区</text>
+    <text x="125" y="192" text-anchor="middle" class="lbl">Emitter</text>
+
+    <line class="wire" x1="125" y1="40" x2="125" y2="18"/>
+    <line class="wire" x1="60" y1="125" x2="22" y2="125"/>
+    <line class="wire" x1="125" y1="210" x2="125" y2="240"/>
+    <text x="138" y="30">C</text>
+    <text x="16" y="120" text-anchor="end">B</text>
+    <text x="138" y="250">E</text>
+
+    <line class="wire thin" x1="190" y1="110" x2="222" y2="110"/>
+    <text x="228" y="115" class="lbl">集电结</text>
+    <line class="wire thin" x1="190" y1="140" x2="222" y2="140"/>
+    <text x="228" y="145" class="lbl">发射结</text>
+    <text x="125" y="278" text-anchor="middle" class="lbl">三块半导体 + 两个 PN 结 + 三个电极</text>
+
+    <circle cx="372" cy="150" r="62" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="296" y1="150" x2="342" y2="150"/>
+    <line class="wire" x1="342" y1="102" x2="342" y2="198" style="stroke-width:5"/>
+    <line class="wire" x1="342" y1="126" x2="386" y2="100"/>
+    <line class="wire" x1="386" y1="100" x2="386" y2="70"/>
+    <line class="wire" x1="342" y1="174" x2="386" y2="200"/>
+    <line class="wire" x1="386" y1="200" x2="386" y2="230"/>
+    <polygon points="378,196 358,193 367,179" fill="#1a1a1a"/>
+    <text x="396" y="64">C</text>
+    <text x="288" y="144" text-anchor="end">B</text>
+    <text x="396" y="238">E</text>
+    <text x="372" y="276" text-anchor="middle" class="lbl">NPN 符号：箭头朝外</text>
+  </svg>
+</div>
+
+<p>
+  符号的记忆法：<strong>箭头永远画在发射极上，方向就是发射结正向电流的方向</strong>。
+  NPN 的箭头由基极指向发射极外侧（朝外），PNP 的箭头朝内。英文口诀 "NPN — Not Pointing iN"。
+  符号里那根又短又粗的竖线代表基区，画得短粗就是在提醒你：基区必须很薄。
+</p>
+
+<p>
+  PNP 管的一切电流方向、电压极性与 NPN 相反：发射极电位最高，电流从 E 流入、从 B 和 C 流出。
+  考研卷面上 NPN 占九成，遇到 PNP 只要把"正负、电流方向"全部取反即可。
+</p>
+
+<h2>二、凭什么能放大：三个"故意"的设计</h2>
+
+<p>
+  同样是一个 PN 结，二极管只能单向导电，三极管却能放大。差别不在原理，而在
+  <strong>掺杂浓度</strong>和<strong>几何尺寸</strong>——这是简答题与"为什么"型选择题的高频出处。
+</p>
+
+<ol>
+  <li>
+    <strong>发射区重掺杂</strong>（约 10<sup>18</sup>~10<sup>19</sup> cm<sup>−3</sup>）：
+    发射区的多数载流子数量压倒性占优，正向偏置时几乎只有"发射区向基区注入"这一种电流，
+    反方向的注入可以忽略。这个比例叫<strong>发射效率</strong>，重掺杂就是为了让它接近 1。
+  </li>
+  <li>
+    <strong>基区极薄且轻掺杂</strong>（厚度 1 μm 量级，掺杂约 10<sup>16</sup> cm<sup>−3</sup>）：
+    载流子穿过基区的时间远小于它的寿命，来不及复合就到达了集电结边缘。
+    复合掉的只是极小一部分，这一小部分才形成基极电流 I<sub>B</sub>。基区越薄，I<sub>B</sub> 越小，β 越大。
+  </li>
+  <li>
+    <strong>集电区面积大、轻掺杂</strong>：结面积大便于"接住"载流子，散热好、耐压高；
+    轻掺杂使集电结的耗尽层主要向集电区扩展，不易击穿。
+  </li>
+</ol>
+
+<p>
+  除了内部结构，还需要<strong>外部偏置条件</strong>：发射结正向偏置、集电结反向偏置。
+  这一条是第 0005 课判断"放大区/饱和区/截止区"的核心，这里先记住结论。
+</p>
+
+<div class="tip">
+  <span class="tip-label">一句话本质</span>
+  三极管是<strong>电流控制电流</strong>的器件：用很小的 I<sub>B</sub> 去控制很大的 I<sub>C</sub>。
+  但 I<sub>C</sub> 的能量来自电源 V<sub>CC</sub>，不是从 I<sub>B</sub> 里"变"出来的。
+  它像一个阀门，不是变压器——阀门只负责开度，水流(能量)来自水库。
+</div>
+
+<h2>三、载流子怎么走：I_E = I_B + I_C</h2>
+
+<p>
+  以 NPN 管为例，把"放大"这个动作拆成四步，每一步都对应一个电极的电流：
+</p>
+
+<ol>
+  <li><strong>注入</strong>：发射结正偏，发射区的电子大量越过发射结进入基区
+      （同时基区空穴也向发射区注入，这部分是"无用电流"，靠重掺杂压到很小）。</li>
+  <li><strong>扩散</strong>：进入基区的电子在浓度差作用下继续向集电结方向扩散，
+      由于基区很薄，绝大多数电子在复合之前就走到了集电结边缘。</li>
+  <li><strong>复合</strong>：扩散途中极少数电子与基区空穴复合而消失。复合掉的电子由基极电源补充，
+      于是形成很小的基极电流 I<sub>B</sub>（μA 级）。</li>
+  <li><strong>收集</strong>：集电结反偏，结内电场把到达边缘的电子全部"扫"进集电区，
+      形成集电极电流 I<sub>C</sub>（mA 级）。</li>
+</ol>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 240" role="img" aria-label="NPN 管内载流子从发射区经基区到集电区的传输过程">
+    <title>载流子传输：发射结注入 → 基区扩散（少量复合）→ 集电结收集</title>
+    <rect class="area" x="40" y="60" width="90" height="90" stroke="#1a1a1a" stroke-width="2.5"/>
+    <rect class="area" x="130" y="60" width="140" height="90" stroke="#1a1a1a" stroke-width="2.5"/>
+    <rect class="area" x="270" y="60" width="100" height="90" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="85" y="128" text-anchor="middle" class="lbl">N 发射区</text>
+    <text x="200" y="128" text-anchor="middle" class="lbl">P 基区</text>
+    <text x="320" y="128" text-anchor="middle" class="lbl">N 集电区</text>
+
+    <text x="200" y="46" text-anchor="middle" class="lbl">电子流的方向（E → B → C）</text>
+    <line class="wire thin ideal" x1="52" y1="82" x2="356" y2="82"/>
+    <polygon points="356,76 356,88 370,82" fill="var(--accent)"/>
+
+    <line class="wire thin" x1="130" y1="60" x2="130" y2="150" stroke="var(--accent)" stroke-dasharray="5 4"/>
+    <line class="wire thin" x1="270" y1="60" x2="270" y2="150" stroke="var(--accent)" stroke-dasharray="5 4"/>
+    <text x="128" y="172" text-anchor="middle" class="lbl">发射结正偏</text>
+    <text x="272" y="172" text-anchor="middle" class="lbl">集电结反偏</text>
+
+    <line class="wire thin" x1="200" y1="150" x2="200" y2="198"/>
+    <polygon points="194,198 206,198 200,212" fill="#1a1a1a"/>
+    <text x="214" y="204" class="lbl">基区复合 → 形成 I_B（很小）</text>
+  </svg>
+</div>
+
+<p>
+  把三步的电流记成一张"账"：发射极送出的载流子总数 = 集电极收走的 + 基区复合掉的，于是
+</p>
+
+<div class="math">I_E = I_C + I_B　（节点电流定律 KCL）</div>
+
+<p>
+  数量级感受：I<sub>B</sub> 约几十 μA，I<sub>C</sub> 约几 mA，I<sub>E</sub> 只比 I<sub>C</sub> 大一点点。
+  所以工程上常写 I<sub>C</sub> ≈ I<sub>E</sub>，而 I<sub>C</sub> 是 I<sub>B</sub> 的几十到几百倍。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 230" role="img" aria-label="三极管三个电极电流关系：I_E 流入，I_B 与 I_C 流出">
+    <title>三个电极的电流关系：I_E 流入，I_B 与 I_C 流出，I_E = I_B + I_C</title>
+    <rect class="area" x="190" y="72" width="140" height="92" rx="10" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="260" y="126" text-anchor="middle">BJT</text>
+
+    <line class="wire" x1="92" y1="118" x2="184" y2="118"/>
+    <polygon points="184,111 184,125 198,118" fill="#1a1a1a"/>
+    <text x="130" y="102" text-anchor="middle">I_E</text>
+    <text x="130" y="150" text-anchor="middle" class="lbl">发射极电流（流入）</text>
+
+    <line class="wire" x1="336" y1="118" x2="428" y2="118"/>
+    <polygon points="428,111 428,125 442,118" fill="#1a1a1a"/>
+    <text x="382" y="102" text-anchor="middle">I_C</text>
+    <text x="382" y="150" text-anchor="middle" class="lbl">集电极电流（流出）</text>
+
+    <line class="wire" x1="260" y1="26" x2="260" y2="66"/>
+    <polygon points="253,62 267,62 260,76" fill="#1a1a1a"/>
+    <text x="276" y="42">I_B</text>
+    <text x="276" y="64" class="lbl">μA 级</text>
+
+    <text x="260" y="200" text-anchor="middle" class="lbl">I_E = I_B + I_C　，且 I_C = β I_B</text>
+  </svg>
+</div>
+
+<div class="tip">
+  <span class="tip-label">易错点</span>
+  不要把 I<sub>E</sub> = I<sub>B</sub> + I<sub>C</sub> 记成 I<sub>C</sub> = I<sub>E</sub> + I<sub>B</sub>；
+  也不要以为 I<sub>B</sub> 越大管子"越有劲"。I<sub>B</sub> 只是控制量，
+  真正搬运电荷、提供能量的是集电极回路的电源 V<sub>CC</sub>。
+</div>
+
+<h2>四、β、α 与三种组态</h2>
+
+<h3>4.1 两个电流放大系数</h3>
+
+<p>同一个管子，从不同电极看进去，就得到两个不同的电流放大系数：</p>
+
+<div class="math">β = I_C / I_B　（共射直流电流放大系数，典型 20 ~ 200）</div>
+<div class="math">α = I_C / I_E　（共基直流电流放大系数，典型 0.95 ~ 0.99）</div>
+
+<p>
+  两者不是独立的。把 I<sub>E</sub> = I<sub>C</sub> + I<sub>B</sub> 代进 α 的定义：
+  α = I<sub>C</sub> / (I<sub>C</sub> + I<sub>B</sub>)，分子分母同除 I<sub>B</sub>，得 α = β / (1 + β)。反解就得到 β。
+</p>
+
+<div class="math">α = β / (1 + β)　　　β = α / (1 − α)</div>
+
+<p>
+  数值感受：β = 100 → α = 100/101 = 0.990；β = 50 → α = 0.980。
+  α 永远小于 1，所以<strong>共基组态没有电流放大</strong>，它的本事是电压放大和高频特性好。
+</p>
+
+<h3>4.2 例题 1：由电流求 β、α（基础题，必须秒算）</h3>
+
+<p>测得某三极管 I<sub>B</sub> = 40 μA，I<sub>C</sub> = 4 mA。求 β、α、I<sub>E</sub>。若温度升高后 I<sub>C</sub> 变为 4.4 mA 而 I<sub>B</sub> 不变，求新的 β。</p>
+
+<ol>
+  <li>β = I<sub>C</sub>/I<sub>B</sub> = 4 mA / 40 μA = 4000 μA / 40 μA = <strong>100</strong></li>
+  <li>I<sub>E</sub> = I<sub>C</sub> + I<sub>B</sub> = 4 mA + 0.04 mA = <strong>4.04 mA</strong></li>
+  <li>α = I<sub>C</sub>/I<sub>E</sub> = 4 / 4.04 = <strong>0.990</strong>，与 β/(1+β) = 100/101 一致 ✅</li>
+  <li>升温后 β′ = 4.4 mA / 40 μA = <strong>110</strong>，增大了 10%。</li>
+</ol>
+
+<p>
+  第 4 问是这道题真正的考点：<strong>β 不是常数</strong>。同一只管子的 β 会随温度、I<sub>C</sub>、U<sub>CE</sub> 变化，
+  这正是第 0008 课要解决"Q 点稳定"问题的根源。
+</p>
+
+<h3>4.3 例题 2：由三个电位反推管型、材料、电极</h3>
+
+<p>
+  这是选择题的经典套路：测得三个电极对地电位为 ①3 V、②3.7 V、③9 V，判断管型、材料，并指出 E/B/C。
+</p>
+
+<ol>
+  <li><strong>找"差 0.7 V 的一对"</strong>：② − ① = 0.7 V，正好是硅管发射结的正向压降 → 材料是<strong>硅</strong>，
+      这两个电极是 B 和 E，剩下的 ③ 必是 C。</li>
+  <li><strong>分 B 和 E</strong>：放大状态下 NPN 满足 U<sub>B</sub> &gt; U<sub>E</sub>，所以 ② 是<strong>基极 B</strong>、① 是<strong>发射极 E</strong>。
+      （若反过来 U<sub>B</sub> &lt; U<sub>E</sub>，就是 PNP。）</li>
+  <li><strong>定管型</strong>：U<sub>C</sub> = 9 V 最高，满足 U<sub>C</sub> &gt; U<sub>B</sub> &gt; U<sub>E</sub> → <strong>NPN</strong>。</li>
+  <li><strong>结论</strong>：NPN 硅管，①E、②B、③C；且集电结反偏（U<sub>C</sub> &gt; U<sub>B</sub>），工作在放大区。</li>
+</ol>
+
+<div class="tip">
+  <span class="tip-label">判别口诀</span>
+  先找 0.7 V（硅）或 0.3 V（锗）的一对定 B、E 与材料；再看 C 的电位排最高还是最低定 NPN / PNP。
+  三个电位里，离得最远的那个是 C，夹在中间、与另一个差 0.7 V 的是 B。
+</div>
+
+<h3>4.4 三种组态：后面几课的地图</h3>
+
+<p>
+  放大电路总有一个电极作为输入与输出的<strong>公共端</strong>，按公共端命名组态。
+  这一节只要求"知道有三种、各叫什么、大致什么特点"，具体分析在第 0007、0009 课。
+</p>
+
+<table>
+  <tr>
+    <th>组态</th><th>公共端</th><th>输入</th><th>输出</th><th>电压增益</th><th>电流增益</th><th>相位</th>
+  </tr>
+  <tr>
+    <td><strong>共射 CE</strong></td><td>发射极</td><td>基极</td><td>集电极</td>
+    <td>大（几十~几百）</td><td>大（β）</td><td>反相 180°</td>
+  </tr>
+  <tr>
+    <td><strong>共集 CC</strong></td><td>集电极</td><td>基极</td><td>发射极</td>
+    <td>≈ 1（略小于 1）</td><td>大（1+β）</td><td>同相</td>
+  </tr>
+  <tr>
+    <td><strong>共基 CB</strong></td><td>基极</td><td>发射极</td><td>集电极</td>
+    <td>大</td><td>小于 1（α）</td><td>同相</td>
+  </tr>
+</table>
+
+<p>
+  一张表记住用途：<strong>共射</strong>是主放大级（电压电流都放大，最常用）；
+  <strong>共集</strong>是缓冲/输出级（电压不放大但带负载能力强，又叫射极跟随器）；
+  <strong>共基</strong>用于高频与宽带场合。
+</p>
+
+<h2>五、速查表</h2>
+
+<table>
+  <tr>
+    <th>量</th><th>符号</th><th>公式</th><th>典型值</th><th>说明</th>
+  </tr>
+  <tr>
+    <td>发射极电流</td><td>I<sub>E</sub></td><td>I<sub>E</sub> = I<sub>B</sub> + I<sub>C</sub></td>
+    <td>mA 级</td><td>三个电流中最大</td>
+  </tr>
+  <tr>
+    <td>基极电流</td><td>I<sub>B</sub></td><td>I<sub>B</sub> = I<sub>E</sub> − I<sub>C</sub></td>
+    <td>几十 μA</td><td>控制量，不是能量来源</td>
+  </tr>
+  <tr>
+    <td>集电极电流</td><td>I<sub>C</sub></td><td>I<sub>C</sub> = β I<sub>B</sub> = α I<sub>E</sub></td>
+    <td>mA 级</td><td>输出量，受 I<sub>B</sub> 控制</td>
+  </tr>
+  <tr>
+    <td>共射电流放大系数</td><td>β</td><td>I<sub>C</sub> / I<sub>B</sub></td>
+    <td>20 ~ 200</td><td>随温度、I<sub>C</sub>、U<sub>CE</sub> 变化</td>
+  </tr>
+  <tr>
+    <td>共基电流放大系数</td><td>α</td><td>I<sub>C</sub> / I<sub>E</sub> = β/(1+β)</td>
+    <td>0.95 ~ 0.99</td><td>恒小于 1</td>
+  </tr>
+  <tr>
+    <td>两者换算</td><td>—</td><td>β = α/(1−α)</td>
+    <td>—</td><td>选择题高频</td>
+  </tr>
+  <tr>
+    <td>放大外部条件</td><td>—</td><td>发射结正偏 + 集电结反偏</td>
+    <td>—</td><td>第 0005 课展开</td>
+  </tr>
+</table>
+
+<h3>自测：3 道考研风格题</h3>
+
+<div class="quiz" id="quiz-container"></div>
+
+<div class="footer-nav">
+  <a href="./0003-diode-and-circuits.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0004 / 0020</span>
+  <a href="./0005-bjt-characteristics-and-regions.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "某三极管 I_B = 20 μA，β = 100。它的 I_C、I_E、α 分别是？",
+    options: [
+      "I_C = 2 mA，I_E = 2.02 mA，α ≈ 0.990",
+      "I_C = 2 mA，I_E = 1.98 mA，α ≈ 0.990",
+      "I_C = 0.2 mA，I_E = 0.22 mA，α ≈ 0.980",
+      "I_C = 2 mA，I_E = 2.02 mA，α ≈ 0.980"
+    ],
+    correct: 0,
+    explain: "I_C = βI_B = 100 × 20μA = 2 mA；I_E = I_C + I_B = 2 mA + 0.02 mA = 2.02 mA；α = I_C/I_E = 2/2.02 ≈ 0.990（也等于 β/(1+β) = 100/101）。注意 I_E 一定大于 I_C，不是相减。"
+  },
+  {
+    q: "测得三个电极对地电位为 ① 2.3 V、② 3 V、③ 8 V。该管的类型、材料与电极是？",
+    options: [
+      "NPN 硅管，①E ②B ③C",
+      "NPN 锗管，①E ②B ③C",
+      "PNP 硅管，①C ②B ③E",
+      "NPN 硅管，①B ②E ③C"
+    ],
+    correct: 0,
+    explain: "② − ① = 3 − 2.3 = 0.7 V，是硅管发射结的正向压降，故为硅管，且这两个电极是 B 与 E，③ 是 C。U_C = 8 V 最高，满足 U_C > U_B > U_E，所以是 NPN；② 比 ① 高 0.7 V，② 为基极 B、① 为发射极 E。若差值是 0.3 V 才是锗管。"
+  },
+  {
+    q: "三极管的基区为什么必须做得很薄且掺杂很轻？",
+    options: [
+      "为了让基极电阻大，便于加控制电压",
+      "为了让载流子来不及复合就到达集电结，提高 β",
+      "为了提高集电结的反向击穿电压",
+      "为了让发射结更容易正向导通"
+    ],
+    correct: 1,
+    explain: "基区薄 → 载流子穿越时间短 → 复合少 → 基极电流小 → β = I_C/I_B 大。基区轻掺杂是为了减少基区多数载流子数量、进一步降低复合，同时减小基区对发射区的影响。击穿电压由集电区轻掺杂保证，与基区厚度无直接关系。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！结构与电流关系已经完全掌握，可以进特性曲线了。' :
+        right >= 2 ? '👍 基本掌握。建议把 β 与 α 的换算再推导一遍。' :
+        '📚 回看第二节"三个故意的设计"和第三节的四步传输过程。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

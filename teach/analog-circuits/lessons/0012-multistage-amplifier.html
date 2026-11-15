@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0012 — 多级放大电路</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0012 — 多级放大电路</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0012 / 0020 · 约 35 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  本课直接建立在前两课上：<a href="./0007-common-emitter-amplifier.html">Lesson 0007（共射放大电路）</a>的
+  微变等效电路与 A_u、R_i、R_o 定义，以及 <a href="./0011-fet-amplifier.html">Lesson 0011（FET 放大电路）</a>
+  的“输入电阻是前级负载”这一直觉。若还不会画微变等效电路，先回去补 0007。
+</div>
+
+<h2>一、为什么必须级联：单级增益不够</h2>
+
+<p>
+  单级共射放大电路的电压增益典型值只有 50~200（约 34~46 dB）。可考研题里常见的场景是：
+  传感器输出 μV~mV 级信号，负载或 AD 转换器却需要 V 级电压——中间差 10<sup>4</sup>~10<sup>5</sup>。
+  一级不够，就把多个单级电路串起来，前一级的输出接后一级的输入，这就是
+  <strong>多级放大电路</strong>（又称级联放大电路）。
+</p>
+
+<p>
+  但“串起来”远不是把增益乘一下那么轻松。级联同时带来三个新问题，也正是这一课的主线：
+</p>
+
+<ol>
+  <li><strong>级与级之间怎么接？</strong>——四种耦合方式，各有取舍；</li>
+  <li><strong>直接耦合时 Q 点互相牵制，输出还会缓慢漂移</strong>——零点漂移问题；</li>
+  <li><strong>每级都有自己的通频带，串起来带宽只会更窄</strong>——通频带问题。</li>
+</ol>
+
+<h2>二、四种耦合方式：级间怎么“接”</h2>
+
+<h3>1. 阻容耦合（分立电路最常用）</h3>
+
+<p>
+  用电容把前一级的集电极和后一级的基极连起来。电容<strong>隔直流、通交流</strong>，
+  所以各级的静态工作点彼此独立，可以逐级用 Lesson 0006 的方法单独计算 Q 点。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 340" role="img" aria-label="两级阻容耦合共射放大电路：C1 输入耦合、C2 级间耦合、C3 输出耦合，各级发射极电阻并联旁路电容">
+    <title>两级阻容耦合共射放大电路</title>
+    <line class="wire" x1="60" y1="34" x2="460" y2="34"/>
+    <text x="260" y="24" text-anchor="middle" class="lbl">+V_CC</text>
+    <line class="wire" x1="60" y1="300" x2="470" y2="300"/>
+    <line class="wire" x1="265" y1="300" x2="265" y2="310"/>
+    <line class="wire" x1="247" y1="310" x2="283" y2="310"/>
+    <line class="wire" x1="254" y1="319" x2="276" y2="319"/>
+    <line class="wire" x1="261" y1="328" x2="269" y2="328"/>
+
+    <line class="wire" x1="10" y1="130" x2="64" y2="130"/>
+    <text x="8" y="118" class="lbl">u_i</text>
+    <line class="wire" x1="64" y1="113" x2="64" y2="147"/>
+    <line class="wire" x1="72" y1="113" x2="72" y2="147"/>
+    <line class="wire" x1="72" y1="130" x2="110" y2="130"/>
+    <text x="46" y="110" class="lbl">C1</text>
+
+    <line class="wire" x1="110" y1="34" x2="110" y2="55"/>
+    <rect class="area" x="98" y="55" width="24" height="50" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="110" y1="105" x2="110" y2="130"/>
+    <circle class="dot" cx="110" cy="130" r="4"/>
+    <text x="92" y="84" text-anchor="end" class="lbl">R_b1</text>
+
+    <line class="wire" x1="110" y1="130" x2="160" y2="130"/>
+    <line class="wire" x1="160" y1="105" x2="160" y2="155"/>
+    <line class="wire" x1="160" y1="115" x2="185" y2="95"/>
+    <line class="wire" x1="185" y1="95" x2="215" y2="95"/>
+    <line class="wire" x1="160" y1="145" x2="185" y2="165"/>
+    <line class="wire" x1="185" y1="165" x2="185" y2="190"/>
+    <polygon points="178,163 191,172 185,165" fill="#1a1a1a"/>
+    <text x="150" y="176" text-anchor="end" class="lbl">Q1</text>
+
+    <line class="wire" x1="215" y1="34" x2="215" y2="48"/>
+    <rect class="area" x="203" y="48" width="24" height="47" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="238" y="70" class="lbl">R_c1</text>
+    <circle class="dot" cx="215" cy="95" r="4"/>
+
+    <rect class="area" x="173" y="190" width="24" height="48" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="185" y1="238" x2="185" y2="300"/>
+    <text x="160" y="222" text-anchor="end" class="lbl">R_e1</text>
+    <circle class="dot" cx="185" cy="190" r="4"/>
+    <line class="wire" x1="185" y1="190" x2="232" y2="190"/>
+    <line class="wire" x1="232" y1="190" x2="258" y2="190"/>
+    <line class="wire" x1="232" y1="199" x2="258" y2="199"/>
+    <line class="wire" x1="245" y1="199" x2="245" y2="300"/>
+    <text x="264" y="190" class="lbl">C_e1</text>
+
+    <line class="wire" x1="215" y1="95" x2="252" y2="95"/>
+    <line class="wire" x1="252" y1="78" x2="252" y2="112"/>
+    <line class="wire" x1="260" y1="78" x2="260" y2="112"/>
+    <line class="wire" x1="260" y1="95" x2="310" y2="95"/>
+    <text x="240" y="74" class="lbl">C2</text>
+
+    <line class="wire" x1="310" y1="34" x2="310" y2="48"/>
+    <rect class="area" x="298" y="48" width="24" height="42" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="310" y1="90" x2="310" y2="95"/>
+    <circle class="dot" cx="310" cy="95" r="4"/>
+    <text x="338" y="72" class="lbl">R_b2</text>
+    <line class="wire" x1="310" y1="95" x2="310" y2="130"/>
+    <line class="wire" x1="310" y1="130" x2="345" y2="130"/>
+
+    <line class="wire" x1="345" y1="105" x2="345" y2="155"/>
+    <line class="wire" x1="345" y1="115" x2="370" y2="95"/>
+    <line class="wire" x1="370" y1="95" x2="400" y2="95"/>
+    <line class="wire" x1="345" y1="145" x2="370" y2="165"/>
+    <line class="wire" x1="370" y1="165" x2="370" y2="190"/>
+    <polygon points="363,163 376,172 370,165" fill="#1a1a1a"/>
+    <text x="335" y="176" text-anchor="end" class="lbl">Q2</text>
+
+    <line class="wire" x1="400" y1="34" x2="400" y2="48"/>
+    <rect class="area" x="388" y="48" width="24" height="47" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="418" y="70" class="lbl">R_c2</text>
+    <circle class="dot" cx="400" cy="95" r="4"/>
+
+    <rect class="area" x="358" y="190" width="24" height="48" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="370" y1="238" x2="370" y2="300"/>
+    <text x="345" y="222" text-anchor="end" class="lbl">R_e2</text>
+    <circle class="dot" cx="370" cy="190" r="4"/>
+    <line class="wire" x1="370" y1="190" x2="415" y2="190"/>
+    <line class="wire" x1="415" y1="190" x2="441" y2="190"/>
+    <line class="wire" x1="415" y1="199" x2="441" y2="199"/>
+    <line class="wire" x1="428" y1="199" x2="428" y2="300"/>
+    <text x="447" y="190" class="lbl">C_e2</text>
+
+    <line class="wire" x1="400" y1="95" x2="437" y2="95"/>
+    <line class="wire" x1="437" y1="78" x2="437" y2="112"/>
+    <line class="wire" x1="445" y1="78" x2="445" y2="112"/>
+    <line class="wire" x1="445" y1="95" x2="470" y2="95"/>
+    <text x="452" y="70" class="lbl">C3</text>
+    <line class="wire" x1="470" y1="95" x2="470" y2="120"/>
+    <rect class="area" x="458" y="120" width="24" height="48" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="492" y="150" class="lbl">R_L</text>
+    <line class="wire" x1="470" y1="168" x2="470" y2="300"/>
+    <text x="476" y="90" class="lbl">u_o</text>
+  </svg>
+</div>
+
+<ul>
+  <li><strong>C1、C2、C3</strong>：耦合电容，隔断各级直流，只让交流信号通过；</li>
+  <li><strong>C_e1、C_e2</strong>：发射极旁路电容，把 R_e 交流短路，避免交流负反馈降低增益（0015 会讲）；</li>
+  <li><strong>优点</strong>：各级 Q 点独立，调试方便，温度互相影响小；</li>
+  <li><strong>缺点</strong>：低频时耦合电容容抗变大，增益下降；不能放大直流和缓慢变化的信号；大电容难以集成。</li>
+</ul>
+
+<h3>2. 直接耦合</h3>
+<p>
+  前一级的集电极直接（或经电阻）接到后一级的基极，中间没有电容。
+  低频与直流都能放大，便于集成，是集成电路唯一可行的耦合方式。代价有两个：
+  <strong>Q 点互相牵制</strong>、<strong>零点漂移</strong>。下一节专门讲。
+</p>
+
+<h3>3. 变压器耦合</h3>
+<p>
+  用变压器把交流耦合到下一级，同时能实现<strong>阻抗变换</strong>（R' = n²R）和直流隔离。
+  功率放大电路中常见（0018）。缺点是体积大、重量大、低频和高频特性都差、无法集成。
+</p>
+
+<h3>4. 光电耦合</h3>
+<p>
+  发光二极管把电信号变成光，光敏三极管再变回电信号。
+  <strong>输入输出电气完全隔离</strong>，抗干扰能力强，常用于隔离放大器与开关电源。
+  缺点是线性度差、速度慢、需要两套独立电源。
+</p>
+
+<table>
+  <tr>
+    <th>耦合方式</th><th>能否放大直流</th><th>Q 点</th><th>主要优点</th><th>主要缺点</th>
+  </tr>
+  <tr>
+    <td>阻容耦合</td><td>不能</td><td>各级独立</td><td>简单、Q 点好调</td><td>低频特性差、不能集成</td>
+  </tr>
+  <tr>
+    <td>直接耦合</td><td>能</td><td>互相牵制</td><td>低频好、易集成</td><td>零点漂移、Q 点难调</td>
+  </tr>
+  <tr>
+    <td>变压器耦合</td><td>不能</td><td>各级独立</td><td>阻抗变换、隔离</td><td>笨重、频带窄</td>
+  </tr>
+  <tr>
+    <td>光电耦合</td><td>能（含直流）</td><td>完全隔离</td><td>电气隔离、抗干扰</td><td>非线性、速度慢</td>
+  </tr>
+</table>
+
+<h2>三、直接耦合的两大难题</h2>
+
+<h3>1. Q 点互相牵制</h3>
+
+<p>
+  把 T1 的集电极直接接到 T2 的基极，就有 U<sub>C1</sub> = U<sub>B2</sub> ≈ 0.7 V。
+  于是 T1 的 U<sub>CE1</sub> 只剩 0.7 V，几乎贴着饱和区，输出动态范围被压得接近于零。
+  工程上的解决办法是<strong>抬高后一级的发射极电位</strong>：T2 发射极串电阻、串二极管或串稳压管，
+  把 U<sub>B2</sub> 抬到几伏，T1 才有正常的 U<sub>CE</sub>。
+</p>
+
+<h3>2. 零点漂移</h3>
+
+<p>
+  <strong>定义</strong>：输入端短路（u<sub>i</sub> = 0）时，输出端电压并不保持恒定，
+  而是随时间缓慢、无规则地变化，这种现象叫零点漂移，简称零漂。
+</p>
+
+<ul>
+  <li><strong>原因</strong>：以温度变化为主（U<sub>BE</sub>、β、I<sub>CBO</sub> 都随温度变），
+      其次是电源电压波动、元件老化；</li>
+  <li><strong>危害</strong>：第一级的漂移会被后面各级<strong>逐级放大</strong>，
+      在总输出中占的比重最大。所以抑制零漂的重点永远在第一级；</li>
+  <li><strong>衡量</strong>：把输出漂移折合到输入端，即 Δu<sub>o</sub> / A<sub>u</sub>，
+      单位 mV 或 μV。这样不同增益的电路才能公平比较；</li>
+  <li><strong>抑制思路</strong>：温度补偿、恒温槽、调制解调，以及最有效的
+      <strong>差分放大电路</strong>——正是下一课 0013 的主题。</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">考研常考的一句话</span>
+  直接耦合放大电路既能放大交流也能放大直流，但存在零点漂移；
+  阻容耦合没有零漂问题，却不能放大直流。这一对矛盾是选择题的常客。
+</div>
+
+<h2>四、多级放大电路的动态参数</h2>
+
+<p>
+  把每一级看成一个二端口，级联后的关系可以画成一条链：
+</p>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 200" role="img" aria-label="多级放大电路级联框图：输入接第一级，第一级输出接末级输入，Ri 取第一级、Ro 取末级">
+    <title>多级放大电路的级联框图</title>
+    <line class="wire" x1="10" y1="90" x2="40" y2="90"/>
+    <text x="8" y="78" class="lbl">u_i</text>
+    <rect class="area" x="40" y="40" width="180" height="100" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="130" y="70" text-anchor="middle">第一级</text>
+    <text x="130" y="100" text-anchor="middle">A_u1</text>
+    <text x="130" y="126" text-anchor="middle" class="lbl">R_i = R_i1</text>
+    <line class="wire" x1="220" y1="90" x2="300" y2="90"/>
+    <line class="wire thin" x1="260" y1="90" x2="260" y2="158"/>
+    <text x="260" y="180" text-anchor="middle" class="lbl">R_i2 是前级的负载</text>
+    <rect class="area" x="300" y="40" width="180" height="100" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="390" y="70" text-anchor="middle">末级</text>
+    <text x="390" y="100" text-anchor="middle">A_u2</text>
+    <text x="390" y="126" text-anchor="middle" class="lbl">R_o = R_o2</text>
+    <line class="wire" x1="480" y1="90" x2="508" y2="90"/>
+    <polygon points="508,84 508,96 520,90" fill="#1a1a1a"/>
+    <text x="482" y="78" class="lbl">u_o</text>
+    <text x="294" y="70" text-anchor="end" class="lbl">R_o1</text>
+    <text x="306" y="112" class="lbl">R_i2</text>
+  </svg>
+</div>
+
+<p>三条规则必须背到条件反射：</p>
+
+<div class="math">
+  A_u = A_u1 · A_u2 · … · A_un　　R_i = R_i1　　R_o = R_on
+</div>
+
+<ol>
+  <li><strong>总电压增益等于各级电压增益之积</strong>，但每一级的增益必须用“它实际带的负载”来算；</li>
+  <li><strong>输入电阻等于第一级的输入电阻</strong>，与后面各级无关；</li>
+  <li><strong>输出电阻等于末级的输出电阻</strong>，计算末级 R_o 时要把 R_L 去掉（令 R_L = ∞）。</li>
+</ol>
+
+<div class="tip">
+  <span class="tip-label">最容易丢分的地方</span>
+  后一级的输入电阻就是前一级的负载。算第一级增益时若仍用 R<sub>C1</sub> 而不并联 R<sub>i2</sub>，
+  增益会被<strong>显著高估</strong>（本课例题会高估 4 倍）。
+  正确顺序是：<strong>从末级往前推</strong>——先算末级增益，再得到末级输入电阻，回代给前一级当负载。
+</div>
+
+<h3>例题：两级阻容耦合共射放大电路</h3>
+
+<p>
+  两级共射电路，参数如下：β<sub>1</sub> = β<sub>2</sub> = 50，
+  r<sub>be1</sub> = r<sub>be2</sub> = 1 kΩ，R<sub>b1</sub> = 300 kΩ，R<sub>c1</sub> = 3 kΩ，
+  R<sub>b2</sub> = 200 kΩ，R<sub>c2</sub> = 3 kΩ，R<sub>L</sub> = 3 kΩ。
+  求总电压增益 A<sub>u</sub>、输入电阻 R<sub>i</sub>、输出电阻 R<sub>o</sub>。
+</p>
+
+<p><strong>第 1 步：末级（第二级）</strong></p>
+<p>
+  末级实际负载是 R<sub>c2</sub> 与 R<sub>L</sub> 并联：
+  R'<sub>L2</sub> = 3 kΩ ∥ 3 kΩ = 1.5 kΩ。
+</p>
+<div class="math">
+  A_u2 = −β2 · R'<sub>L2</sub> / r<sub>be2</sub> = −50 × 1.5 k / 1 k = −75
+</div>
+
+<p><strong>第 2 步：求第二级的输入电阻</strong></p>
+<div class="math">
+  R_i2 = R_b2 ∥ r_be2 = 200 k ∥ 1 k ≈ 0.995 kΩ ≈ 1 kΩ
+</div>
+
+<p><strong>第 3 步：第一级带着 R<sub>i2</sub> 这个负载</strong></p>
+<div class="math">
+  R'<sub>L1</sub> = R_c1 ∥ R_i2 = 3 k ∥ 1 k = 0.75 kΩ<br>
+  A_u1 = −β1 · R'<sub>L1</sub> / r<sub>be1</sub> = −50 × 0.75 = −37.5
+</div>
+
+<p><strong>第 4 步：相乘</strong></p>
+<div class="math">
+  A_u = A_u1 · A_u2 = (−37.5)(−75) = +2812.5 ≈ 2.8 × 10³
+</div>
+<p>
+  两级各倒相一次，总共<strong>不倒相</strong>（输出与输入同相）。
+  用分贝表示：20 lg 2812.5 ≈ 69 dB。
+</p>
+
+<p><strong>第 5 步：输入、输出电阻</strong></p>
+<div class="math">
+  R_i = R_i1 = R_b1 ∥ r_be1 = 300 k ∥ 1 k ≈ 0.997 kΩ ≈ 1 kΩ<br>
+  R_o = R_c2 = 3 kΩ（令 R_L = ∞）
+</div>
+
+<p><strong>对照检查</strong>：若忽略级间负载，直接用 A<sub>u1</sub> = −50 × 3 / 1 = −150，
+会算出 A<sub>u</sub> = 11250，比正确值大 4 倍。这就是“后级输入电阻是前级负载”的分量。
+</p>
+
+<h2>五、通频带：级联的代价</h2>
+
+<p>
+  每一级放大器都有自己的下限频率 f<sub>L</sub> 和上限频率 f<sub>H</sub>（0014 详讲）。
+  级联后，低频段各级的增益都下降，衰减叠加，因此<strong>下限频率升高</strong>；
+  高频段同理，<strong>上限频率降低</strong>。结果是通频带 BW = f<sub>H</sub> − f<sub>L</sub> 变窄。
+</p>
+
+<p>
+  设 n 级完全相同、每级都是单极点（一阶）系统，则级联后的上限频率为：
+</p>
+
+<div class="math">
+  f_H' ≈ f_H · √(2<sup>1/n</sup> − 1)　　f_L' ≈ f_L / √(2<sup>1/n</sup> − 1)
+</div>
+
+<table>
+  <tr>
+    <th>级数 n</th><th>系数 √(2<sup>1/n</sup>−1)</th><th>f<sub>H</sub>'（设单级 f<sub>H</sub> = 1 MHz）</th><th>带宽变化</th>
+  </tr>
+  <tr><td>1</td><td>1.000</td><td>1.00 MHz</td><td>不变</td></tr>
+  <tr><td>2</td><td>0.643</td><td>0.64 MHz</td><td>降到 64%</td></tr>
+  <tr><td>3</td><td>0.510</td><td>0.51 MHz</td><td>降到 51%</td></tr>
+  <tr><td>4</td><td>0.435</td><td>0.44 MHz</td><td>降到 44%</td></tr>
+  <tr><td>5</td><td>0.386</td><td>0.39 MHz</td><td>降到 39%</td></tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">记住两个数</span>
+  两级：f<sub>H</sub>' ≈ <strong>0.64</strong> f<sub>H</sub>；三级：≈ <strong>0.51</strong> f<sub>H</sub>。
+  考研计算题只要写 0.64 或 0.51 就够了，不必每次开根号。
+</div>
+
+<p>
+  这说明级联不是免费的：增益按乘积涨，带宽却按级数往下掉。
+  想同时要“高增益 + 宽频带”，只能靠<strong>负反馈</strong>（0016）或更好的单管（f<sub>T</sub> 更高）。
+</p>
+
+<h3>速查：多级放大的五个结论</h3>
+
+<table>
+  <tr><th>项目</th><th>结论 / 公式</th><th>备注</th></tr>
+  <tr><td>总增益</td><td>A<sub>u</sub> = A<sub>u1</sub>·A<sub>u2</sub>·…·A<sub>un</sub></td><td>每级按实际负载算</td></tr>
+  <tr><td>输入电阻</td><td>R<sub>i</sub> = R<sub>i1</sub></td><td>与后级无关</td></tr>
+  <tr><td>输出电阻</td><td>R<sub>o</sub> = R<sub>on</sub></td><td>末级令 R<sub>L</sub> = ∞</td></tr>
+  <tr><td>级间影响</td><td>R<sub>i(k+1)</sub> 是第 k 级的负载</td><td>从末级往前算</td></tr>
+  <tr><td>通频带</td><td>f<sub>H</sub>' = 0.64 f<sub>H</sub>（两级）</td><td>n 级：√(2<sup>1/n</sup>−1)</td></tr>
+  <tr><td>零点漂移</td><td>折合到输入端 Δu<sub>o</sub>/A<sub>u</sub></td><td>第一级影响最大</td></tr>
+</table>
+
+<h2>六、Quiz — 考研风格题</h2>
+
+<div class="quiz" id="quiz-container"></div>
+
+<div class="footer-nav">
+  <a href="./0011-fet-amplifier.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0012 / 0020</span>
+  <a href="./0013-differential-amplifier.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "两级放大电路，第一级电压增益 A_u1 = −40，第二级 A_u2 = −30。总电压增益 A_u 及输出与输入的相位关系是？",
+    options: [
+      "A_u = 1200，输出与输入同相",
+      "A_u = −1200，输出与输入反相",
+      "A_u = 70，输出与输入同相",
+      "A_u = 1200，输出与输入反相"
+    ],
+    correct: 0,
+    explain: "A_u = A_u1 · A_u2 = (−40) × (−30) = +1200。负号表示倒相，两级各倒相一次，负负得正，所以总输出与输入同相。换算成分贝：20 lg 1200 ≈ 61.6 dB。注意增益是相乘不是相加，70 是干扰项。"
+  },
+  {
+    q: "两级阻容耦合电路中，第一级 R_c1 = 6 kΩ、β1 = 50、r_be1 = 1 kΩ，第二级的输入电阻 R_i2 = 2 kΩ。第一级的实际电压增益 A_u1 约为？",
+    options: [
+      "−75",
+      "−300",
+      "−150",
+      "−37.5"
+    ],
+    correct: 0,
+    explain: "后级输入电阻就是前级的负载：R'_L1 = R_c1 ∥ R_i2 = 6 k ∥ 2 k = 1.5 kΩ。A_u1 = −β1 R'_L1 / r_be1 = −50 × 1.5 / 1 = −75。若忘记并联 R_i2，会算成 −50×6/1 = −300，高估 4 倍，这是最常见的错误。"
+  },
+  {
+    q: "单级放大电路的上限频率 f_H = 500 kHz。把三级相同的这种电路级联，级联后的上限频率约为？",
+    options: [
+      "255 kHz",
+      "500 kHz",
+      "320 kHz",
+      "167 kHz"
+    ],
+    correct: 0,
+    explain: "三级时系数 √(2^(1/3) − 1) = √(1.2599 − 1) = √0.2599 ≈ 0.51。f_H' ≈ 0.51 × 500 kHz ≈ 255 kHz。两级系数是 0.64（对应 320 kHz），四级是 0.44（对应 220 kHz）。级联级数越多，通频带越窄。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！多级放大的三条规则已经稳了，可以进差分放大电路。' :
+        right >= 2 ? '👍 不错！重点回看“后级输入电阻是前级负载”这一步。' :
+        '📚 建议重做例题，从末级往前推一遍，再检查通频带系数。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

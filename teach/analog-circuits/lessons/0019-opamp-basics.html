@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0019 — 集成运放基础</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0019 — 集成运放基础</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0019 / 0020 · 约 35 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  需要 <a href="./0013-differential-amplifier.html">Lesson 0013（差分放大电路）</a>、
+  <a href="./0016-negative-feedback-effects.html">Lesson 0016（1+AF）</a>、
+  <a href="./0017-deep-negative-feedback-and-stability.html">Lesson 0017（深度负反馈）</a>、
+  <a href="./0018-power-amplifier.html">Lesson 0018（互补输出级）</a>。
+  运放内部就是把前三课的内容焊在一起的产物。
+</div>
+
+<h2>一、运放内部：一颗芯片里的四级电路</h2>
+
+<p>
+  集成运算放大器（Operational Amplifier，简称运放）不是新原理，而是把前面十几课
+  学过的单元电路<strong>集成到一颗芯片里</strong>。打开它的内部框图，只有四块：
+</p>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 250" role="img">
+    <title>集成运放内部框图：输入级差分放大、中间级电压放大、输出级互补对称、偏置电路供电</title>
+    <line class="wire" x1="14" y1="70" x2="34" y2="70"/>
+    <line class="wire" x1="14" y1="105" x2="34" y2="105"/>
+    <text x="20" y="60" class="lbl">u_+</text>
+    <text x="20" y="128" class="lbl">u_−</text>
+
+    <rect class="area" x="34" y="48" width="110" height="78" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="89" y="82" text-anchor="middle">输入级</text>
+    <text x="89" y="106" text-anchor="middle" class="lbl">差分放大</text>
+
+    <line class="wire" x1="144" y1="87" x2="172" y2="87"/>
+    <polygon points="172,81 172,93 184,87" fill="#1a1a1a"/>
+
+    <rect class="area" x="184" y="58" width="104" height="58" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="236" y="84" text-anchor="middle">中间级</text>
+    <text x="236" y="106" text-anchor="middle" class="lbl">电压放大</text>
+
+    <line class="wire" x1="288" y1="87" x2="312" y2="87"/>
+    <polygon points="312,81 312,93 324,87" fill="#1a1a1a"/>
+
+    <rect class="area" x="324" y="48" width="112" height="78" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="380" y="82" text-anchor="middle">输出级</text>
+    <text x="380" y="106" text-anchor="middle" class="lbl">互补对称</text>
+
+    <line class="wire" x1="436" y1="87" x2="486" y2="87"/>
+    <text x="492" y="93" class="lbl">u_o</text>
+
+    <rect class="area" x="140" y="168" width="260" height="48" rx="4" stroke="#1a1a1a" stroke-width="2.5" stroke-dasharray="6 4"/>
+    <text x="270" y="198" text-anchor="middle" class="lbl">偏置电路（电流源）</text>
+    <line class="wire thin ideal" x1="200" y1="168" x2="200" y2="126"/>
+    <line class="wire thin ideal" x1="236" y1="168" x2="236" y2="116"/>
+    <line class="wire thin ideal" x1="380" y1="168" x2="380" y2="126"/>
+    <text x="14" y="234" class="lbl">偏置电路为各级提供稳定的静态工作电流</text>
+  </svg>
+</div>
+
+<table>
+  <tr><th>组成部分</th><th>典型电路</th><th>主要贡献的指标</th></tr>
+  <tr>
+    <td><strong>输入级</strong></td>
+    <td>差分放大电路（BJT 或 MOS），双端输入、单端输出</td>
+    <td>决定 R_id（输入电阻）、K_CMR（共模抑制比）、U_IO（失调）、噪声</td>
+  </tr>
+  <tr>
+    <td><strong>中间级</strong></td>
+    <td>共射（或共源）放大，常带相位补偿电容</td>
+    <td>提供绝大部分电压增益 A_od（可达 10⁵ 以上）</td>
+  </tr>
+  <tr>
+    <td><strong>输出级</strong></td>
+    <td>互补对称射极跟随器（甲乙类），带过流保护</td>
+    <td>决定 R_o（输出电阻小）、最大输出摆幅、带载能力</td>
+  </tr>
+  <tr>
+    <td><strong>偏置电路</strong></td>
+    <td>电流源（镜像电流源、微电流源等）</td>
+    <td>为各级提供稳定的静态电流，提高电源抑制能力</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">一条因果链</span>
+  差分输入 → 共模抑制强、能直接放大直流；共射中间级 → 增益极高；
+  互补输出 → 输出电阻低、能带负载。这正好对应运放的三条理想假设，
+  所以"理想运放"不是虚构，而是集成工艺把这些指标推到了极端。
+</div>
+
+<h2>二、符号与引脚</h2>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 250" role="img">
+    <title>理想运放符号：反相输入端、同相输入端、输出端，以及虚短虚断的标注</title>
+    <polygon points="110,60 110,200 280,130" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="50" y1="88" x2="110" y2="88"/>
+    <line class="wire" x1="50" y1="172" x2="110" y2="172"/>
+    <text x="88" y="68" class="lbl">+</text>
+    <text x="88" y="162" class="lbl">−</text>
+    <text x="34" y="82" class="lbl" text-anchor="end">u_+</text>
+    <text x="34" y="178" class="lbl" text-anchor="end">u_−</text>
+
+    <line class="wire" x1="280" y1="130" x2="420" y2="130"/>
+    <text x="400" y="120" class="lbl">u_o</text>
+
+    <line class="wire thin ideal" x1="50" y1="88" x2="50" y2="172"/>
+    <text x="62" y="214" class="lbl">U_+ ≈ U_−（虚短）</text>
+    <text x="62" y="236" class="lbl">I_+ = I_− = 0（虚断）</text>
+    <text x="130" y="140" class="lbl">∞</text>
+    <text x="130" y="160" class="lbl">A_od</text>
+  </svg>
+</div>
+
+<ul>
+  <li><strong>两个输入端</strong>：标 "+" 的是<strong>同相输入端</strong>（u_+），
+      标 "−" 的是<strong>反相输入端</strong>（u_−）。输出与同相端同相，与反相端反相。</li>
+  <li><strong>一个输出端</strong>：u_o。</li>
+  <li><strong>两个电源端</strong>：+V_CC 与 −V_CC（或双电源 ±V），
+      电路图中常省略，但它是输出摆幅的物理上限——输出永远不可能超过电源轨。</li>
+  <li>常见封装：8 脚双运放（如 LM358）、14 脚四运放，另有调零、补偿引脚。</li>
+</ul>
+
+<div class="math">
+  u_o = A_od · (u_+ − u_−)　（开环时）<br>
+  u_id = u_+ − u_− 称为<strong>差模输入电压</strong>
+</div>
+
+<h2>三、主要参数</h2>
+
+<table>
+  <tr><th>参数</th><th>符号</th><th>典型值</th><th>含义与影响</th></tr>
+  <tr>
+    <td>开环差模电压增益</td><td>A_od</td><td>10⁵（约 100 dB）</td>
+    <td>开环时差模增益，越大越接近"虚短"</td>
+  </tr>
+  <tr>
+    <td>差模输入电阻</td><td>R_id</td><td>1 MΩ~10¹² Ω</td>
+    <td>越大越接近"虚断"，对信号源负载越轻</td>
+  </tr>
+  <tr>
+    <td>输出电阻</td><td>R_o</td><td>几十~几百 Ω</td>
+    <td>越小带负载能力越强</td>
+  </tr>
+  <tr>
+    <td>共模抑制比</td><td>K_CMR</td><td>80~120 dB</td>
+    <td>抑制共模干扰（温漂、50 Hz 干扰）的能力，越大越好</td>
+  </tr>
+  <tr>
+    <td>输入失调电压</td><td>U_IO</td><td>1~10 mV</td>
+    <td>输入为零时输出不为零所需的补偿电压，是直流精度的主要限制</td>
+  </tr>
+  <tr>
+    <td>转换速率</td><td>SR</td><td>0.5~50 V/μs</td>
+    <td>输出电压的最大变化速率，限制大信号高频能力</td>
+  </tr>
+  <tr>
+    <td>单位增益带宽</td><td>GBW</td><td>1~100 MHz</td>
+    <td>开环增益降到 1 时的频率，等于闭环的增益带宽积</td>
+  </tr>
+</table>
+
+<h2>四、理想运放三条假设 → 虚短与虚断</h2>
+
+<p>
+  把实际参数推向极端，得到<strong>理想运放</strong>。只有三条：
+</p>
+
+<div class="math">
+  ① A_od → ∞　② R_id → ∞　③ R_o → 0
+</div>
+
+<h3>虚短的推导（一条极限，不是玄学）</h3>
+
+<p>
+  运放工作在线性区时，输出电压 u_o 是有限值（受电源限制）。
+  由 <code>u_o = A_od·(u_+ − u_−)</code> 反解：
+</p>
+
+<div class="math">
+  u_+ − u_− = u_o / A_od →（A_od → ∞）→ 0<br>
+  故 <strong>u_+ = u_−</strong>，两端电位相等但并未短接 → "虚短"
+</div>
+
+<h3>虚断的推导</h3>
+
+<div class="math">
+  I_+ = u_+ / R_id → 0，　I_− = u_− / R_id → 0<br>
+  故 <strong>I_+ = I_− = 0</strong>，输入端开路但仍有电位 → "虚断"
+</div>
+
+<div class="tip">
+  <span class="tip-label">最重要的一条前提（必考）</span>
+  <strong>虚短只在运放工作在线性区时成立</strong>，即电路必须引入<strong>负反馈</strong>，
+  且输出没有饱和。若运放工作在非线性区（比较器、开环、正反馈），
+  输出被推到 ±U_omax，此时 u_+ 与 u_− 不再相等，<strong>虚短失效</strong>，
+  但<strong>虚断仍然成立</strong>（R_id 极大与工作区无关）。
+  0020 讲比较器时全靠这一条区分。
+</div>
+
+<h2>五、理想与实际的差别</h2>
+
+<table>
+  <tr><th>指标</th><th>理想</th><th>实际</th><th>带来的误差</th></tr>
+  <tr><td>A_od</td><td>∞</td><td>10⁵ 左右（且随频率下降）</td><td>闭环增益有微小偏差；高频时虚短变差</td></tr>
+  <tr><td>R_id</td><td>∞</td><td>1 MΩ ~ 10¹² Ω</td><td>从信号源取电流，产生分压误差</td></tr>
+  <tr><td>R_o</td><td>0</td><td>几十~几百 Ω</td><td>带载后输出幅度下降</td></tr>
+  <tr><td>频带</td><td>∞</td><td>GBW 有限，主极点很低</td><td>增益升高则带宽变窄（A_f·BW_f = GBW）</td></tr>
+  <tr><td>失调</td><td>0</td><td>U_IO 为 mV 级，且随温度漂移</td><td>直流放大时输出有固定偏移</td></tr>
+  <tr><td>SR</td><td>∞</td><td>0.5~50 V/μs</td><td>大信号高频时输出变成三角波</td></tr>
+  <tr><td>K_CMR</td><td>∞</td><td>80~120 dB</td><td>共模干扰会部分转化为差模输出</td></tr>
+</table>
+
+<h2>六、考研例题（带步骤）</h2>
+
+<h3>例题 1：虚短到底有多"短"</h3>
+
+<p>
+  某运放 A_od = 10⁵，接成闭环后输出电压 u_o = 10 V。求差模输入电压 u_id，
+  并说明"虚短"近似的误差量级。
+</p>
+
+<p><strong>解</strong></p>
+<ol>
+  <li>由 u_o = A_od·u_id 得
+      <code>u_id = 10 / 10⁵ = 10⁻⁴ V = 0.1 mV</code>。</li>
+  <li>0.1 mV 相对于 10 V 的输出是 10⁻⁵ 量级，相对于常见的伏级输入信号是万分之一以下。</li>
+  <li><strong>结论</strong>：只要 A_od 足够大且工作在线性区，把 u_id 当作 0（虚短）带来的误差
+      在工程精度内可忽略。若 A_od 只有 10³，u_id 就是 10 mV，近似开始不可靠。</li>
+</ol>
+
+<h3>例题 2：转换速率 SR 限制了最高频率</h3>
+
+<p>
+  某运放 SR = 0.5 V/μs，要求输出幅值 U_om = 10 V 的正弦波。求最高不失真频率 f_max。
+</p>
+
+<p><strong>解</strong></p>
+<ol>
+  <li>正弦波的最大变化率出现在过零点，其值为
+      <code>du/dt|max = 2πf·U_om</code>。</li>
+  <li>不失真条件：<code>2πf·U_om ≤ SR</code>，故
+      <code>f_max = SR/(2πU_om)</code>。</li>
+  <li>代入：SR = 0.5 V/μs = 0.5 × 10⁶ V/s，
+      <code>f_max = 0.5×10⁶ / (2π × 10) ≈ 7.96 kHz</code>。</li>
+  <li><strong>解读</strong>：超过这个频率，输出跟不上输入的变化，正弦波会被"削"成三角波。
+      注意这是<strong>大信号</strong>限制，与小信号带宽（GBW）是两回事，考试常放在一起对比。</li>
+</ol>
+
+<h3>例题 3：GBW 与闭环带宽</h3>
+
+<p>
+  运放 GBW = 1 MHz，接成闭环增益 A_f = 100 的放大电路，求闭环带宽。
+</p>
+
+<p><strong>解</strong></p>
+<ol>
+  <li>由增益带宽积守恒：<code>A_f · BW_f = GBW</code>。</li>
+  <li><code>BW_f = GBW / A_f = 10⁶ / 100 = 10 kHz</code>。</li>
+  <li>这与 0016 的 <code>BW_f = (1+AF)·BW</code> 是同一件事的两种写法：
+      闭环增益越低，带宽越宽；增益为 1（跟随器）时带宽就等于 GBW。</li>
+</ol>
+
+<h2>七、速查表</h2>
+
+<table>
+  <tr><th>概念</th><th>内容</th></tr>
+  <tr><td>内部四部分</td><td>输入级（差分）、中间级（共射）、输出级（互补）、偏置电路（电流源）</td></tr>
+  <tr><td>传输关系</td><td>u_o = A_od·(u_+ − u_−)</td></tr>
+  <tr><td>理想三假设</td><td>A_od → ∞、R_id → ∞、R_o → 0</td></tr>
+  <tr><td>虚短</td><td>u_+ = u_−，由 A_od → ∞ 且输出有限推出</td></tr>
+  <tr><td>虚断</td><td>I_+ = I_− = 0，由 R_id → ∞ 推出</td></tr>
+  <tr><td>虚短前提</td><td>必须工作在线性区（有负反馈、输出未饱和）；虚断无此限制</td></tr>
+  <tr><td>带宽</td><td>A_f·BW_f = GBW（常数）</td></tr>
+  <tr><td>大信号极限</td><td>f_max = SR/(2πU_om)</td></tr>
+  <tr><td>直流精度</td><td>主要由 U_IO 及其温漂决定</td></tr>
+</table>
+
+<h2>八、Quiz — 考研风格题</h2>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>运放是前面所有单元电路的集成</strong>：差分输入、共射增益、互补输出、电流源偏置。</li>
+  <li><strong>三条理想假设导出两条黄金法则</strong>：虚短（u_+ = u_−）、虚断（I_+ = I_− = 0）。</li>
+  <li><strong>虚短有前提</strong>：必须线性区 + 负反馈；非线性区虚短失效、虚断仍成立。</li>
+  <li><strong>两个频率限制要分清</strong>：小信号看 GBW，大信号看 SR。</li>
+</ol>
+
+<p>
+  最后一课（<strong>Lesson 0020</strong>）把运放用起来：线性区的比例、加减、积分、微分，
+  非线性区的比较器与方波发生器，最后用运放搭出能自己产生正弦波的
+  <strong>RC 桥式振荡器</strong>——正好把 0017 的"自激"从敌人变成工具。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第五章（集成运算放大电路）。
+  运放参数定义与理想化分析见 §5.1~5.2；SR 与 GBW 的区分见 §5.3。
+</div>
+
+<div class="ask-agent">
+  想看看 LM358、OP07 这些常见运放的真实参数表，对照本课的"典型值"？<br>
+  <strong>直接问我</strong>——把理想参数和真实器件对上号，理解会牢很多。
+</div>
+
+<div class="footer-nav">
+  <a href="./0018-power-amplifier.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0019 / 0020</span>
+  <a href="./0020-opamp-applications-and-oscillators.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "理想运放"虚短"（u_+ = u_−）成立的必要条件是？",
+    options: [
+      "运放必须开环使用",
+      "运放工作在线性区，即引入负反馈且输出未饱和",
+      "输入信号必须是正弦波",
+      "运放必须接成比较器"
+    ],
+    correct: 1,
+    explain: "虚短来自 u_+ − u_− = u_o/A_od，只有当 u_o 是有限值（未饱和）且 A_od 极大时才趋于零。所以必须工作在线性区：有负反馈、输出没有撞到电源轨。开环或正反馈时运放进入非线性区，输出被推到 ±U_omax，u_+ 与 u_− 不再相等，虚短失效；但虚断由 R_id 极大决定，与工作区无关，仍然成立。"
+  },
+  {
+    q: "某运放 SR = 0.5 V/μs，输出正弦波幅值 U_om = 10 V，最高不失真频率约为？",
+    options: [
+      "约 7.96 kHz",
+      "约 50 kHz",
+      "约 1.6 kHz",
+      "约 500 kHz"
+    ],
+    correct: 0,
+    explain: "正弦波最大变化率 2πf·U_om 不能超过 SR：f_max = SR/(2πU_om) = 0.5×10⁶/(2π×10) ≈ 7.96 kHz。超过后输出跟不上输入斜率，正弦波被削成三角波。注意这是大信号限制，与小信号带宽 GBW/A_f 是两套不同的约束。"
+  },
+  {
+    q: "运放接成闭环增益 A_f = 50 的放大电路，其 GBW = 2 MHz，则闭环带宽约为？",
+    options: [
+      "40 kHz",
+      "100 kHz",
+      "2 MHz",
+      "4 kHz"
+    ],
+    correct: 0,
+    explain: "增益带宽积守恒：A_f·BW_f = GBW，所以 BW_f = GBW/A_f = 2 MHz / 50 = 40 kHz。这与 0016 中 BW_f = (1+AF)·BW 完全一致：闭环增益压低多少倍，带宽就扩展多少倍。跟随器（A_f = 1）时带宽就等于 GBW。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！运放的理想化分析你已经掌握，可以进最后一课了。' :
+        right >= 2 ? '👍 不错，重点复习虚短成立的前提。' :
+        '📚 建议重看第四节，把"虚短为什么需要负反馈"推一遍。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

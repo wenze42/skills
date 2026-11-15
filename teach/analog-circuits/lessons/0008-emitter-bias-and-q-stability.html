@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0008 — 分压式偏置与 Q 点稳定</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0008 — 分压式偏置与 Q 点稳定</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0008 / 0020 · 约 35 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  必须掌握 <a href="0006-dc-analysis-and-q-point.html">Lesson 0006（直流通路与 Q 点）</a> 和
+  <a href="0007-common-emitter-amplifier.html">Lesson 0007（共射放大电路微变等效分析）</a>。
+  本课要用到的三件旧工具：电容对直流开路、<code>I_B = (V_CC − U_BE) / R_b</code>、
+  <code>A_u = −βR_L′ / r_be</code>。
+</div>
+
+<p>
+  上一课我们算出共射电路的 <code>A_u = −114</code>，看上去很美。但那个数字是在
+  「室温 25 ℃、β = 50」的前提下算出来的。真实世界里，温度会从 −10 ℃ 变到 60 ℃，
+  换一只同型号的管子 β 可能从 50 跳到 150。<strong>Q 点一动，增益、失真、动态范围全都跟着动。</strong>
+  这一课解决的问题就是：怎样让 Q 点「钉死」。
+</p>
+
+<h2>一、Q 点为什么会漂移</h2>
+
+<p>
+  晶体管里有三个参数对温度极其敏感。它们不是「误差」，而是器件物理决定的必然趋势：
+</p>
+
+<ul>
+  <li><strong>U<sub>BE</sub></strong>：约 <strong>−2.2 mV/℃</strong>。本征载流子浓度随温度上升，同样电流所需的压降变小 → I<sub>B</sub>↑ → I<sub>C</sub>↑。</li>
+  <li><strong>β</strong>：约 <strong>+0.5% ~ +1%/℃</strong>。基区复合减少、发射效率提高 → I<sub>C</sub> = βI<sub>B</sub> 直接放大（<strong>主因</strong>）。</li>
+  <li><strong>I<sub>CBO</sub></strong>：每升 <strong>10 ℃ 翻一倍</strong> → I<sub>C</sub> = βI<sub>B</sub> + (1+β)I<sub>CBO</sub> 抬高。</li>
+</ul>
+
+<h3>固定偏置：Q 点完全由 β 决定</h3>
+
+<p>
+  最基本的偏置电路只用一只基极电阻 R<sub>b</sub> 从电源取电流，叫<strong>固定偏置</strong>
+  （也叫固定基流偏置）：
+</p>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 460 370" role="img">
+    <title>固定偏置共射电路：基极电阻从 V_CC 直接取电流</title>
+    <line class="wire" x1="130" y1="40" x2="380" y2="40"/>
+    <text x="255" y="28" text-anchor="middle">+V_CC</text>
+
+    <line class="wire" x1="250" y1="40" x2="250" y2="62"/>
+    <rect class="area" x="234" y="62" width="32" height="56" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="250" y1="118" x2="250" y2="180"/>
+    <text x="222" y="98" text-anchor="end" class="lbl">R_b</text>
+
+    <line class="wire" x1="250" y1="180" x2="300" y2="180"/>
+    <line class="wire thin" x1="300" y1="150" x2="300" y2="210"/>
+    <line class="wire" x1="300" y1="162" x2="345" y2="132"/>
+    <line class="wire" x1="345" y1="132" x2="345" y2="118"/>
+    <line class="wire" x1="345" y1="66" x2="345" y2="40"/>
+    <rect class="area" x="329" y="66" width="32" height="52" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="392" y="96" class="lbl">R_c</text>
+
+    <line class="wire" x1="300" y1="198" x2="345" y2="228"/>
+    <polygon points="336,228 345,222 341,236" fill="#1a1a1a"/>
+    <line class="wire" x1="345" y1="228" x2="345" y2="250"/>
+    <rect class="area" x="329" y="250" width="32" height="52" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="345" y1="302" x2="345" y2="320"/>
+    <line class="wire thin" x1="321" y1="320" x2="369" y2="320"/>
+    <line class="wire thin" x1="330" y1="329" x2="360" y2="329"/>
+    <line class="wire thin" x1="339" y1="338" x2="351" y2="338"/>
+    <text x="392" y="282" class="lbl">R_e</text>
+    <text x="268" y="232" class="lbl">T</text>
+    <text x="345" y="360" text-anchor="middle" class="lbl">GND</text>
+  </svg>
+</div>
+
+<p>
+  直流通路里电容开路，基极回路是一条一元一次方程：
+</p>
+
+<div class="math">I_B = (V_CC − U_BE) / R_b　　I_C = β I_B　　U_CE = V_CC − I_C R_c</div>
+
+<p>
+  注意 <strong>I<sub>C</sub> 直接正比于 β</strong>，而 β 恰恰是管子里最不可控的参数
+  （同一型号同一批次的 β 可以差 3 倍，如 50~150）。举个真实数字：
+  V<sub>CC</sub> = 12 V，R<sub>b</sub> = 470 kΩ，R<sub>c</sub> = 4 kΩ。
+</p>
+
+<ul>
+  <li>β = 50：I<sub>B</sub> = (12 − 0.7)/470k = 24 μA，I<sub>C</sub> = 1.2 mA，U<sub>CE</sub> = 12 − 4.8 = <strong>7.2 V</strong>　✅ 正常放大</li>
+  <li>β = 100：I<sub>C</sub> = 2.4 mA，U<sub>CE</sub> = 12 − 9.6 = <strong>2.4 V</strong>　⚠ 逼近饱和</li>
+  <li>β = 130：I<sub>C</sub> = 3.12 mA，U<sub>CE</sub> = 12 − 12.5 &lt; 0 → 管子<strong>饱和</strong>，U<sub>CE</sub> = U<sub>CES</sub> ≈ 0.3 V　❌ 失去放大能力</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">结论</span>
+  固定偏置的 Q 点完全靠 β 撑着，<strong>不能用于批量生产的放大器</strong>。
+  它只剩两个用途：做开关（只关心饱和/截止两态），以及作为「反面教材」出现在考研选择题里。
+</div>
+
+<h2>二、分压式射极偏置电路</h2>
+
+<p>
+  要让 Q 点不受 β 摆布，核心思路是：<strong>别让 I<sub>C</sub> 由 β 决定，而让它由电阻比值决定。</strong>
+  具体做法是两招组合——基极用电阻分压「钉住」电位，发射极串电阻「检测」电流：
+</p>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 410" role="img">
+    <title>分压式射极偏置电路：R_b1 与 R_b2 分压固定基极电位，R_e 引入直流负反馈，C_e 旁路</title>
+    <line class="wire" x1="200" y1="40" x2="440" y2="40"/>
+    <text x="210" y="28" text-anchor="start">+V_CC</text>
+
+    <line class="wire" x1="230" y1="40" x2="230" y2="70"/>
+    <rect class="area" x="214" y="70" width="32" height="56" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="230" y1="126" x2="230" y2="230"/>
+    <text x="200" y="100" text-anchor="end" class="lbl">R_b1</text>
+
+    <circle class="dot" cx="230" cy="230" r="4"/>
+    <line class="wire" x1="230" y1="230" x2="300" y2="230"/>
+    <line class="wire" x1="230" y1="230" x2="230" y2="260"/>
+    <rect class="area" x="214" y="260" width="32" height="56" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="230" y1="316" x2="230" y2="350"/>
+    <text x="200" y="290" text-anchor="end" class="lbl">R_b2</text>
+
+    <line class="wire thin" x1="300" y1="200" x2="300" y2="260"/>
+    <line class="wire" x1="300" y1="212" x2="345" y2="182"/>
+    <line class="wire" x1="300" y1="248" x2="345" y2="278"/>
+    <polygon points="336,278 345,272 341,286" fill="#1a1a1a"/>
+
+    <line class="wire" x1="345" y1="40" x2="345" y2="120"/>
+    <rect class="area" x="329" y="120" width="32" height="52" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="345" y1="172" x2="345" y2="182"/>
+    <text x="392" y="150" class="lbl">R_c</text>
+
+    <circle class="dot" cx="345" cy="182" r="4"/>
+    <line class="wire" x1="345" y1="182" x2="400" y2="182"/>
+    <line class="wire" x1="400" y1="160" x2="400" y2="204"/>
+    <line class="wire" x1="412" y1="160" x2="412" y2="204"/>
+    <line class="wire" x1="412" y1="182" x2="468" y2="182"/>
+    <circle cx="470" cy="182" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="470" y="164" text-anchor="middle" class="lbl">u_o</text>
+    <text x="406" y="146" text-anchor="middle" class="lbl">C_2</text>
+
+    <line class="wire" x1="345" y1="278" x2="345" y2="296"/>
+    <rect class="area" x="329" y="296" width="32" height="50" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="345" y1="346" x2="345" y2="370"/>
+    <text x="300" y="326" text-anchor="end" class="lbl">R_e</text>
+
+    <circle class="dot" cx="345" cy="290" r="4"/>
+    <line class="wire" x1="345" y1="290" x2="420" y2="290"/>
+    <line class="wire" x1="420" y1="290" x2="420" y2="302"/>
+    <line class="wire x thin" x1="400" y1="302" x2="440" y2="302"/>
+    <line class="wire x thin" x1="400" y1="314" x2="440" y2="314"/>
+    <line class="wire" x1="420" y1="314" x2="420" y2="350"/>
+    <line class="wire" x1="420" y1="350" x2="345" y2="350"/>
+    <text x="442" y="316" class="lbl">C_e</text>
+
+    <line class="wire" x1="230" y1="230" x2="300" y2="230"/>
+    <circle class="dot" cx="230" cy="230" r="4"/>
+    <line class="wire" x1="45" y1="230" x2="95" y2="230"/>
+    <line class="wire" x1="100" y1="208" x2="100" y2="252"/>
+    <line class="wire" x1="112" y1="208" x2="112" y2="252"/>
+    <line class="wire" x1="112" y1="230" x2="230" y2="230"/>
+    <circle cx="40" cy="230" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="30" y="236" text-anchor="end" class="lbl">u_i</text>
+    <text x="106" y="196" text-anchor="middle" class="lbl">C_1</text>
+
+    <line class="wire" x1="230" y1="350" x2="440" y2="350"/>
+    <line class="wire" x1="335" y1="370" x2="355" y2="370"/>
+    <text x="345" y="400" text-anchor="middle" class="lbl">GND</text>
+  </svg>
+</div>
+
+<ul>
+  <li><strong>R<sub>b1</sub>、R<sub>b2</sub></strong>：分压器，把 V<sub>CC</sub> 分成固定的基极电位 U<sub>B</sub>。</li>
+  <li><strong>R<sub>e</sub></strong>：串在发射极，把「电流」翻译成「电压」（U<sub>E</sub> = I<sub>E</sub>R<sub>e</sub>），这个电压反过来削减 U<sub>BE</sub>，形成<strong>直流负反馈</strong>。</li>
+  <li><strong>C<sub>e</sub></strong>：旁路电容，对交流短路，让 R<sub>e</sub> 只在直流上起作用（第四节详述）。</li>
+  <li><strong>C<sub>1</sub>、C<sub>2</sub></strong>：耦合电容，隔直流、通交流，信号进得来出得去而不破坏 Q 点。</li>
+</ul>
+
+<h3>两个近似条件：为什么可以「假装 I_B = 0」</h3>
+
+<p>
+  分压式偏置的全部计算都建立在一个近似上：<strong>基极电流几乎不从分压器里抽走电流</strong>。
+  只要分压器电流 I<sub>2</sub> 远大于 I<sub>B</sub>，基极电位就由电阻比值说了算：
+</p>
+
+<div class="math">I_2 = (5 ~ 10) I_B　　⇒　　U_B ≈ R_b2 / (R_b1 + R_b2) × V_CC</div>
+
+<p>
+  与之配套的第二个条件是：<strong>U<sub>B</sub> 要远大于 U<sub>BE</sub></strong>，一般取 3~5 V。
+  原因是如果 U<sub>B</sub> 只有 1 V 左右，那么 U<sub>E</sub> = U<sub>B</sub> − U<sub>BE</sub> ≈ 0.3 V，
+  U<sub>BE</sub> 那 −2.2 mV/℃ 的漂移就占了 U<sub>E</sub> 的 1%，I<sub>C</sub> 跟着漂 1%；
+  若 U<sub>E</sub> = 3 V，同样的漂移只占 0.07%，几乎看不出来。
+</p>
+
+<div class="tip">
+  <span class="tip-label">设计口诀（考研简答题常考）</span>
+  <strong>「I<sub>2</sub> 大、U<sub>B</sub> 高、R<sub>e</sub> 有」</strong>——
+  I<sub>2</sub> = (5~10)I<sub>B</sub> 保证 U<sub>B</sub> 硬；U<sub>B</sub> = (5~10)U<sub>BE</sub> ≈ 3~5 V 保证 U<sub>E</sub> 大；
+  R<sub>e</sub> 提供负反馈。三条同时满足，Q 点才真正稳。
+</div>
+
+<h2>三、稳定原理与 Q 点计算</h2>
+
+<h3>负反馈链：一次完整的自我纠正</h3>
+
+<p>
+  假设温度升高，I<sub>C</sub> 想往上跑。电路会自动把它拉回来，过程是一条闭环链条：
+</p>
+
+<ol>
+  <li>温度 T ↑ → I<sub>C</sub> ↑、I<sub>E</sub> ↑</li>
+  <li>U<sub>E</sub> = I<sub>E</sub>R<sub>e</sub> ↑（发射极电位被抬高）</li>
+  <li>U<sub>B</sub> 被分压器钉死不动 → U<sub>BE</sub> = U<sub>B</sub> − U<sub>E</sub> <strong>↓</strong></li>
+  <li>U<sub>BE</sub> ↓ → I<sub>B</sub> ↓</li>
+  <li>I<sub>C</sub> = βI<sub>B</sub> <strong>↓</strong>，回到接近原来的值</li>
+</ol>
+
+<p>
+  这条链的关键在第 3 步：<strong>U<sub>B</sub> 必须「不动」</strong>，否则 U<sub>E</sub> 抬高时 U<sub>BE</sub> 不会变小，反馈就失效了。
+  这正是第一个近似条件 I<sub>2</sub> ≫ I<sub>B</sub> 的真正作用——它保证分压器是个「硬」电压源。
+</p>
+
+<p>
+  换个角度记：<strong>R<sub>e</sub> 把电流搬成电压，再用这个电压去抵消输入</strong>。
+  这是所有「稳定 Q 点」电路的共同套路，后面学集成运放、电流源偏置还会反复见到。
+</p>
+
+<h3>Q 点计算四步法</h3>
+
+<div class="tip">
+  <span class="tip-label">计算步骤（固定套路，背下来）</span>
+  <ol>
+    <li><strong>算 U<sub>B</sub></strong>：U<sub>B</sub> ≈ R<sub>b2</sub>/(R<sub>b1</sub>+R<sub>b2</sub>) · V<sub>CC</sub>，并校验 I<sub>2</sub> ≥ 5I<sub>B</sub>。</li>
+    <li><strong>算 U<sub>E</sub></strong>：U<sub>E</sub> = U<sub>B</sub> − U<sub>BEQ</sub>（硅管取 0.7 V）。</li>
+    <li><strong>算 I<sub>CQ</sub></strong>：I<sub>CQ</sub> ≈ I<sub>EQ</sub> = U<sub>E</sub>/R<sub>e</sub>。</li>
+    <li><strong>算 U<sub>CEQ</sub></strong>：U<sub>CEQ</sub> = V<sub>CC</sub> − I<sub>CQ</sub>R<sub>c</sub> − I<sub>EQ</sub>R<sub>e</sub>。</li>
+  </ol>
+</div>
+
+<h3>考研例题（完整步骤）</h3>
+
+<p>
+  电路如上图，已知 V<sub>CC</sub> = 12 V，R<sub>b1</sub> = 30 kΩ，R<sub>b2</sub> = 10 kΩ，
+  R<sub>c</sub> = 2 kΩ，R<sub>e</sub> = 1 kΩ，β = 50，U<sub>BEQ</sub> = 0.7 V。
+  求 Q 点，并说明该电路的温度稳定性。
+</p>
+
+<p><strong>第一步：求 U<sub>B</sub></strong></p>
+<div class="math">U_B = 12 × 10 / (30 + 10) = 12 × 0.25 = 3 V</div>
+
+<p><strong>第二步：校验近似条件</strong>（考研答题时写上这一步会加分）</p>
+<p>
+  先估算 I<sub>CQ</sub> ≈ (3 − 0.7)/1k = 2.3 mA，则 I<sub>B</sub> = 2.3/50 = 46 μA；
+  分压器电流 I<sub>2</sub> ≈ U<sub>B</sub>/R<sub>b2</sub> = 3/10k = 300 μA。
+  I<sub>2</sub>/I<sub>B</sub> = 300/46 ≈ <strong>6.5 倍</strong>，满足 5~10 倍的要求，第一步的近似成立 ✅
+</p>
+
+<p><strong>第三步：求 I<sub>CQ</sub></strong></p>
+<div class="math">U_E = 3 − 0.7 = 2.3 V　　I_CQ ≈ I_EQ = 2.3 V / 1 kΩ = 2.3 mA</div>
+
+<p><strong>第四步：求 U<sub>CEQ</sub></strong></p>
+<div class="math">U_CEQ = 12 − 2.3×2 − 2.3×1 = 12 − 4.6 − 2.3 = 5.1 V</div>
+
+<p><strong>第五步：温度稳定性验证</strong>（这一步是把「懂了」变成「证了」）</p>
+<ul>
+  <li>若 β 由 50 变为 100：I<sub>B</sub> 减半，但 U<sub>B</sub> 仍 ≈ 3 V（因为 I<sub>2</sub> ≫ I<sub>B</sub>），
+      于是 U<sub>E</sub>、I<sub>CQ</sub> 几乎不变（精确计算约 2.36 mA，变化 &lt; 3%）。</li>
+  <li>若 U<sub>BE</sub> 因升温降为 0.65 V：U<sub>E</sub> = 2.35 V，I<sub>CQ</sub> = 2.35 mA，变化 +2%。</li>
+  <li>对比第一节的固定偏置：β 翻倍时 I<sub>C</sub> 直接翻倍。这就是「稳定」的量化含义。</li>
+</ul>
+
+<p>
+  顺带把后面要用的 r<sub>be</sub> 也求出来（下一节要用）：
+</p>
+<div class="math">r_be = r_bb′ + (1+β)·26 mV / I_EQ ≈ 300 + 51×26/2.3 ≈ 0.88 kΩ</div>
+
+<h2>四、旁路电容与电压增益</h2>
+
+<p>
+  到这里 Q 点已经稳了，但代价出现了：<strong>R<sub>e</sub> 对交流信号同样是负反馈</strong>。
+  它不认识「直流」和「交流」的区别，只要发射极电流变化，它就会抬高 U<sub>E</sub>、削减 U<sub>BE</sub>，
+  于是有用信号也被削弱了。
+</p>
+
+<h3>不接 C<sub>e</sub>：增益被 R<sub>e</sub> 压死</h3>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 250" role="img">
+    <title>无旁路电容时的微变等效电路：r_be 与 (1+β)R_e 串联，增益被严重削弱</title>
+    <circle cx="40" cy="120" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="26" y="126" text-anchor="end" class="lbl">B</text>
+    <line class="wire" x1="45" y1="120" x2="80" y2="120"/>
+    <rect class="area" x="80" y="104" width="64" height="32" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="112" y="96" text-anchor="middle" class="lbl">r_be</text>
+    <line class="wire" x1="144" y1="120" x2="330" y2="120"/>
+    <circle class="dot" cx="250" cy="120" r="4"/>
+    <text x="250" y="108" text-anchor="middle" class="lbl">E</text>
+    <line class="wire" x1="250" y1="120" x2="250" y2="140"/>
+    <rect class="area" x="234" y="140" width="32" height="50" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="250" y1="190" x2="250" y2="205"/>
+    <text x="222" y="170" text-anchor="end" class="lbl">(1+β)R_e</text>
+    <line class="wire" x1="330" y1="120" x2="330" y2="88"/>
+    <circle cx="330" cy="72" r="16" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire thin" x1="322" y1="62" x2="330" y2="74"/>
+    <polygon points="321,61 330,66 330,78" fill="#1a1a1a"/>
+    <line class="wire" x1="330" y1="56" x2="330" y2="40"/>
+    <line class="wire" x1="330" y1="40" x2="430" y2="40"/>
+    <text x="352" y="66" class="lbl">βi_b</text>
+    <line class="wire" x1="430" y1="40" x2="430" y2="56"/>
+    <rect class="area" x="414" y="56" width="32" height="50" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="452" y="86" class="lbl">R_c</text>
+    <line class="wire" x1="430" y1="106" x2="430" y2="205"/>
+    <line class="wire" x1="250" y1="205" x2="430" y2="205"/>
+    <line class="wire" x1="340" y1="205" x2="340" y2="215"/>
+    <line class="wire thin" x1="316" y1="215" x2="364" y2="215"/>
+    <line class="wire thin" x1="325" y1="223" x2="355" y2="223"/>
+    <line class="wire thin" x1="334" y1="231" x2="346" y2="231"/>
+    <text x="20" y="245" class="lbl">A_u = −βR_L′ / [r_be + (1+β)R_e]</text>
+  </svg>
+</div>
+
+<p>把数值代进去（R<sub>L</sub> 开路，R<sub>L</sub>′ = R<sub>c</sub> = 2 kΩ）：</p>
+<div class="math">A_u = −50×2 / (0.88 + 51×1) = −100 / 51.88 ≈ −1.93</div>
+
+<p>
+  忙活半天，增益只有 <strong>−1.93</strong>，还不如一个无源分压器。这就是 R<sub>e</sub> 的「交流副作用」。
+</p>
+
+<h3>接上 C<sub>e</sub>：交流短路 R<sub>e</sub>，增益恢复</h3>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 250" role="img">
+    <title>接入旁路电容后的微变等效电路：R_e 被 C_e 交流短路，只保留 r_be</title>
+    <circle cx="40" cy="120" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="26" y="126" text-anchor="end" class="lbl">B</text>
+    <line class="wire" x1="45" y1="120" x2="80" y2="120"/>
+    <rect class="area" x="80" y="104" width="64" height="32" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="112" y="96" text-anchor="middle" class="lbl">r_be</text>
+    <line class="wire" x1="144" y1="120" x2="330" y2="120"/>
+    <circle class="dot" cx="250" cy="120" r="4"/>
+    <text x="250" y="108" text-anchor="middle" class="lbl">E</text>
+    <line class="wire" x1="250" y1="120" x2="250" y2="205"/>
+    <text x="268" y="170" class="lbl">C_e 短路，R_e 视作 0</text>
+    <line class="wire" x1="330" y1="120" x2="330" y2="88"/>
+    <circle cx="330" cy="72" r="16" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire thin" x1="322" y1="62" x2="330" y2="74"/>
+    <polygon points="321,61 330,66 330,78" fill="#1a1a1a"/>
+    <line class="wire" x1="330" y1="56" x2="330" y2="40"/>
+    <line class="wire" x1="330" y1="40" x2="430" y2="40"/>
+    <text x="352" y="66" class="lbl">βi_b</text>
+    <line class="wire" x1="430" y1="40" x2="430" y2="56"/>
+    <rect class="area" x="414" y="56" width="32" height="50" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="452" y="86" class="lbl">R_c</text>
+    <line class="wire" x1="430" y1="106" x2="430" y2="205"/>
+    <line class="wire" x1="250" y1="205" x2="430" y2="205"/>
+    <line class="wire" x1="340" y1="205" x2="340" y2="215"/>
+    <line class="wire thin" x1="316" y1="215" x2="364" y2="215"/>
+    <line class="wire thin" x1="325" y1="223" x2="355" y2="223"/>
+    <line class="wire thin" x1="334" y1="231" x2="346" y2="231"/>
+    <text x="20" y="245" class="lbl">A_u = −βR_L′ / r_be</text>
+  </svg>
+</div>
+
+<div class="math">A_u = −50×2 / 0.88 ≈ −114　（相位相反，幅值 114 倍）</div>
+
+<p>
+  同一个电路，只多了一只电容，增益从 1.93 变成 114——差了 <strong>59 倍</strong>。
+  这不是"boost"，而是把原本被 R<sub>e</sub> 拿走的交流负反馈还回来。
+</p>
+
+<h3>增益回来了，Q 点还稳吗？</h3>
+
+<p>
+  稳。C<sub>e</sub> 的容抗 Z<sub>e</sub> = 1/(ωC<sub>e</sub>) 只在交流上起作用：直流时开路，R<sub>e</sub> 完整存在，负反馈照常工作；
+  中频时近似短路，R<sub>e</sub> 对信号失效。<strong>直流稳、交流强</strong>——这正是我们想要的。
+</p>
+
+<ul>
+  <li><strong>容量选取</strong>：一般 10 ~ 100 μF，要保证最低工作频率下容抗远小于 R<sub>e</sub>；频率很低时增益会掉回 −1.93 附近，形成低频转折（第五章频率响应的伏笔）。</li>
+  <li><strong>部分旁路</strong>：把 R<sub>e</sub> 拆成 R<sub>e1</sub>+R<sub>e2</sub>，只旁路 R<sub>e2</sub>，即可在「增益」与「线性度」之间折中。</li>
+</ul>
+
+<p>两种情况的完整对比（含输入输出电阻）：</p>
+
+<table>
+  <tr>
+    <th>指标</th><th>无 C<sub>e</sub></th><th>有 C<sub>e</sub></th>
+  </tr>
+  <tr>
+    <td>电压增益 A<sub>u</sub></td>
+    <td>−βR<sub>L</sub>′ / [r<sub>be</sub>+(1+β)R<sub>e</sub>] ≈ <strong>−1.93</strong></td>
+    <td>−βR<sub>L</sub>′ / r<sub>be</sub> ≈ <strong>−114</strong></td>
+  </tr>
+  <tr>
+    <td>输入电阻 R<sub>i</sub></td>
+    <td>R<sub>b1</sub>∥R<sub>b2</sub>∥[r<sub>be</sub>+(1+β)R<sub>e</sub>] ≈ 15 kΩ（较大）</td>
+    <td>R<sub>b1</sub>∥R<sub>b2</sub>∥r<sub>be</sub> ≈ 0.86 kΩ（小）</td>
+  </tr>
+  <tr>
+    <td>输出电阻 R<sub>o</sub></td>
+    <td>≈ R<sub>c</sub> = 2 kΩ</td>
+    <td>≈ R<sub>c</sub> = 2 kΩ</td>
+  </tr>
+  <tr>
+    <td>Q 点</td>
+    <td colspan="2" style="text-align: center;">完全相同（C<sub>e</sub> 对直流开路，不影响 Q 点）</td>
+  </tr>
+  <tr>
+    <td>适用</td>
+    <td>要求高输入电阻、低失真、增益不高的场合</td>
+    <td>追求电压增益的中间级</td>
+  </tr>
+</table>
+
+<h2>五、Quiz</h2>
+
+<p>下面 3 道题覆盖「漂移原因、稳定机理、Q 点计算、旁路影响」四个考点。</p>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h3>这一课学到了什么</h3>
+
+<ol>
+  <li><strong>漂移的根源</strong>：U<sub>BE</sub>（−2.2 mV/℃）、β（+0.5%~1%/℃）、I<sub>CBO</sub>（每 10 ℃ 翻倍）。固定偏置让 I<sub>C</sub> 正比于 β，因此不可用。</li>
+  <li><strong>稳定的办法</strong>：分压器钉住 U<sub>B</sub>，R<sub>e</sub> 把 I<sub>E</sub> 变成 U<sub>E</sub>，靠 U<sub>BE</sub> = U<sub>B</sub> − U<sub>E</sub> 自动回调——一条直流负反馈链。</li>
+  <li><strong>两个近似条件</strong>：I<sub>2</sub> = (5~10)I<sub>B</sub>，U<sub>B</sub> = 3~5 V。它们是「U<sub>B</sub> 不动」的前提。</li>
+  <li><strong>计算四步</strong>：U<sub>B</sub> → U<sub>E</sub> → I<sub>CQ</sub> → U<sub>CEQ</sub>，全程只需要一个 0.7 V。</li>
+  <li><strong>C<sub>e</sub> 的价值</strong>：直流保留 R<sub>e</sub>（稳 Q），交流短路 R<sub>e</sub>（保增益）。</li>
+</ol>
+
+<p>
+  下一课（<strong>Lesson 0009</strong>）我们换两个"视角"看同一只管子：
+  从发射极输出（共集，射极跟随器）和从发射极输入（共基）。它们的增益一个约等于 1，一个频响特别好——
+  三种组态凑齐，你才有资格在考研选择题里一眼选出"该用哪个"。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第二章 §2.4「放大电路静态工作点的稳定」。
+  分压式偏置的近似条件与稳定过程的推导，在该节有完整版；旁路电容对低频特性的影响见第五章。
+</div>
+
+<div class="ask-agent">
+  为什么 I<sub>2</sub> ≫ I<sub>B</sub> 就能让 U<sub>B</sub> 不动？β 变化时到底该怎么"精确"重算？<br>
+  部分旁路（R<sub>e</sub> 拆两段）的增益怎么算？<strong>直接问我</strong>。
+</div>
+
+<div class="footer-nav">
+  <a href="./0007-common-emitter-amplifier.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0008 / 0020</span>
+  <a href="./0009-common-collector-common-base.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "分压式射极偏置电路中，温度升高使 I_C 增大时，抑制 I_C 增大的过程是？",
+    options: [
+      "I_C↑ → U_E↑ → U_BE↓ → I_B↓ → I_C↓",
+      "I_C↑ → U_C↑ → U_CE↑ → I_B↑ → I_C↑",
+      "I_C↑ → U_B↑ → U_BE↑ → I_B↑ → I_C↑",
+      "I_C↑ → I_B↑ → U_E↓ → U_BE↑ → I_C↓"
+    ],
+    correct: 0,
+    explain: "R_e 上的电压 U_E = I_E·R_e 随 I_C 上升而升高；而 U_B 被分压器钉住不变，于是 U_BE = U_B − U_E 减小，I_B 减小，I_C 随之回落。这是一条直流负反馈链，前提是 I_2 ≫ I_B 使 U_B 稳定。"
+  },
+  {
+    q: "分压式偏置电路：V_CC = 12 V，R_b1 = 30 kΩ，R_b2 = 10 kΩ，R_c = 2 kΩ，R_e = 1 kΩ，U_BEQ = 0.7 V，β = 50。求 I_CQ 和 U_CEQ。",
+    options: [
+      "I_CQ = 2.3 mA，U_CEQ = 5.1 V",
+      "I_CQ = 3.0 mA，U_CEQ = 3.0 V",
+      "I_CQ = 1.15 mA，U_CEQ = 8.5 V",
+      "I_CQ = 2.3 mA，U_CEQ = 9.7 V"
+    ],
+    correct: 0,
+    explain: "U_B = 12×10/(30+10) = 3 V；U_E = 3 − 0.7 = 2.3 V；I_CQ ≈ I_EQ = 2.3/1k = 2.3 mA；U_CEQ = 12 − 2.3×2 − 2.3×1 = 5.1 V。注意 U_CEQ 要把 R_c 和 R_e 上的压降都减掉。"
+  },
+  {
+    q: "上题电路中，若把旁路电容 C_e 断开，中频电压增益的幅值大约变为多少？（已知 r_be ≈ 0.88 kΩ，R_L 开路）",
+    options: [
+      "从约 114 降到约 2",
+      "从约 114 升到约 228",
+      "几乎不变，仍是 114",
+      "从约 114 降到约 57"
+    ],
+    correct: 0,
+    explain: "C_e 断开后 R_e 对交流也产生负反馈：A_u = −βR_c/[r_be+(1+β)R_e] = −50×2/(0.88+51) ≈ −1.93，幅值约 2。C_e 的作用就是把这段交流负反馈短路掉，使增益恢复到 −βR_c/r_be ≈ −114。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！分压式偏置的稳定机理和计算都拿下了。' :
+        right >= 2 ? '👍 不错！建议回看错题对应的那一节推导。' :
+        '📚 需要重做一遍稳定过程的五步链条，再练一遍 Q 点计算。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

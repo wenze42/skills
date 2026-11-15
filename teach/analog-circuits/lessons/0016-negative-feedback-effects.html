@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0016 — 负反馈对放大电路性能的影响</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0016 — 负反馈对放大电路性能的影响</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0016 / 0020 · 约 35 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  必须掌握 <a href="./0015-feedback-basics.html">Lesson 0015（反馈的基本概念）</a>：
+  反馈的四种组态、开环增益 A、反馈系数 F、以及那个反复出现的量
+  <code>1+AF</code>。这一课不是新知识，而是<strong>同一个公式的五个推论</strong>。
+</div>
+
+<h2>一、一切结论的源头：A_f = A / (1 + AF)</h2>
+
+<p>
+  上一课我们只做了三件事：认出反馈、判断组态、写出 F。现在回答一个更实际的问题：
+  <strong>工程师为什么要故意把增益砍掉几十倍？</strong>
+  答案是：负反馈是一个"交易"，用多余的增益去换其他所有性能。
+</p>
+
+<div class="math">
+  A_f = A / (1 + AF)　　（闭环增益）<br>
+  AF 称为<strong>环路增益</strong>，1 + AF 称为<strong>反馈深度</strong>
+</div>
+
+<p>
+  请把 <code>AF</code> 和 <code>1+AF</code> 这两个量分清楚，考研选择题最爱在这里挖坑：
+</p>
+
+<table>
+  <tr><th>量</th><th>定义</th><th>物理意义</th></tr>
+  <tr><td>AF</td><td>环路增益</td><td>信号绕反馈环走一圈所获得的总增益（含 A 与 F）</td></tr>
+  <tr><td>1+AF</td><td>反馈深度</td><td>闭环后"净输入"被削弱的倍数，也是所有性能改善的倍数</td></tr>
+</table>
+
+<table>
+  <tr><th>1 + AF 的值</th><th>反馈性质</th><th>结果</th></tr>
+  <tr><td>1 + AF &gt; 1，即 AF &gt; 0</td><td>负反馈</td><td>A_f 下降，性能改善</td></tr>
+  <tr><td>1 + AF = 1，即 AF = 0</td><td>无反馈</td><td>A_f = A</td></tr>
+  <tr><td>0 &lt; 1 + AF &lt; 1，即 −1 &lt; AF &lt; 0</td><td>正反馈</td><td>A_f 增大，性能恶化</td></tr>
+  <tr><td>1 + AF = 0，即 AF = −1</td><td>自激</td><td>A_f → ∞，无输入也有输出（0017 讲）</td></tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">本课唯一需要记住的结构</span>
+  下面五个性能改善，<strong>改善倍数统统等于 (1+AF)</strong>。
+  所以只要算出 1+AF = 101，你就能一口气答出：增益降为 1/101、稳定性提高 101 倍、
+  带宽扩展 101 倍、失真降为 1/101、内部噪声降为 1/101。
+</div>
+
+<h2>二、五项性能改善（一个一个数）</h2>
+
+<h3>2.1 降低增益（代价，不是收益）</h3>
+
+<p>
+  这是唯一的"损失项"：<code>A_f = A/(1+AF) &lt; A</code>。
+  但只要 A 足够大，牺牲 100 倍增益换 100 倍的其它改善，在工程上永远划算——
+  因为增益可以再补一级放大，稳定性、带宽、失真却补不回来。
+</p>
+
+<h3>2.2 提高增益稳定性</h3>
+
+<p>
+  对 <code>A_f = A/(1+AF)</code> 求全微分，得到考研必背的公式：
+</p>
+
+<div class="math">
+  dA_f / A_f = 1/(1 + AF) · (dA / A)
+</div>
+
+<p>
+  含义：开环增益 A 因温度、电源电压、器件离散性变化了 <code>dA/A</code>，
+  闭环后只变化 <code>1/(1+AF)</code> 那么多。
+  例如 A 漂移 10%、1+AF = 101，则 A_f 只漂移约 0.1%。
+</p>
+
+<h3>2.3 扩展通频带</h3>
+
+<div class="math">
+  BW_f = (1 + AF) · BW　　（BW 为开环带宽）
+</div>
+
+<p>
+  负反馈对"低频段增益过大、高频段增益下跌"这个形状是同等对待的：
+  增益整体压低 1+AF 倍，于是原来 −3dB 对应的那个频率点被推到 1+AF 倍高的频率。
+  由此得到一条极其常用的结论——<strong>增益带宽积为常数</strong>：
+</p>
+
+<div class="math">
+  A_f · BW_f ≈ A · BW = GBW（常数）
+</div>
+
+<div class="tip">
+  <span class="tip-label">这是"守恒定律"</span>
+  运放的 GBW 是器件固有参数（如 1 MHz）。你想让闭环增益为 10，带宽就只有 100 kHz；
+  想增益为 100，带宽只有 10 kHz。天下没有免费的带宽，负反馈只是重新分配。
+</div>
+
+<h3>2.4 减小非线性失真</h3>
+
+<p>
+  非线性失真的本质是"输出波形里长出了新的谐波"。
+  反馈把输出取样送回输入端，与原信号相减，误差（也就是失真那部分）被反馈环
+  自动修正——修正能力正比于环路增益。
+</p>
+
+<div class="math">
+  失真系数（闭环）≈ 失真系数（开环）/ (1 + AF)
+</div>
+
+<p>
+  注意成立前提：失真不能大到让放大器进入饱和或截止，否则反馈无能为力
+  （管子已经削顶，反馈也变不出没被削掉的正弦）。
+</p>
+
+<h3>2.5 抑制内部噪声——但<strong>不改善输入信噪比</strong></h3>
+
+<p>
+  这是全课最容易错的考点，必须掰开讲。把噪声分两类：
+</p>
+
+<table>
+  <tr><th>噪声来源</th><th>负反馈的作用</th></tr>
+  <tr>
+    <td><strong>反馈环内部</strong>产生的噪声（后级管子、电阻热噪声）</td>
+    <td>等效到输出端被压低 1+AF 倍，<strong>有效抑制</strong></td>
+  </tr>
+  <tr>
+    <td><strong>输入信号源本身</strong>携带的噪声（与信号一起进入放大器）</td>
+    <td>信号和噪声<strong>同时</strong>被压低 1+AF 倍，
+        比值 S/N <strong>一点没变</strong></td>
+  </tr>
+</table>
+
+<div class="math">
+  (S/N)_f = S/(1+AF) ÷ N/(1+AF) = S/N　　（输入信噪比不变）
+</div>
+
+<p>
+  所以标准说法是：<strong>负反馈可以抑制反馈环内的噪声，但不能提高输入信噪比。</strong>
+  要提高输入信噪比，只能从源头下手——降低信号源内阻、提高前级器件质量、
+  或让第一级就具备低噪声特性。
+</p>
+
+<h2>三、对输入电阻、输出电阻的影响</h2>
+
+<p>
+  这一节是<strong>四种组态的核心价值所在</strong>，也是"为什么要有四种组态"的答案。
+  规律只有两条，但组合出四张面孔：
+</p>
+
+<ul>
+  <li><strong>输入端</strong>看"串联还是并联"：串联 → 反馈电压与输入电压<strong>串联叠加</strong>，
+      输入端等效电压变大，<code>R_i</code> 增大；并联 → 反馈电流与输入电流<strong>并联分流</strong>，
+      输入端等效电流变大，<code>R_i</code> 减小。</li>
+  <li><strong>输出端</strong>看"电压还是电流"：电压负反馈<strong>稳定输出电压</strong>（恒压源特性），
+      <code>R_o</code> 减小；电流负反馈<strong>稳定输出电流</strong>（恒流源特性），
+      <code>R_o</code> 增大。</li>
+</ul>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 410" role="img">
+    <title>四种反馈组态对输入电阻与输出电阻的影响示意</title>
+    <text x="14" y="26" class="lbl">① 串联负反馈 → R_i 增大</text>
+    <line class="wire" x1="40" y1="72" x2="130" y2="72"/>
+    <polygon points="130,66 130,78 142,72" fill="#1a1a1a"/>
+    <rect class="area" x="142" y="48" width="120" height="48" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="202" y="78" text-anchor="middle">A</text>
+    <line class="wire" x1="262" y1="72" x2="340" y2="72"/>
+    <polygon points="340,66 340,78 352,72" fill="#1a1a1a"/>
+    <text x="40" y="112" class="lbl">R_if = (1+AF)·R_i　↑</text>
+    <text x="290" y="112" class="lbl">R_of = R_o</text>
+
+    <text x="14" y="141" class="lbl">② 并联负反馈 → R_i 减小</text>
+    <line class="wire" x1="40" y1="187" x2="130" y2="187"/>
+    <polygon points="130,181 130,193 142,187" fill="#1a1a1a"/>
+    <rect class="area" x="142" y="163" width="120" height="48" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="202" y="193" text-anchor="middle">A</text>
+    <line class="wire" x1="262" y1="187" x2="340" y2="187"/>
+    <polygon points="340,181 340,193 352,187" fill="#1a1a1a"/>
+    <text x="40" y="227" class="lbl">R_if = R_i / (1+AF)　↓</text>
+    <text x="290" y="227" class="lbl">R_of = R_o</text>
+
+    <text x="14" y="256" class="lbl">③ 电压负反馈 → R_o 减小</text>
+    <line class="wire" x1="40" y1="302" x2="130" y2="302"/>
+    <polygon points="130,296 130,308 142,302" fill="#1a1a1a"/>
+    <rect class="area" x="142" y="278" width="120" height="48" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="202" y="308" text-anchor="middle">A</text>
+    <line class="wire" x1="262" y1="302" x2="340" y2="302"/>
+    <polygon points="340,296 340,308 352,302" fill="#1a1a1a"/>
+    <text x="40" y="342" class="lbl">R_if = R_i</text>
+    <text x="290" y="342" class="lbl">R_of = R_o/(1+AF)　↓</text>
+
+    <text x="14" y="371" class="lbl">④ 电流负反馈 → R_o 增大</text>
+    <line class="wire" x1="40" y1="400" x2="130" y2="400"/>
+    <polygon points="130,394 130,406 142,400" fill="#1a1a1a"/>
+    <rect class="area" x="142" y="376" width="120" height="48" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="202" y="406" text-anchor="middle">A</text>
+    <line class="wire" x1="262" y1="400" x2="340" y2="400"/>
+    <polygon points="340,394 340,406 352,400" fill="#1a1a1a"/>
+  </svg>
+</div>
+
+<table>
+  <tr>
+    <th>组态</th><th>输入电阻 R_i</th><th>输出电阻 R_o</th><th>典型用途</th>
+  </tr>
+  <tr>
+    <td><strong>电压串联</strong></td>
+    <td>(1+AF)·R_i　↑</td>
+    <td>R_o/(1+AF)　↓</td>
+    <td>前置级、缓冲级：要高输入电阻 + 低输出电阻</td>
+  </tr>
+  <tr>
+    <td><strong>电压并联</strong></td>
+    <td>R_i/(1+AF)　↓</td>
+    <td>R_o/(1+AF)　↓</td>
+    <td>反相放大、电流-电压转换（跨阻放大）</td>
+  </tr>
+  <tr>
+    <td><strong>电流串联</strong></td>
+    <td>(1+AF)·R_i　↑</td>
+    <td>(1+AF)·R_o　↑</td>
+    <td>电压-电流转换、恒流源</td>
+  </tr>
+  <tr>
+    <td><strong>电流并联</strong></td>
+    <td>R_i/(1+AF)　↓</td>
+    <td>(1+AF)·R_o　↑</td>
+    <td>电流放大、电流检测</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">记忆口诀</span>
+  输入看<strong>串并</strong>：串联抬、并联压；输出看<strong>压流</strong>：电压压、电流抬。
+  四句话拼起来就是 "串抬并压、压降压抬"，与上表完全对应，考试现场 30 秒就能推完。
+</div>
+
+<h2>四、考研例题（带完整步骤）</h2>
+
+<h3>例题 1：一个电路，五个问</h3>
+
+<p>
+  某负反馈放大电路，开环增益 <code>A = 10⁴</code>，反馈系数 <code>F = 0.01</code>，
+  开环带宽 <code>BW = 10 kHz</code>，开环非线性失真系数 <code>γ = 10%</code>。求：
+</p>
+<ol>
+  <li>闭环增益 A_f；</li>
+  <li>若 A 因温度变化 10%，A_f 的相对变化量；</li>
+  <li>闭环带宽 BW_f；</li>
+  <li>闭环非线性失真系数；</li>
+  <li>说明该电路能否提高输入信噪比。</li>
+</ol>
+
+<p><strong>解</strong></p>
+<ol>
+  <li><strong>先算反馈深度</strong>：AF = 10⁴ × 0.01 = 100，故 1+AF = 101。<br>
+      A_f = 10⁴ / 101 = <strong>99.0</strong>（约等于 100，这正是"深度负反馈"的味道，0017 展开）。</li>
+  <li><strong>稳定性</strong>：dA_f/A_f = (1/101) × 10% = <strong>0.099% ≈ 0.1%</strong>。<br>
+      增益从 10⁴ 掉到 99，但漂移从 10% 掉到 0.1%，稳了 101 倍。</li>
+  <li><strong>带宽</strong>：BW_f = 101 × 10 kHz = <strong>1.01 MHz</strong>。<br>
+      验证增益带宽积：99 × 1.01 MHz ≈ 100 MHz = 10⁴ × 10 kHz，守恒 ✅</li>
+  <li><strong>失真</strong>：γ_f = 10% / 101 = <strong>0.099%</strong>。</li>
+  <li><strong>不能</strong>。该电路可抑制环内噪声，但输入端的信号与噪声被同比例削减，
+      输入信噪比不变。</li>
+</ol>
+
+<h3>例题 2：组态与电阻</h3>
+
+<p>
+  某放大电路开环 <code>R_i = 10 kΩ</code>、<code>R_o = 1 kΩ</code>，A = 10⁴，F = 0.01。
+  要求：输入电阻尽可能大、输出电阻尽可能小。<br>
+  (1) 应引入哪种组态？(2) 求闭环后的 R_if 与 R_of。
+</p>
+
+<p><strong>解</strong></p>
+<ol>
+  <li><strong>选组态</strong>：要高 R_i → 输入端必须<strong>串联</strong>；
+      要低 R_o → 输出端必须取<strong>电压</strong>。所以引入<strong>电压串联负反馈</strong>。</li>
+  <li><strong>算电阻</strong>：1+AF = 101。<br>
+      R_if = (1+AF)·R_i = 101 × 10 kΩ = <strong>1.01 MΩ</strong><br>
+      R_of = R_o/(1+AF) = 1 kΩ / 101 ≈ <strong>9.9 Ω</strong></li>
+  <li><strong>解读</strong>：输入电阻提高了 100 倍（几乎不从信号源取电流），
+      输出电阻降到 10 Ω 以下（接近理想电压源，带负载能力强）。
+      这就是"射极跟随器 + 电压串联反馈"在电路里如此常见的原因。</li>
+</ol>
+
+<div class="tip">
+  <span class="tip-label">答题模板（阅卷给分点）</span>
+  凡是"负反馈对某性能的影响"的问法，标准三步：
+  ① 写出 1+AF；② 写出该性能的闭环表达式；③ 代入数字并说明"改善/恶化"方向。
+  只写答案不写 1+AF，通常扣一半分。
+</div>
+
+<h2>五、速查表</h2>
+
+<table>
+  <tr><th>性能指标</th><th>闭环表达式</th><th>变化方向</th><th>改善倍数</th></tr>
+  <tr><td>闭环增益</td><td>A_f = A/(1+AF)</td><td>减小</td><td>—（这是代价）</td></tr>
+  <tr><td>增益稳定性</td><td>dA_f/A_f = 1/(1+AF)·(dA/A)</td><td>更稳</td><td>1+AF</td></tr>
+  <tr><td>通频带</td><td>BW_f = (1+AF)·BW</td><td>变宽</td><td>1+AF</td></tr>
+  <tr><td>非线性失真</td><td>γ_f ≈ γ/(1+AF)</td><td>减小</td><td>1+AF</td></tr>
+  <tr><td>环内噪声</td><td>N_of ≈ N_o/(1+AF)</td><td>减小</td><td>1+AF</td></tr>
+  <tr><td>输入信噪比</td><td>(S/N)_f = S/N</td><td>不变</td><td>1（无法改善）</td></tr>
+  <tr><td>输入电阻（串联）</td><td>R_if = (1+AF)·R_i</td><td>增大</td><td>1+AF</td></tr>
+  <tr><td>输入电阻（并联）</td><td>R_if = R_i/(1+AF)</td><td>减小</td><td>1+AF</td></tr>
+  <tr><td>输出电阻（电压）</td><td>R_of = R_o/(1+AF)</td><td>减小</td><td>1+AF</td></tr>
+  <tr><td>输出电阻（电流）</td><td>R_of = (1+AF)·R_o</td><td>增大</td><td>1+AF</td></tr>
+</table>
+
+<h2>六、Quiz — 考研风格题</h2>
+
+<p>三道题，全部围绕 (1+AF) 这一个数展开。</p>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>一个公式统治全课</strong>：所有改善倍数都是 (1+AF)，算一次用五次。</li>
+  <li><strong>五项改善 + 一个例外</strong>：增益、稳定性、带宽、失真、环内噪声都改善，
+      但输入信噪比<strong>无法改善</strong>。</li>
+  <li><strong>四种组态的价值</strong>：串/并决定 R_i 走向，压/流决定 R_o 走向，
+      实际选型时"按需要的电阻反推组态"。</li>
+</ol>
+
+<p>
+  下一课（<strong>Lesson 0017</strong>）进入负反馈的高阶部分：
+  当 1+AF 大到可以忽略 1 的时候，电路会发生质变——增益只由反馈网络决定，
+  可以用"虚短虚断"直接口算；同时，负反馈也可能<strong>翻脸</strong>，
+  在某个频率上变成正反馈而自激振荡。这就是稳定性问题。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第六章 §6.3~6.5（负反馈对放大电路性能的影响）。
+  康华光《电子技术基础 模拟部分》对应章节对 R_if、R_of 的推导更细。
+</div>
+
+<div class="ask-agent">
+  "为什么串联负反馈让输入电阻增大"还是觉得别扭？想再看一个用反馈深度解释 R_i 的推导？<br>
+  <strong>直接问我</strong>——这类"结论背后的物理图像"正是值得追问的地方。
+</div>
+
+<div class="footer-nav">
+  <a href="./0015-feedback-basics.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0016 / 0020</span>
+  <a href="./0017-deep-negative-feedback-and-stability.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "某放大电路开环增益 A = 1000，反馈系数 F = 0.01，则闭环增益 A_f 约为？",
+    options: [
+      "A_f ≈ 90.9",
+      "A_f ≈ 100",
+      "A_f ≈ 110",
+      "A_f ≈ 9.9"
+    ],
+    correct: 0,
+    explain: "先求 AF = 1000 × 0.01 = 10，反馈深度 1+AF = 11。A_f = A/(1+AF) = 1000/11 ≈ 90.9。注意不要直接写 1/F = 100，那是深度负反馈（1+AF 远大于 1）才成立的近似，本题 1+AF = 11 只是接近深度，严谨答案仍是 90.9。"
+  },
+  {
+    q: "关于负反馈对噪声的影响，下列说法正确的是？",
+    options: [
+      "既能抑制内部噪声，又能提高输入信噪比",
+      "只能抑制反馈环内产生的噪声，不能提高输入信噪比",
+      "对噪声没有任何影响",
+      "会把噪声和信号一起放大，所以信噪比变大"
+    ],
+    correct: 1,
+    explain: "反馈环内部产生的噪声（后级管子、电阻热噪声）等效到输出端被压低 1+AF 倍，可以抑制。但信号源本身携带的噪声与信号一起进入放大器，二者同比例被压低，比值不变，所以输入信噪比无法改善。要提高输入信噪比只能从信号源和前级器件入手。"
+  },
+  {
+    q: "某放大电路要求输入电阻大、输出电阻小，应引入哪种负反馈？",
+    options: [
+      "电压串联负反馈",
+      "电压并联负反馈",
+      "电流串联负反馈",
+      "电流并联负反馈"
+    ],
+    correct: 0,
+    explain: "输入端要 R_i 增大 → 必须串联（串联抬、并联压）；输出端要 R_o 减小 → 必须电压（电压压、电流抬）。两个条件合并即电压串联负反馈。此时 R_if = (1+AF)R_i，R_of = R_o/(1+AF)，正是射极跟随器一类的理想缓冲特性。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！负反馈的五项改善你已经彻底拿下。' :
+        right >= 2 ? '👍 不错，回看错题对应的那一节即可。' :
+        '📚 建议重看第二节和第三节，把 (1+AF) 这个数用熟。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>
