@@ -181,3 +181,13 @@ npx skills@latest update
 ### 自定义 Skill 同步
 
 本仓库的 2 个自定义 skill（dev-gating、health-scoring）在 `.agents/skills/` 下，不在 `skills-lock.json` 中，需手动复制到其他 AI agent 的 skills 目录；其余 38 个锁定 skill 可用 `npx skills@latest experimental_install` 还原。
+
+## 教学课件文件格式（teach/*/lessons、teach/*/reference）
+
+生成或重写课件 HTML 时，一律遵守（用户 2026-11 明确要求）：
+
+- **单文件自包含**：样式内联在 `<style>`，不引用外部 CSS/JS/字体，离线双击即可打开；
+- **图一律内联 SVG**（`class="schematic"`），禁止用 ASCII 字符画表达电路/曲线；
+- `<head>` 必须含 `<meta charset="UTF-8">` 与 `viewport`，保证手机与电脑都能正常显示；
+- 文件名 `NNNN-slug.html`，正文中文，打印样式可用；
+- 交付时给可下载的链接（GitHub blob 页 + Download raw file），不要依赖 `localhost` 预览服务。
