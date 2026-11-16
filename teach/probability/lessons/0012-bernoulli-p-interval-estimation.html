@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../assets/teach.css">
+<title>Lesson 0012 — （0-1）分布参数 p 的区间估计与单侧置信区间</title>
+<style>
+.frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 2px; }
+.frac-num { border-bottom: 1px solid var(--text); padding: 0 4px; line-height: 1.1; }
+.frac-den { padding: 0 4px; line-height: 1.1; }
+.schematic text { font-family: inherit; font-size: 13px; fill: var(--text); }
+.schematic .axis { stroke: var(--text); stroke-width: 1.2; }
+.schematic .curve { stroke: var(--accent); stroke-width: 2; fill: none; }
+.schematic .critical { stroke: var(--quiz-wrong); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.schematic .fill-area { fill: var(--accent-light); opacity: 0.6; }
+</style>
+</head>
+<body>
+
+<h1>Lesson 0012 — （0-1）分布参数 p 的区间估计与单侧置信区间</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">概率论 · 考研核心考点 · 20 分钟 · 对应教材第 7 章 §6</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  你需要已经会：矩估计/极大似然估计的基本思想、中心极限定理、双侧置信区间的一般求解方法。
+  这一课聚焦（0-1）分布这个最常考的特例。
+</div>
+
+<h2>为什么（0-1）分布值得单独讲</h2>
+<p>
+  （0-1）分布 X ~ Bernoulli(p) 只取两个值：X = 1（事件发生，概率 p）或 X = 0（不发生，概率 1-p）。
+  但现实中<strong>大量问题都可以归结为这个模型</strong>：
+</p>
+<ul>
+  <li>产品合格率（随机抽一个，合格=1，不合格=0）</li>
+  <li>命中率、故障率、犯罪率、感染率……</li>
+  <li>任何"二选一"的问题</li>
+</ul>
+<p>
+  我们的目标是：做了 n 次观测（n 很大），观测到 k 次 1（即 X̄ = k/n），
+  那么 p 的<strong>置信区间</strong>是什么？
+</p>
+
+<h2>前置：（0-1）分布的数字特征</h2>
+<p>这是所有推导的基础，请确认你会：</p>
+<table>
+  <tr><th>量</th><th>公式</th></tr>
+  <tr><td>E(X)（总体均值）</td><td class="math" style="margin:0">p</td></tr>
+  <tr><td>D(X)（总体方差）</td><td class="math" style="margin:0">p(1 − p)</td></tr>
+  <tr><td>样本均值 X̄</td><td class="math" style="margin:0"><span class="frac"><span class="frac-num">1</span><span class="frac-den">n</span></span>ΣXᵢ = k/n</td></tr>
+  <tr><td>E(X̄)（无偏）</td><td class="math" style="margin:0">p</td></tr>
+  <tr><td>D(X̄)（标准误的平方）</td><td class="math" style="margin:0"><span class="frac"><span class="frac-num">p(1 − p)</span><span class="frac-den">n</span></span></td></tr>
+  <tr><td>p 的点估计（矩估计=极大似然）</td><td class="math" style="margin:0">p̂ = X̄ = k/n</td></tr>
+</table>
+
+<h2>双侧置信区间（大样本精确解法）</h2>
+
+<h3>第一步：中心极限定理近似</h3>
+<p>n 很大时（一般 n ≥ 30），由 CLT：</p>
+<div class="math">
+  <span class="frac"><span class="frac-num">X̄ − p</span><span class="frac-den">√(p(1 − p)/n)</span></span> &nbsp;≈&nbsp; N(0, 1)
+</div>
+<p>
+  所以置信水平 1 − α 的双侧置信区间满足：
+</p>
+<div class="math">
+  P( −u<sub>α/2</sub> ≤ <span class="frac"><span class="frac-num">X̄ − p</span><span class="frac-den">√(p(1 − p)/n)</span></span> ≤ u<sub>α/2</sub> ) &nbsp;≈&nbsp; 1 − α
+</div>
+
+<h3>第二步：整理为二次方程</h3>
+<p>关键一步：两边都乘分母、移项、<strong>平方</strong>，就得到关于 p 的<strong>一元二次不等式</strong>：</p>
+<div class="math">
+  (n + u<sub>α/2</sub>²) · p² &nbsp;−&nbsp; (2nX̄ + u<sub>α/2</sub>²) · p &nbsp;+&nbsp; nX̄² &nbsp;≤&nbsp; 0
+</div>
+<p>对应方程：</p>
+<div class="math">
+  A·p² − B·p + C = 0
+</div>
+<table>
+  <tr><th>系数</th><th>表达式</th></tr>
+  <tr><td>A</td><td class="math" style="margin:0">n + u<sub>α/2</sub>²</td></tr>
+  <tr><td>B</td><td class="math" style="margin:0">2nX̄ + u<sub>α/2</sub>²</td></tr>
+  <tr><td>C</td><td class="math" style="margin:0">nX̄²</td></tr>
+</table>
+
+<h3>第三步：解二次方程</h3>
+<p>判别式 Δ = B² − 4AC，两个根：</p>
+<div class="math">
+  p₁,₂ &nbsp;=&nbsp; <span class="frac"><span class="frac-num">B ± √Δ</span><span class="frac-den">2A</span></span>
+</div>
+<p>因为二次项系数 A > 0，所以不等式 A·p² − B·p + C ≤ 0 的解在两根之间：</p>
+<div class="math">
+  <strong>p 的 (1 − α) 双侧置信区间：(p₁, p₂)</strong>
+</div>
+<p>这里 p₁ = (B − √Δ)/(2A) 是<strong>下限</strong>，p₂ = (B + √Δ)/(2A) 是<strong>上限</strong>。</p>
+
+<div class="tip">
+  <span class="tip-label">为什么不直接用 X̄ ± u·σ？</span>
+  近似法是 X̄ ± u<sub>α/2</sub>√(X̄(1 − X̄)/n)，把 p 换成了 X̄。这个在 p 靠近 0.5 时还行，
+  但 p 靠近 0 或 1 时误差大，而且可能出界（小于 0 或大于 1）。精确解法永远在 [0,1] 内，
+  考研应该考精确法。
+</div>
+
+<h2>双侧完整数值例子</h2>
+<p>
+  从一批产品中随机抽检 n = <strong>100</strong> 件，其中 k = <strong>80</strong> 件合格，
+  即 X̄ = 0.8。求 p 的 95% 双侧置信区间。
+</p>
+<p>查表：α = 0.05 时 u<sub>α/2</sub> = u<sub>0.025</sub> = 1.96</p>
+<table>
+  <tr><th>步骤</th><th>计算</th><th>结果</th></tr>
+  <tr><td>u²</td><td>1.96²</td><td>3.8416</td></tr>
+  <tr><td>A</td><td>100 + 3.8416</td><td>103.8416</td></tr>
+  <tr><td>B</td><td>2×100×0.8 + 3.8416 = 160 + 3.8416</td><td>163.8416</td></tr>
+  <tr><td>C</td><td>100×0.8² = 100×0.64</td><td>64</td></tr>
+  <tr><td>Δ</td><td>163.8416² − 4×103.8416×64</td><td>260.60</td></tr>
+  <tr><td>√Δ</td><td>—</td><td>16.143</td></tr>
+  <tr><td>p₁（下限）</td><td>(163.8416 − 16.143)/(2×103.8416)</td><td><strong>0.711</strong></td></tr>
+  <tr><td>p₂（上限）</td><td>(163.8416 + 16.143)/(2×103.8416)</td><td><strong>0.867</strong></td></tr>
+</table>
+<p>
+  <strong>结论</strong>：p 的 95% 双侧置信区间为 (0.711, 0.867)。
+  近似法给 (0.722, 0.878)，比精确法略宽——因为 p 靠近 0.5 所以差别不大。
+</p>
+
+<!-- SVG: 标准正态分布 + 双侧分位点 -->
+<svg class="schematic" viewBox="0 0 520 200" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:1rem auto;max-width:520px;width:100%;">
+  <!-- Fill left area: Z < -1.96 -->
+  <path d="M 50 160 L 98 160 L 98 140 Q 110 138 114 135" fill="var(--accent-light)" />
+  <path d="M 50 160 L 98 160 Q 110 158 114 135 L 102 160 Z" fill="#fce4ec" opacity="0.7" />
+  <!-- Fill right area: Z > 1.96 -->
+  <path d="M 422 160 L 470 160 Q 470 158 458 135 L 422 160 Z" fill="#fce4ec" opacity="0.7" />
+  <!-- Axes -->
+  <line class="axis" x1="50" y1="160" x2="470" y2="160" />
+  <line class="axis" x1="260" y1="40" x2="260" y2="160" />
+  <!-- Bell curve -->
+  <path class="curve" d="M 50 160 Q 80 160 114 135 Q 150 70 200 45 Q 230 40 260 38 Q 290 40 320 45 Q 370 70 406 135 Q 440 160 470 160" />
+  <!-- Critical lines -->
+  <line class="critical" x1="102" y1="160" x2="102" y2="55" />
+  <line class="critical" x1="418" y1="160" x2="418" y2="55" />
+  <!-- Labels -->
+  <text x="260" y="185" text-anchor="middle">Z（标准化统计量）</text>
+  <text x="258" y="175" text-anchor="middle">0</text>
+  <text x="102" y="175" text-anchor="middle">−u<sub>α/2</sub></text>
+  <text x="418" y="175" text-anchor="middle">+u<sub>α/2</sub></text>
+  <text x="260" y="22" text-anchor="middle">N(0,1) 概率密度</text>
+  <!-- Annotations -->
+  <text x="88" y="110" text-anchor="end" style="fill:var(--quiz-wrong);font-size:11px;">α/2</text>
+  <text x="432" y="110" style="fill:var(--quiz-wrong);font-size:11px;">α/2</text>
+  <text x="260" y="125" text-anchor="middle" style="fill:var(--accent);font-size:11px;">1 − α（置信概率）</text>
+</svg>
+
+<h2>单侧置信区间</h2>
+
+<h3>什么时候用单侧</h3>
+<p>
+  双侧置信区间回答的问题是"<strong>p 在某个区间内吗？</strong>"。
+  但很多实际问题只关心<strong>一个方向</strong>：
+</p>
+<ul>
+  <li>"产品合格率 p <strong>至少</strong>是多少？" → 单侧下限</li>
+  <li>"次品率 p <strong>不超过</strong>多少？" → 单侧上限</li>
+  <li>"感染率 <strong>会不会高于</strong>某个警戒线？" → 单侧上限</li>
+</ul>
+
+<h3>单侧下限的推导（P(p ≥ p̂<sub>L</sub>) = 1 − α）</h3>
+<p>关键区别：现在要的是<strong>单边概率</strong>，不是双边：</p>
+<div class="math">
+  P( <span class="frac"><span class="frac-num">X̄ − p</span><span class="frac-den">√(p(1 − p)/n)</span></span> ≤ u<sub>α</sub> ) &nbsp;≈&nbsp; 1 − α
+</div>
+<p>
+  注意：这里用 <strong>u<sub>α</sub></strong> 而不是 u<sub>α/2</sub>——因为 α 全部堆在右边了。
+  整理过程跟双侧完全一样，平方后还是那个关于 p 的二次方程，<strong>只是系数里 u<sub>α/2</sub> 换成了 u<sub>α</sub></strong>：
+</p>
+<table>
+  <tr><th>系数</th><th>双侧用</th><th>单侧用</th></tr>
+  <tr><td>A</td><td>n + u<sub>α/2</sub>²</td><td>n + u<sub>α</sub>²</td></tr>
+  <tr><td>B</td><td>2nX̄ + u<sub>α/2</sub>²</td><td>2nX̄ + u<sub>α</sub>²</td></tr>
+  <tr><td>C</td><td>nX̄²</td><td>nX̄²（不变）</td></tr>
+</table>
+<p>代入 u<sub>α</sub> 算出来两个根，取<strong>较小那个</strong>就是下限 p̂<sub>L</sub>：</p>
+<div class="math">
+  <strong>单侧下限：p̂<sub>L</sub> = (B − √Δ')/(2A)，其中 α 用 u<sub>α</sub></strong>
+</div>
+
+<h3>单侧上限的推导（P(p ≤ p̂<sub>U</sub>) = 1 − α）</h3>
+<p>同理，只要把式子反过来：</p>
+<div class="math">
+  P( <span class="frac"><span class="frac-num">X̄ − p</span><span class="frac-den">√(p(1 − p)/n)</span></span> ≥ −u<sub>α</sub> ) &nbsp;≈&nbsp; 1 − α
+</div>
+<p>还是同一个二次方程，解的较大根就是上限 p̂<sub>U</sub>：</p>
+<div class="math">
+  <strong>单侧上限：p̂<sub>U</sub> = (B + √Δ')/(2A)，其中 α 用 u<sub>α</sub></strong>
+</div>
+
+<!-- SVG: 标准正态分布 + 单侧分位点对比 -->
+<svg class="schematic" viewBox="0 0 520 240" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:1rem auto;max-width:520px;width:100%;">
+  <!-- Top: 单侧下限 -->
+  <text x="260" y="20" text-anchor="middle" style="font-size:13px;font-weight:600;">单侧下限：α 全堆在右边</text>
+  <line class="axis" x1="50" y1="80" x2="470" y2="80" />
+  <path d="M 50 80 Q 80 80 114 60 Q 150 20 200 5 Q 260 0 320 5 Q 370 20 406 60 Q 440 80 470 80" fill="none" stroke="var(--accent)" stroke-width="2"/>
+  <path d="M 50 80 L 388 80 Q 400 78 406 60 L 470 80 Z" fill="#dcfce7" opacity="0.7" />
+  <line class="critical" x1="388" y1="80" x2="388" y2="25" />
+  <text x="388" y="95" text-anchor="middle" style="font-size:11px;">u<sub>α</sub> = 1.645</text>
+  <text x="360" y="65" style="font-size:11px;fill:var(--accent);">1−α</text>
+  <text x="420" y="50" style="font-size:11px;fill:var(--quiz-wrong);">α</text>
+
+  <!-- Bottom: 单侧上限 -->
+  <text x="260" y="125" text-anchor="middle" style="font-size:13px;font-weight:600;">单侧上限：α 全堆在左边</text>
+  <line class="axis" x1="50" y1="185" x2="470" y2="185" />
+  <path d="M 50 185 Q 80 185 114 165 Q 150 125 200 110 Q 260 105 320 110 Q 370 125 406 165 Q 440 185 470 185" fill="none" stroke="var(--accent)" stroke-width="2"/>
+  <path d="M 50 185 L 132 185 Q 120 183 114 165 L 50 185 Z" fill="#dcfce7" opacity="0.7" />
+  <line class="critical" x1="132" y1="185" x2="132" y2="130" />
+  <text x="132" y="200" text-anchor="middle" style="font-size:11px;">−u<sub>α</sub> = −1.645</text>
+  <text x="175" y="170" style="font-size:11px;fill:var(--accent);">1−α</text>
+  <text x="100" y="155" style="font-size:11px;fill:var(--quiz-wrong);">α</text>
+</svg>
+
+<h2>单侧完整数值例子（接着前面的双侧）</h2>
+<p>
+  数据不变：n = 100，X̄ = 0.8。求 p 的 95% 单侧下限和单侧上限。
+</p>
+<p>查表：α = 0.05 时 u<sub>α</sub> = u<sub>0.05</sub> = 1.645</p>
+<table>
+  <tr><th>步骤</th><th>计算</th><th>结果</th></tr>
+  <tr><td>u<sub>α</sub>²</td><td>1.645²</td><td>2.706</td></tr>
+  <tr><td>A</td><td>100 + 2.706</td><td>102.706</td></tr>
+  <tr><td>B</td><td>2×100×0.8 + 2.706 = 160 + 2.706</td><td>162.706</td></tr>
+  <tr><td>C</td><td>100×0.64</td><td>64</td></tr>
+  <tr><td>Δ'</td><td>162.706² − 4×102.706×64</td><td>180.5</td></tr>
+  <tr><td>√Δ'</td><td>—</td><td>13.435</td></tr>
+  <tr><td><strong>单侧下限 p̂<sub>L</sub></strong></td><td>(162.706 − 13.435)/(2×102.706)</td><td><strong>0.727</strong></td></tr>
+  <tr><td><strong>单侧上限 p̂<sub>U</sub></strong></td><td>(162.706 + 13.435)/(2×102.706)</td><td><strong>0.858</strong></td></tr>
+</table>
+
+<h3>对比：三种区间的关系</h3>
+<table>
+  <tr><th>类型</th><th>下限</th><th>上限</th><th>风险分布</th></tr>
+  <tr><td>双侧 95% CI</td><td>0.711</td><td>0.867</td><td>左右各 2.5%</td></tr>
+  <tr><td>单侧 95% 下限</td><td><strong>0.727</strong></td><td>—</td><td>右边 5%</td></tr>
+  <tr><td>单侧 95% 上限</td><td>—</td><td><strong>0.858</strong></td><td>左边 5%</td></tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">关键直觉：单侧比双侧更"紧"</span>
+  单侧下限（0.727）比双侧下限（0.711）更大——因为你只关心"会不会太低"，右边完全放心，
+  所以下限可以更敢说大。同理单侧上限（0.858）比双侧上限（0.867）更小。
+  这是考研常考的选择题选项！
+</div>
+
+<h2>完整解题模板（直接套）</h2>
+<p>考试时按这个模板一步步写：</p>
+<ol>
+  <li><strong>确定统计模型</strong>：Xᵢ ~ Bernoulli(p) 独立同分布</li>
+  <li><strong>点估计</strong>：p̂ = X̄ = k/n</li>
+  <li><strong>用 CLT 近似</strong>：(X̄ − p)/√(p(1−p)/n) ≈ N(0,1)</li>
+  <li>
+    <strong>选分位点</strong>：<br>
+    · 双侧 → u<sub>α/2</sub><br>
+    · 单侧下限 → u<sub>α</sub><br>
+    · 单侧上限 → u<sub>α</sub>（取较大根）
+  </li>
+  <li><strong>写二次方程</strong>：(n+u²)p² − (2nX̄+u²)p + nX̄² = 0</li>
+  <li><strong>求根公式解</strong>：p₁,₂ = (B ± √(B²−4AC))/(2A)</li>
+  <li><strong>结论</strong>：区间 (p₁, p₂)，或单侧下限 p₁ / 上限 p₂</li>
+</ol>
+
+<h2>Quiz</h2>
+<div class="quiz" id="quiz-container"></div>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong> 浙大《概率论与数理统计》第五版 第七章 §6（0-1）分布参数的区间估计。
+  推导完全来自教材，数值例子为新构造（但数值自洽已验证）。
+</div>
+
+<div class="ask-agent">
+  单侧和双侧搞混了？算二次方程卡壳了？想换一组数据手算？<br>
+  <strong>直接问我</strong>。
+</div>
+
+<div class="footer-nav">
+  <span class="lesson-counter">概率论 · Lesson 0012 / 专题</span>
+  <span>
+    <a href="0011-time-series-analysis.html">← 上一课</a>
+    · <a href="../MISSION.md">Mission</a> · <a href="../RESOURCES.md">Resources</a>
+  </span>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "（0-1）分布参数 p 的区间估计中，双侧置信区间推导时用的分位点是？",
+    options: ["u_α", "u_{α/2}", "u_{1−α}", "t_{α/2}(n−1)"],
+    correct: 1,
+    explain: "双侧把 α 风险分到两边，各 α/2，所以用 u_{α/2}。单侧才用 u_α。"
+  },
+  {
+    q: "数据 n=100, X̄=0.8, α=0.05。单侧 95% 下限和双侧 95% 下限的关系是？",
+    options: ["单侧下限 < 双侧下限", "单侧下限 = 双侧下限", "单侧下限 > 双侧下限", "无法确定"],
+    correct: 2,
+    explain: "单侧下限把所有风险放右边，左边零风险，所以下限可以更大（0.727 > 0.711）。这是关键直觉。"
+  },
+  {
+    q: "（0-1）分布 p 的精确置信区间为什么要解二次方程，而不是用 X̄ ± u·σ̂？",
+    options: ["因为精确解永远在 [0,1] 内，近似法可能出界且误差大", "因为二次方程更简单好算", "因为考研不考近似法", "因为 CLT 不允许用近似法"],
+    correct: 0,
+    explain: "近似法把 p 换成 p̂，在 p 靠近 0 或 1 时误差显著，而且可能算出 <0 或 >1。精确解是闭区间推导，永远在 [0,1] 内。"
+  },
+  {
+    q: "抽检 n=100, 40 件合格 (X̄=0.4)。p 的 95% 单侧上限 p̂_U 约为多少？(u_α=1.645)",
+    options: ["0.482", "0.450", "0.323", "0.550"],
+    correct: 0,
+    explain: "A=100+1.645²=102.706, B=2×100×0.4+2.706=82.706, C=100×0.16=16。Δ=B²-4AC=6840.3-6573.2=267.1, √Δ≈16.34。p̂_U=(B+√Δ)/(2A)=(82.706+16.34)/(2×102.706)=99.046/205.412≈0.482。注意 C 选项 0.323 是单侧下限，别搞反。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = [];
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+});
+</script>
+
+</body>
+</html>
