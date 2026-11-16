@@ -139,8 +139,8 @@ th { background: var(--code-bg); font-weight: 600; }
 </p>
 
 <div class="circuit">
-  <svg class="schematic" viewBox="0 0 520 285" role="img" aria-label="NPN 三极管输入特性曲线：U_CE 为 0 与大于 1V 两条曲线">
-    <title>输入特性：I_B 随 U_BE 变化，U_CE 增大时曲线略微右移</title>
+  <svg class="schematic" viewBox="0 0 520 285" role="img" aria-label="NPN 三极管输入特性曲线：U_CE=0 的曲线在左，U_CE 大于 1V 的曲线略向右移">
+    <title>输入特性：I_B 随 U_BE 变化；U_CE 增大时曲线略微右移</title>
     <line class="wire thin" x1="70" y1="230" x2="470" y2="230"/>
     <polygon points="470,224 470,236 484,230" fill="#1a1a1a"/>
     <line class="wire thin" x1="70" y1="230" x2="70" y2="46"/>
@@ -152,13 +152,13 @@ th { background: var(--code-bg); font-weight: 600; }
     <line class="wire thin" x1="378" y1="230" x2="378" y2="236"/>
     <text x="378" y="252" text-anchor="middle" class="lbl">0.7</text>
 
-    <line class="wire thin" x1="90" y1="62" x2="126" y2="62" stroke="var(--accent)"/>
+    <line class="wire thin" x1="90" y1="62" x2="126" y2="62" style="stroke:var(--accent)"/>
     <text x="134" y="68" class="lbl">U_CE ≥ 1 V</text>
-    <line class="wire thin" x1="90" y1="88" x2="126" y2="88" stroke="var(--accent)" stroke-dasharray="6 4"/>
+    <line class="wire thin" x1="90" y1="88" x2="126" y2="88" style="stroke:var(--accent)" stroke-dasharray="6 4"/>
     <text x="134" y="94" class="lbl">U_CE = 0</text>
 
-    <path class="wire" d="M70,230 L250,229 C285,228 315,224 335,214 C355,202 362,150 366,60" stroke="var(--accent)"/>
-    <path class="wire ideal" d="M70,230 L262,229 C297,228 327,224 347,214 C367,202 374,150 378,60" stroke="var(--accent)"/>
+    <path class="wire" d="M70,230 L262,229 C297,228 327,224 347,214 C367,202 374,150 378,60" style="stroke:var(--accent)"/>
+    <path class="wire ideal" d="M70,230 L250,229 C285,228 315,224 335,214 C355,202 362,150 366,60" style="stroke:var(--accent)"/>
 
     <text x="270" y="276" text-anchor="middle" class="lbl">硅管：0.5 V 开始导通，0.7 V 后急剧上升</text>
   </svg>
@@ -169,6 +169,45 @@ th { background: var(--code-bg); font-weight: 600; }
   原因是 U<sub>CE</sub> 变大后集电结耗尽层变宽、基区有效宽度变窄，复合减少，
   同样的 U<sub>BE</sub> 下 I<sub>B</sub> 略小一点。考研只在概念题里考这一句，不会让你算。
 </p>
+
+<h3>温度对输入特性的影响：整条曲线左移</h3>
+
+<p>
+  温度升高，发射结的扩散电流更容易流过，<strong>同样的 U<sub>BE</sub> 下 I<sub>B</sub> 变大</strong>；
+  画在同一条 U<sub>BE</sub> 轴上，就是曲线<strong>整体向左移动</strong>。
+  定量只需记一句：温度每升高 1 °C，维持同一 I<sub>B</sub> 所需的 U<sub>BE</sub> 下降约 <strong>2 ~ 2.5 mV</strong>。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 300" role="img" aria-label="温度对三极管输入特性的影响：20、50、80 摄氏度三条曲线依次向左移动">
+    <title>温度升高时输入特性曲线左移，同一 I_B 所需 U_BE 降低</title>
+    <line class="wire thin" x1="70" y1="230" x2="470" y2="230"/>
+    <polygon points="470,224 470,236 484,230" fill="#1a1a1a"/>
+    <line class="wire thin" x1="70" y1="230" x2="70" y2="46"/>
+    <polygon points="64,46 76,46 70,32" fill="#1a1a1a"/>
+    <text x="478" y="256" text-anchor="end" class="lbl">U_BE / V</text>
+    <text x="56" y="54" text-anchor="end" class="lbl">I_B</text>
+    <text x="62" y="250" class="lbl">0</text>
+    <line class="wire thin" x1="380" y1="230" x2="380" y2="236"/>
+    <text x="380" y="250" text-anchor="middle" class="lbl">0.7</text>
+
+    <line class="wire thin" x1="92" y1="64" x2="128" y2="64" style="stroke:#1a1a1a"/>
+    <text x="136" y="70" class="lbl">20 °C</text>
+    <line class="wire thin" x1="92" y1="88" x2="128" y2="88" style="stroke:var(--accent)"/>
+    <text x="136" y="94" class="lbl">50 °C</text>
+    <line class="wire thin" x1="92" y1="112" x2="128" y2="112" style="stroke:#c0392b"/>
+    <text x="136" y="118" class="lbl">80 °C</text>
+
+    <path class="wire" d="M70,227 L258,226 C293,225 323,221 343,211 C365,199 374,157 380,67" style="stroke:#1a1a1a"/>
+    <path class="wire" d="M70,227 L244,226 C279,225 309,221 329,211 C351,199 360,157 366,67" style="stroke:var(--accent)"/>
+    <path class="wire" d="M70,227 L230,226 C265,225 295,221 315,211 C337,199 346,157 352,67" style="stroke:#c0392b"/>
+
+    <line class="wire thin" x1="352" y1="268" x2="380" y2="268"/>
+    <polygon points="352,263 352,273 346,268" fill="#1a1a1a"/>
+    <polygon points="380,263 380,273 386,268" fill="#1a1a1a"/>
+    <text x="366" y="290" text-anchor="middle" class="lbl">ΔU_BE ≈ 0.15 V（60 °C 温差）</text>
+  </svg>
+</div>
 
 <div class="tip">
   <span class="tip-label">这条曲线真正给你的东西</span>
