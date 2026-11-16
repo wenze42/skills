@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0006 — 泊松过程与维纳过程</title>
+<link rel="stylesheet" href="../assets/teach.css">
+<style>
+.schematic { display: block; width: 100%; max-width: 560px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-size: 16px; fill: var(--text);
+}
+.schematic .lbl { font-size: 14px; fill: var(--text-light); }
+.schematic .main-curve { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.schematic .thin-curve { fill: none; stroke: #718096; stroke-width: 1.2; stroke-linecap: round; }
+.schematic .axis { stroke: var(--text); stroke-width: 1.5; fill: none; }
+.schematic .tick { stroke: var(--text); stroke-width: 1.2; }
+.schematic .poisson-step { fill: none; stroke: var(--accent); stroke-width: 2.8; stroke-linejoin: round; }
+.schematic .marker { fill: var(--accent); }
+.schematic .wiener { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+</style>
+</head>
+<body>
+
+<h1>Lesson 0006 — 泊松过程与维纳过程</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">概率论 · 两个最重要的独立增量过程 · 约 40 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">两个极端但互补的独立增量过程</span>
+  泊松过程<strong>只能跳跃取整数值</strong>（计数来了多少次）；
+  维纳过程<strong>只能连续变化</strong>（布朗运动粒子位置）。
+  它们是独立增量 + 时齐这两条公理下最基础、最常用的两个特例——也是考研考频最高的两个过程。
+</div>
+
+<h2>一、计数过程</h2>
+
+<p>
+  设 N(t) 表示在 [0, t] 内某种"事件"发生的次数（如电话总机来话数、放射性衰变粒子数、
+  医院急诊接诊数）。则 {N(t), t ≥ 0} 称为<strong>计数过程</strong>，它满足：
+</p>
+<ul>
+  <li>N(0) = 0（初始时刻事件数为零）</li>
+  <li>N(t) 是取值在 {0, 1, 2, …} 上的整数变量（离散状态）</li>
+  <li>N(t) 关于 t 单调不减（次数只增不减）</li>
+  <li>s < t ⟹ N(t) − N(s) = (s, t] 内事件发生的次数</li>
+</ul>
+
+<h2>二、泊松过程——计数世界的"黄金标准"</h2>
+
+<p>
+  如果一个计数过程满足以下三条公理，它就是<strong>强度为 λ 的泊松过程</strong>（λ > 0，常数）：
+</p>
+
+<div class="math">
+公理 ① <strong>独立增量</strong>：对任意 t₁ < t₂ ≤ t₃ < t₄，
+        N(t₂) − N(t₁) 与 N(t₄) − N(t₃) 相互独立。
+<br>公理 ② <strong>增量分布</strong>：对任意 s < t，
+        N(t) − N(s) ~ P(λ(t − s))（参数为 λ(t − s) 的泊松分布）。
+<br>公理 ③ 初始条件 N(0) = 0。
+</div>
+
+<p>
+  三条公理合起来，意味着：<strong>事件以平均速率 λ 均匀地、独立地、随机地到来</strong>。
+  λ 越大，单位时间内平均到来的事件越多——它是整个过程的"节拍"。
+</p>
+
+<svg class="schematic" viewBox="0 0 560 280" role="img">
+  <title>泊松过程的样本函数——阶梯状只向上跳</title>
+  <!-- 坐标轴 -->
+  <line class="axis" x1="70" y1="240" x2="530" y2="240"/>
+  <polygon points="530,234 530,246 544,240" fill="#1a1a1a"/>
+  <line class="axis" x1="70" y1="240" x2="70" y2="30"/>
+  <polygon points="64,30 76,30 70,16" fill="#1a1a1a"/>
+  <text x="540" y="260" text-anchor="end" class="lbl">时间 t</text>
+  <text x="56" y="40" text-anchor="end" class="lbl">N(t)</text>
+  <text x="62" y="250" class="lbl">0</text>
+
+  <!-- y 刻度：0 到 6 -->
+  <line class="tick" x1="66" y1="205" x2="70" y2="205"/>
+  <text x="56" y="209" text-anchor="end" class="lbl">1</text>
+  <line class="tick" x1="66" y1="170" x2="70" y2="170"/>
+  <text x="56" y="174" text-anchor="end" class="lbl">2</text>
+  <line class="tick" x1="66" y1="135" x2="70" y2="135"/>
+  <text x="56" y="139" text-anchor="end" class="lbl">3</text>
+  <line class="tick" x1="66" y1="100" x2="70" y2="100"/>
+  <text x="56" y="104" text-anchor="end" class="lbl">4</text>
+  <line class="tick" x1="66" y1="65" x2="70" y2="65"/>
+  <text x="56" y="69" text-anchor="end" class="lbl">5</text>
+
+  <!-- 泊松过程阶梯曲线：在 t=0 开始为0，依次在某几个时刻跳升 -->
+  <!-- 跳跃时刻约在 t=50, 140, 210, 290, 370, 450 共跳6次 -->
+  <!-- 每段水平段 y 值不变，遇到跳跃点竖直上升35px -->
+  <polyline class="poisson-step"
+    points="70,240 110,240 110,205 190,205 190,170 250,170 250,135 330,135 330,100 410,100 410,65 530,65"/>
+
+  <!-- 跳跃点标记 -->
+  <circle class="marker" cx="110" cy="205" r="4"/>
+  <circle class="marker" cx="190" cy="170" r="4"/>
+  <circle class="marker" cx="250" cy="135" r="4"/>
+  <circle class="marker" cx="330" cy="100" r="4"/>
+  <circle class="marker" cx="410" cy="65" r="4"/>
+
+  <text x="300" y="275" text-anchor="middle" class="lbl">N(t) 在事件发生时刻跳跃 +1，其余时间保持不变</text>
+  <text x="300" y="28" text-anchor="middle" class="lbl">强度 λ 控制跳跃频率（平均单位时间跳跃 λ 次）</text>
+</svg>
+
+<h3>2.1 泊松过程的数字特征</h3>
+
+<p>
+  由公理 ②，N(t) ~ P(λt)（即 N(t) = N(t) − N(0)），直接得到：
+</p>
+
+<div class="math">
+均值函数：E[N(t)] = λ t
+<br>方差函数：D[N(t)] = λ t  ← <strong>均值 = 方差</strong>，这是泊松分布的"散弹噪声"特征
+</div>
+
+<p>
+  下面推导协方差和自相关。对 s ≤ t：
+</p>
+<ul>
+  <li>N(t) = N(s) + (N(t) − N(s))</li>
+  <li>由独立增量，N(s) 与 N(t) − N(s) 独立</li>
+  <li>Cov(N(s), N(t)) = Cov(N(s), N(s)) + Cov(N(s), N(t)−N(s)) = D[N(s)] + 0 = λs</li>
+</ul>
+
+<div class="math">
+协方差函数：C<sub>N</sub>(s, t) = λ · min(s, t)
+<br>自相关函数：R<sub>N</sub>(s, t) = λ² s t + λ · min(s, t)
+</div>
+
+<p>
+  当 s = t 时，D[N(t)] = C<sub>N</sub>(t, t) = λt，与之前结果一致 ✅
+</p>
+
+<h3>2.2 等待时间——Γ 分布登场</h3>
+
+<p>
+  记 W<sub>n</sub> 为第 n 个事件出现的<strong>绝对时刻</strong>（即等待了多久第 n 个事件才来），
+  则有：
+</p>
+
+<div class="math">
+W<sub>n</sub> = min{ t > 0 : N(t) ≥ n }
+<br>W<sub>n</sub> ~ Γ(n, λ)  ← 参数为 (n, λ) 的伽马分布
+</div>
+
+<p>
+  特别地，当 n = 1 时：
+</p>
+
+<div class="math">
+W₁ ~ Exp(λ)  ← 首次等待时间服从指数分布
+</div>
+
+<h3>2.3 点间间距——无记忆性的源泉</h3>
+
+<p>
+  记 T<sub>i</sub> = W<sub>i</sub> − W<sub>i−1</sub>（令 W₀ = 0）为第 i−1 个到第 i 个事件之间的<strong>时间间隔</strong>，
+  则：
+</p>
+
+<div class="math">
+T₁, T₂, T₃, …  独立同分布 Exp(λ)
+</div>
+
+<p>
+  这个结论<strong>反过来</strong>也成立：若点间间距独立同 Exp(λ)，则计数过程一定是泊松过程。
+  这是泊松过程的一个<strong>等价定义</strong>，在许多实际建模中更直观（"顾客到来的间隔时间是独立同指数"）。
+</p>
+
+<div class="tip">
+  <span class="tip-label">指数分布的无记忆性——为什么重要</span>
+  指数分布 P(T > s + t | T > s) = P(T > t)，即"已经等了 s 时间还没发生事件，
+  那剩下还要等多久的分布和从来没等过一样"。
+  这完美解释了泊松过程的独立增量性——事件到来与过去发生过什么完全无关。
+</div>
+
+<h2>三、维纳过程（布朗运动）</h2>
+
+<p>
+  1827 年布朗观察到：花粉粒在水中的运动是连续的、不规则的、永远不停的——
+  这就是<strong>布朗运动</strong>。1905 年爱因斯坦用分子碰撞给出物理解释，
+  1923 年维纳用严格的概率语言定义了它：
+</p>
+
+<div class="math">
+过程 {W(t), t ≥ 0} 是 <strong>σ² 维纳过程</strong>，若满足：
+<br>① 独立增量：不重叠区间增量相互独立
+<br>② 增量正态：对任意 s ≤ t，W(t) − W(s) ~ N(0, σ²(t − s))
+<br>③ W(0) = 0，且 W(t) 的样本函数<strong>几乎处处连续</strong>
+</div>
+
+<svg class="schematic" viewBox="0 0 560 300" role="img">
+  <title>维纳过程的样本函数——连续但处处不可微的锯齿状轨迹</title>
+  <!-- 坐标轴 -->
+  <line class="axis" x1="70" y1="260" x2="530" y2="260"/>
+  <polygon points="530,254 530,266 544,260" fill="#1a1a1a"/>
+  <line class="axis" x1="70" y1="260" x2="70" y2="26"/>
+  <polygon points="64,26 76,26 70,12" fill="#1a1a1a"/>
+  <text x="540" y="280" text-anchor="end" class="lbl">时间 t</text>
+  <text x="56" y="34" text-anchor="end" class="lbl">W(t)</text>
+
+  <!-- 零线 -->
+  <line class="thin-curve" x1="70" y1="200" x2="530" y2="200" stroke-dasharray="4 3" stroke="#cbd5e0"/>
+  <text x="62" y="204" text-anchor="end" class="lbl">0</text>
+
+  <!-- 维纳过程样本曲线——用多段随机折线模拟连续但不可微 -->
+  <!-- 用一串贝塞尔曲线模拟锯齿感 -->
+  <path class="wiener" d="M70,200 
+    C90,180 110,220 130,190
+    C150,160 170,200 190,170
+    C210,140 230,180 250,150
+    C270,120 290,160 310,130
+    C330,100 350,140 370,110
+    C390,130 410,90 430,120
+    C450,150 470,110 490,140
+    C510,170 530,130 530,140"/>
+
+  <!-- 用折线叠加一个更锯齿的版本 -->
+  <path class="thin-curve" d="M70,200 
+    L90,185 L100,210 L115,195 L130,205
+    L150,170 L165,195 L180,160 L195,180
+    L215,140 L225,170 L240,145 L255,160
+    L275,110 L290,155 L305,120 L320,140
+    L340,85 L355,130 L370,95 L385,115
+    L405,155 L415,125 L430,165 L445,140
+    L465,175 L475,150 L490,180 L510,155 L530,140"/>
+
+  <text x="300" y="35" text-anchor="middle" class="lbl">连续样本，看似"光滑"实则处处不可微</text>
+  <text x="300" y="295" text-anchor="middle" class="lbl">W(t) ~ N(0, σ²t)，方差随 t 线性增大</text>
+</svg>
+
+<h3>3.1 维纳过程的数字特征</h3>
+
+<p>
+  由 W(t) = W(t) − W(0) ~ N(0, σ²t)，直接得：
+</p>
+
+<div class="math">
+均值函数：E[W(t)] = 0  ← <strong>永远零均值</strong>，这叫"鞅性质"
+<br>方差函数：D[W(t)] = σ² t
+<br>协方差函数：C<sub>W</sub>(s, t) = σ² · min(s, t)
+</div>
+
+<p>
+  协方差推导与泊松过程完全相同——利用 W(t) = W(s) + (W(t)−W(s)) 和独立增量。
+</p>
+
+<h3>3.2 维纳过程是正态过程</h3>
+
+<p>
+  任意有限时刻 t₁ < t₂ < … < tₙ，(W(t₁), W(t₂), …, W(tₙ)) 是多维正态。
+  为什么？因为：
+</p>
+<ul>
+  <li>每个 W(tₖ) 是增量的和：W(tₖ) = [W(t₁)] + [W(t₂)−W(t₁)] + … + [W(tₖ)−W(tₖ₋₁)]</li>
+  <li>每个增量 W(tᵢ)−W(tᵢ₋₁) 独立且正态</li>
+  <li>独立正态变量的线性组合仍是正态 ⇒ 联合正态</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">正态过程的"极简定理"再次生效</span>
+  维纳过程 = 零均值 + C<sub>W</sub>(s,t) = σ² min(s,t)。
+  抓住这两个函数，就抓住了它所有的有限维分布、所有的统计性质。
+</div>
+
+<h2>四、两者对比</h2>
+
+<table>
+  <tr><th>性质</th><th>泊松过程 N(t)</th><th>维纳过程 W(t)</th></tr>
+  <tr>
+    <td>状态空间</td>
+    <td>离散 {0, 1, 2, …}</td>
+    <td>连续 ℝ</td>
+  </tr>
+  <tr>
+    <td>样本函数</td>
+    <td>阶梯状，只向上跳</td>
+    <td>连续但处处不可微</td>
+  </tr>
+  <tr>
+    <td>增量分布</td>
+    <td>泊松 P(λΔt)</td>
+    <td>正态 N(0, σ²Δt)</td>
+  </tr>
+  <tr>
+    <td>均值函数</td>
+    <td>λ t</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>方差函数</td>
+    <td>λ t (= 均值)</td>
+    <td>σ² t</td>
+  </tr>
+  <tr>
+    <td>协方差 C(s,t)</td>
+    <td>λ · min(s,t)</td>
+    <td>σ² · min(s,t)</td>
+  </tr>
+  <tr>
+    <td>独立增量</td>
+    <td>✅</td>
+    <td>✅</td>
+  </tr>
+  <tr>
+    <td>时齐</td>
+    <td>✅</td>
+    <td>✅</td>
+  </tr>
+  <tr>
+    <td>正态过程</td>
+    <td>❌</td>
+    <td>✅</td>
+  </tr>
+</table>
+
+<p>
+  注意它们的协方差函数<strong>形式完全一样</strong>，只是系数（λ vs σ²）不同。
+  这不是巧合——独立增量 + 时齐 + 连续参数过程的协方差必然长成 σ² min(s,t) 的样子，
+  差别只在增量的分布类型。
+</p>
+
+<h2>五、考研高频结论速记</h2>
+
+<h3>泊松过程必背</h3>
+<ul>
+  <li>E[N(t)] = D[N(t)] = λ t</li>
+  <li>N(t) ~ P(λ t)</li>
+  <li>首次等待 W₁ ~ Exp(λ)，第 n 次等待 Wₙ ~ Γ(n, λ)</li>
+  <li>点间间距 T<sub>i</sub> ~ Exp(λ)，独立同分布</li>
+  <li>条件 N(t) = n 下，n 个事件的发生时刻 W₁, …, Wₙ 的分布等价于 n 个独立 U(0,t) 顺序统计量</li>
+</ul>
+
+<h3>维纳过程必背</h3>
+<ul>
+  <li>W(t) ~ N(0, σ² t)</li>
+  <li>Cov(W(s), W(t)) = σ² min(s, t)</li>
+  <li>样本函数连续，但处处不可微</li>
+  <li>正态过程，完全由均值=0 和协方差函数决定</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">N(t) = n 下事件发生时刻的条件分布</span>
+  在已知 [0, t] 内发生了 n 个事件的条件下，这 n 个事件的发生时刻在 [0, t] 上<strong>独立均匀</strong>。
+  这是泊松过程一个非常有用的性质，考研中偶尔考填空题。
+</div>
+
+<h2>六、课堂测验</h2>
+
+<div class="quiz" id="quiz-container"></div>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong> Sheldon Ross《随机过程》（第 2 版）第 2-6 章。
+  Ross 用大量直观例子驱动定义推导，特别适合建立泊松过程和维纳过程的直觉。
+</div>
+
+<div class="footer-nav">
+  <a href="./0005-stochastic-process-basics.html">← 上一课：随机过程基本概念</a>
+  <span class="lesson-counter">概率论 · Lesson 0006 / ∞</span>
+  <a href="./0007-markov-chain-def-and-transition.html">下一课：马尔可夫链 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "设 N(t) 是强度为 λ = 2 的泊松过程。求 E[N(5)] 和 D[N(5)]。",
+    options: [
+      "E=10, D=10",
+      "E=10, D=20",
+      "E=2, D=2",
+      "E=5, D=5"
+    ],
+    correct: 0,
+    explain: "泊松过程 E[N(t)] = D[N(t)] = λ t。这里 λ=2, t=5，所以 E=D=2×5=10。均值=方差是泊松过程的标志性特征，记住就能秒杀。"
+  },
+  {
+    q: "某电话总机来话是强度 λ = 3/分钟的泊松过程。已知在某两分钟内来了6通电话，那在这两分钟的第一分钟内来4通、第二分钟内来2通的概率是？",
+    options: [
+      "P(N(1)=4)·P(N(2)−N(1)=2) = P(3)·P(3)",
+      "二项分布 B(6, 1/2) = C(6,4)(1/2)⁶",
+      "P(N(2)=6 | N(1)=4)·P(N(1)=4)",
+      "题目条件不足，算不出"
+    ],
+    correct: 1,
+    explain: "由条件分布性质：已知 N(2)=6，6 个事件在 [0,2] 上均匀独立。每个事件落在 [0,1] 的概率是 1/2，所以落在前 4 个在后 2 个的概率是 C(6,4)·(1/2)⁶。这比用泊松分布乘积简单得多，注意增量独立性在这里起了关键作用。"
+  },
+  {
+    q: "设 W(t) 是标准维纳过程（σ² = 1）。求 Cov(W(3), W(5))。",
+    options: [
+      "0",
+      "3",
+      "5",
+      "15"
+    ],
+    correct: 1,
+    explain: "维纳过程协方差 Cov(W(s), W(t)) = σ² min(s,t)。这里 σ²=1，min(3,5)=3，所以 Cov=3。推导：W(5)=W(3)+(W(5)−W(3))，由独立增量 Cov(W(3), W(5)) = Cov(W(3), W(3)) + Cov(W(3), W(5)−W(3)) = 3 + 0 = 3。"
+  },
+  {
+    q: "关于维纳过程，下列说法<strong>错误</strong>的是？",
+    options: [
+      "W(t) 的样本函数是连续的",
+      "W(t) 是正态过程，有限维分布由均值和协方差完全决定",
+      "对任意 s ≠ t，W(s) 与 W(t) 相互独立",
+      "W(t) − W(s) 与 W(s) 独立（s < t）"
+    ],
+    correct: 2,
+    explain: "❌ 错误说法是 C。W(s) 与 W(t)（s < t）通过协方差 σ²·min(s,t)=σ²s 相关，只有 W(s) 与 W(t)−W(s) 这两个增量独立。A 正确（维纳过程定义要求样本连续）；B 正确（正态过程定理）；D 正确（独立增量公理）。容易混淆的是"W(s) 与增量独立"≠"W(s) 与 W(t) 独立"。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！泊松和维纳两个独立增量过程已掌握，可以进马尔可夫链了。' :
+        right >= 2 ? '👍 不错。重点把"均值=方差"和"协方差=min(s,t)"两个特征记牢。' :
+        '📚 回看两条公理的推导——E[N(t)]=λt 和 Cov(W(s),W(t))=σ²min(s,t) 都来自独立增量。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

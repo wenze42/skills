@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 0009 — 平稳随机过程与各态历经性</title>
+<link rel="stylesheet" href="../assets/teach.css">
+<style>
+.schematic {
+  display: block;
+  margin: 1.5rem auto;
+  max-width: 640px;
+  height: auto;
+}
+.schematic-label {
+  text-align: center;
+  font-size: 0.85em;
+  color: var(--text-light);
+  margin-top: -0.5rem;
+  margin-bottom: 1.5rem;
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0009 — 平稳随机过程与各态历经性</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">随机过程专题 · 考研拓展 · 约 25 分钟</p>
+
+<h2>为什么需要平稳性</h2>
+<p>
+  随机过程是随时间演化的一族随机变量 <code>{X(t), t∈T}</code>。但对于一个过程，我们需要回答：
+  <strong>"它的统计规律是否随时间变化？"</strong>
+</p>
+<p>
+  平稳性就是对这个问题的回答。它是随机过程中最重要的概念之一——只有当一个过程是平稳的，
+  我们才能用<strong>有限的样本数据</strong>去推断它的<strong>长期统计规律</strong>。
+</p>
+<p>平稳性分为两个层次：严平稳（强平稳）和宽平稳（弱平稳）。</p>
+
+<h2>严平稳（强平稳）</h2>
+
+<h3>定义</h3>
+<p>
+  如果随机过程 <code>{X(t), t∈T}</code> 的<strong>任意有限维分布</strong>在时间平移下保持不变，
+  则称该过程是<strong>严平稳</strong>的。
+</p>
+
+<div class="math">
+  F(t₁+τ, t₂+τ, ..., tₙ+τ; x₁, x₂, ..., xₙ) = F(t₁, t₂, ..., tₙ; x₁, x₂, ..., xₙ)
+</div>
+
+<p>
+  对任意正整数 n、任意时间点 t₁,...,tₙ∈T、任意实数 τ，分布函数都相同。
+  这意味着：把整个过程"平移"任意时间，它的统计性质完全不变。
+</p>
+
+<div class="tip">
+  <span class="tip-label">直观理解</span>
+  严平稳过程没有"起点"——它从无穷久远开始，到无穷远后结束，永远以同样的统计方式变化。
+  比如热噪声、电力负荷的日周期分量（取合适的时间尺度后）。
+</div>
+
+<h2>宽平稳（二阶矩平稳）</h2>
+
+<h3>定义</h3>
+<p>
+  严平稳要求太强（所有有限维分布都不变），实际中更常用的是<strong>宽平稳</strong>，它只要求二阶矩满足三个条件：
+</p>
+
+<ol>
+  <li><strong>均值函数是常数</strong>：<code>E[X(t)] = μ_X</code>（不随 t 变化）</li>
+  <li><strong>自相关函数仅依赖时间差</strong>：<code>R_X(t, t+τ) = R_X(τ)</code>（不依赖 t，只依赖间隔 τ）</li>
+  <li><strong>二阶矩存在</strong>：<code>E[X²(t)] < ∞</code></li>
+</ol>
+
+<div class="tip">
+  <span class="tip-label">两者的关系</span>
+  <ul>
+    <li>严平稳 + 二阶矩存在 ⇒ 宽平稳</li>
+    <li>宽平稳 ⇏ 严平稳（反例存在）</li>
+    <li><strong>正态过程例外</strong>：宽平稳 ⇔ 严平稳（正态分布完全由一、二阶矩决定）</li>
+  </ul>
+</div>
+
+<h2>自相关函数的基本性质</h2>
+
+<p>自相关函数 <code>R_X(τ) = E[X(t)X(t+τ)]</code> 是宽平稳过程最重要的数字特征，
+它有一系列深刻的性质：</p>
+
+<h3>① R_X(0) = 平均功率</h3>
+
+<div class="math">
+  R_X(0) = E[X(t)X(t)] = E[X²(t)]
+</div>
+
+<p>这是信号的<strong>平均功率</strong>——信号幅度平方的时间平均期望。</p>
+
+<h3>② 偶函数性质</h3>
+
+<div class="math">
+  R_X(-τ) = R_X(τ)
+</div>
+
+<p>
+  证明：<code>R_X(-τ) = E[X(t)X(t-τ)] = E[X(t-τ)X(t)] = R_X(t-τ, t) = R_X(τ)</code>（宽平稳性保证只依赖时间差）。
+  所以自相关函数关于 τ=0 对称。
+</p>
+
+<h3>③ 柯西-施瓦茨不等式</h3>
+
+<div class="math">
+  |R_X(τ)| ≤ R_X(0)
+</div>
+
+<p>自相关函数在 τ=0 处取得最大值（绝对值意义上）。时间间隔越大，相关性越弱。</p>
+
+<h3>④ 非负定性</h3>
+
+<p>对任意实数 <code>t₁, t₂, ..., tₙ</code> 和任意函数 g(t)，有：</p>
+
+<div class="math">
+  Σᵢ Σⱼ R_X(tᵢ - tⱼ) · g(tᵢ) · g(tⱼ) ≥ 0
+</div>
+
+<p>这意味着以 <code>R_X(tᵢ - tⱼ)</code> 为元素的矩阵是半正定的。这是平稳过程能通过谱表示的理论基础。</p>
+
+<h2>各态历经性（遍历性）</h2>
+
+<p>
+  平稳性告诉我们"所有时刻的统计规律相同"，但这还不够。实际中我们只有<strong>一条样本曲线</strong>
+  （一段观测数据）。能否用这一条曲线来推断整个过程的统计性质？
+</p>
+
+<p>这就是<strong>各态历经性</strong>（Ergodicity）要回答的核心问题。</p>
+
+<h3>时间平均 vs 统计平均</h3>
+
+<p>对任意一条样本曲线 <code>x(t)</code>，我们可以计算它的<strong>时间平均</strong>：</p>
+
+<div class="math">
+  ⟨X⟩ = lim_{T→∞} 1/T ∫₀ᵀ x(t) dt
+</div>
+
+<p>而过程的<strong>统计平均</strong>（期望）是：</p>
+
+<div class="math">
+  E[X(t)] = μ_X
+</div>
+
+<h3>定义</h3>
+<p>
+  如果宽平稳过程的<strong>时间平均以概率 1 等于统计平均</strong>，则称过程具有<strong>各态历经性</strong>：
+</p>
+
+<ul>
+  <li><strong>均值各态历经</strong>：<code>lim_{T→∞} 1/T ∫₀ᵀ X(t) dt = μ_X</code>（w.p.1）</li>
+  <li><strong>自相关各态历经</strong>：<code>lim_{T→∞} 1/T ∫₀ᵀ X(t)X(t+τ) dt = R_X(τ)</code>（w.p.1）</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">为什么"各态历经"</span>
+  直观含义：随着时间推移，一条样本曲线会"经历"过程的<strong>所有可能状态</strong>，
+  因此它的时间平均就能代表整个过程的统计平均。
+  如果过程是非各态历经的，那不同样本曲线可能给出完全不同的统计结果。
+</div>
+
+<h3>随机相位正弦波的例子</h3>
+
+<p>考虑过程 <code>X(t) = cos(ω₀t + Φ)</code>，其中 Φ ~ U(0, 2π)。这是一个经典的平稳过程，
+让我们来验证它的各态历经性。</p>
+
+<div class="math">
+  统计平均：E[X(t)] = ∫₀^{2π} cos(ω₀t + φ) · 1/(2π) dφ = 0
+</div>
+
+<p>对任意一条样本曲线（固定一个相位 φ₀），它的时间平均：</p>
+
+<div class="math">
+  时间平均：lim_{T→∞} 1/T ∫₀ᵀ cos(ω₀t + φ₀) dt = 0
+</div>
+
+<p>两者相等！所以这个过程是均值各态历经的。下面的 SVG 展示了两条不同相位的样本曲线：</p>
+
+<svg class="schematic" viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景网格 -->
+  <rect x="40" y="40" width="560" height="220" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+  <!-- 水平网格线 -->
+  <line x1="40" y1="95" x2="600" y2="95" stroke="#f1f5f9" stroke-width="1"/>
+  <line x1="40" y1="150" x2="600" y2="150" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="40" y1="205" x2="600" y2="205" stroke="#f1f5f9" stroke-width="1"/>
+  <!-- 坐标轴 -->
+  <line x1="40" y1="40" x2="40" y2="260" stroke="#1a1a1a" stroke-width="1.5"/>
+  <line x1="40" y1="150" x2="600" y2="150" stroke="#1a1a1a" stroke-width="1.5"/>
+  <!-- 轴标签 -->
+  <text x="30" y="45" font-size="12" text-anchor="end">1</text>
+  <text x="30" y="155" font-size="12" text-anchor="end">0</text>
+  <text x="30" y="260" font-size="12" text-anchor="end">−1</text>
+  <text x="610" y="155" font-size="13">t</text>
+  <text x="35" y="35" font-size="12" fill="#4a4a4a">X(t)</text>
+
+  <!-- 第一条曲线: Φ = 0 -->
+  <path d="M 40,150 Q 75,95 110,150 T 180,150 T 250,150 T 320,150 T 390,150 T 460,150 T 530,150 T 600,150"
+        fill="none" stroke="#2b6cb0" stroke-width="2" stroke-linecap="round"/>
+  <text x="80" y="80" font-size="13" fill="#2b6cb0" font-weight="600">样本 1: Φ = 0</text>
+
+  <!-- 第二条曲线: Φ = π/3 -->
+  <path d="M 40,177 Q 75,110 110,122 Q 145,135 180,177 Q 215,220 250,177 Q 285,135 320,122 Q 355,110 390,177 Q 425,220 460,177 Q 495,135 530,122 Q 565,110 600,177"
+        fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <text x="350" y="240" font-size="13" fill="#059669" font-weight="600">样本 2: Φ = π/3</text>
+
+  <!-- 时间平均标注 -->
+  <line x1="40" y1="150" x2="600" y2="150" stroke="#dc2626" stroke-width="1" stroke-dasharray="6,3" opacity="0.6"/>
+  <text x="550" y="143" font-size="11" fill="#dc2626" font-style="italic">时间平均 = 0</text>
+
+  <!-- 统计平均标注 -->
+  <text x="40" y="280" font-size="11" fill="#4a4a4a">两条样本曲线的时间平均都 = 0 = 统计平均 E[X(t)]</text>
+</svg>
+<div class="schematic-label">图 1: 随机相位正弦波的两条样本曲线，展示各态历经性</div>
+
+<h3>均值各态历经的充要条件</h3>
+
+<p>对于宽平稳过程，均值各态历经有一个优雅的充要条件：</p>
+
+<div class="math">
+  lim_{T→∞} 1/T ∫_{-T}^{T} (1 − |τ|/T) · [R_X(τ) − μ_X²] dτ = 0
+</div>
+
+<p>这个条件的直觉含义是：<strong>当 τ 增大时，自协方差 C_X(τ) = R_X(τ) − μ_X² 必须衰减</strong>，
+而且要衰减得足够快。</p>
+
+<h3>一个实用的充分条件</h3>
+
+<p>如果自相关函数在 τ → ∞ 时收敛到均值的平方：</p>
+
+<div class="math">
+  lim_{τ→∞} R_X(τ) = μ_X²
+</div>
+
+<p>那么过程一定是均值各态历经的。这是考试中最常用的判断方法。</p>
+
+<div class="tip">
+  <span class="tip-label">怎么理解这个充分条件</span>
+  <code>R_X(τ) → μ_X²</code> 意味着：当时间间隔足够大时，X(t) 和 X(t+τ) 几乎不相关了。
+  这正是"过程逐渐忘记过去"的信号——如果过了很长时间后就独立了，那么一条长样本曲线就会经历所有可能的状态。
+</div>
+
+<h2>时间均值估计式</h2>
+
+<p>各态历经性的最大实用价值在于：我们可以用<strong>一条样本曲线</strong>来估计过程的统计量。</p>
+
+<h3>均值估计</h3>
+<div class="math">
+  μ̂_X = 1/T ∫₀ᵀ x(t) dt
+</div>
+
+<h3>自相关函数估计</h3>
+<div class="math">
+  R̂_X(τ) = 1/(T − τ) ∫₀^{T−τ} x(t)x(t+τ) dt
+</div>
+
+<p>其中 T 是观测时间长度。当 T 足够大时，这些估计量会以概率 1 收敛到真实值。</p>
+
+<h2>常见平稳过程总结</h2>
+
+<table>
+  <tr>
+    <th>过程类型</th>
+    <th>均值 μ</th>
+    <th>自相关 R(τ)</th>
+    <th>各态历经？</th>
+  </tr>
+  <tr>
+    <td><strong>随机相位正弦波</strong><br>X(t) = A cos(ω₀t + Φ)</td>
+    <td>0</td>
+    <td>A²/2 · cos(ω₀τ)</td>
+    <td>是（均值各态历经）</td>
+  </tr>
+  <tr>
+    <td><strong>白噪声</strong></td>
+    <td>0</td>
+    <td>(N₀/2)δ(τ)</td>
+    <td>是（均值各态历经）</td>
+  </tr>
+  <tr>
+    <td><strong>滑动平均过程</strong><br>X(t) = ∫ h(u)W(t−u)du</td>
+    <td>0（若白噪声均值为 0）</td>
+    <td>∫ h(u)h(u+τ)du · N₀/2</td>
+    <td>通常是</td>
+  </tr>
+  <tr>
+    <td><strong>非各态历经反例</strong><br>X(t) = Y（Y 是随机变量）</td>
+    <td>E[Y]</td>
+    <td>Var(Y) + E[Y]²</td>
+    <td><strong>否</strong>（时间平均 = Y ≠ E[Y]）</td>
+  </tr>
+</table>
+
+<h2>交互式测验</h2>
+
+<div class="quiz" id="quiz-container"></div>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  郑祖康《概率论与数理统计》（第二版）§10.2–§10.3；张禾瑞《高等代数》中关于非负定矩阵的附录。
+  平稳过程的充要条件属于考研数学（一）竞赛级内容，理解核心结论即可。
+</div>
+
+<div class="footer-nav">
+  <span class="lesson-counter">概率论 · Lesson 0009 / ∞</span>
+  <span>
+    <a href="0008-coming-soon.html">← 上一课</a> ·
+    <a href="0010-power-spectral-density.html">下一课 →</a>
+  </span>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "设 X(t) 是宽平稳过程，下列哪一项<strong>不是</strong>宽平稳的必要条件？",
+    options: [
+      "均值函数 E[X(t)] 是常数",
+      "自相关函数 R_X(t, t+τ) 仅依赖 τ",
+      "任意有限维分布在时间平移下不变",
+      "二阶矩 E[X²(t)] 存在"
+    ],
+    correct: 2,
+    explain: "选项 C 是<strong>严平稳</strong>的定义，不是宽平稳的条件。宽平稳只要求前三个条件中的①②③（均值常数、自相关仅依赖时间差、二阶矩存在）。"
+  },
+  {
+    q: "设宽平稳过程的自相关函数 R_X(τ) = 4 + 3e^{-|τ|}，求过程的平均功率 R_X(0)。",
+    options: ["4", "3", "7", "1"],
+    correct: 2,
+    explain: "R_X(0) = E[X²(t)] = 平均功率。直接代入 τ=0：R_X(0) = 4 + 3e⁰ = 4 + 3 = 7。"
+  },
+  {
+    q: "若宽平稳过程的自相关函数满足 lim_{τ→∞} R_X(τ) = μ_X²，则该过程：",
+    options: [
+      "一定是严平稳的",
+      "一定是均值各态历经的",
+      "一定不是各态历经的",
+      "无法判断各态历经性"
+    ],
+    correct: 1,
+    explain: "这是均值各态历经的<strong>充分条件</strong>。当 R_X(τ) → μ_X²（即自协方差 C_X(τ) → 0）时，过程逐渐"忘记"过去，长时间的时间平均就能代表统计平均。"
+  },
+  {
+    q: "X(t) = Y，其中 Y ~ N(0, 1) 是一个固定的随机变量（不随 t 变化）。关于这个过程，下列说法正确的是：",
+    options: [
+      "它是宽平稳的且均值各态历经",
+      "它是宽平稳的但<strong>不是</strong>均值各态历经",
+      "它不是宽平稳的",
+      "它是严平稳的且各态历经"
+    ],
+    correct: 1,
+    explain: "E[X(t)] = E[Y] = 0（常数），R_X(t, t+τ) = E[Y·Y] = E[Y²] = 1（只依赖时间差），所以是宽平稳的。但时间平均 lim 1/T ∫X(t)dt = Y，这是一个随机变量，不等于 E[Y]=0（除非 Y 恰好取 0，但概率为 0）。所以<strong>不是</strong>各态历经的。这是经典的反例。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = [];
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+
+  if (userAnswers.filter(v => v !== undefined).length === quizzes.length) {
+    setTimeout(showResult, 300);
+  }
+});
+
+function showResult() {
+  const right = userAnswers.filter(v => v).length;
+  let msg;
+  if (right === 4) msg = '🎉 全对！平稳过程的概念已经扎实掌握。';
+  else if (right === 3) msg = '👍 不错，核心概念清楚，细节再打磨一下。';
+  else if (right === 2) msg = '📚 基本概念有了，建议重新读一遍"自相关函数性质"和"各态历经充要条件"。';
+  else msg = '🔄 平稳过程的定义关系还没理顺，建议从宽平稳的三个条件重新看起。';
+
+  const summary = document.createElement('div');
+  summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+  summary.innerHTML = `<strong>📊 测验结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+  container.after(summary);
+}
+</script>
+
+</body>
+</html>

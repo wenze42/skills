@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Lesson 0002 — 方差分析基础（单因素）</title>
+<link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+
+<h1>Lesson 0002 — 方差分析基础（单因素）</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">概率论 · 数理统计 · 约 20 分钟</p>
+
+<h2>为什么需要方差分析</h2>
+<p>
+  在 Lesson 0001 的诊断中我们见过 t 检验——它能检验<strong>两个</strong>总体均值是否相等。
+  但如果你要比较 <strong>三个</strong>或更多配方的平均产量呢？
+</p>
+
+<div class="tip">
+  <span class="tip-label">t 检验的多重比较问题</span>
+  假设有 r=5 组，两两配对要做 C(5,2)=10 次 t 检验。单次检验 α=0.05，
+  10 次下来整体犯第一类错误的概率 ≈ 1−(1−0.05)¹⁰ ≈ 0.40。
+  <strong>方差分析一次性检验所有均值是否相等</strong>，把整体 α 控制在 0.05。
+</div>
+
+<p>
+  方差分析（ANOVA, ANalysis Of VAriance）的零假设与备择假设：
+</p>
+
+<div class="math">
+  H₀ : μ₁ = μ₂ = … = μᵣ  &nbsp;&nbsp;（所有组均值相等）<br>
+  H₁ : μ₁, μ₂, …, μᵣ 中至少有两个不相等
+</div>
+
+<p>
+  名字里的"方差"不是因为我们检验方差，而是因为检验统计量 F 来自<strong>方差的比值</strong>。
+</p>
+
+<h2>单因素方差分析模型</h2>
+<p>
+  只有一个因素（比如"配方"），有 r 个水平（比如 3 种配方），每个水平下做若干次试验：
+</p>
+
+<div class="math">
+  xᵢⱼ = μ + αᵢ + εᵢⱼ，&nbsp;&nbsp;εᵢⱼ ~ N(0, σ²)  独立同分布
+</div>
+
+<p>
+  含义：每个观察值等于<strong>总均值 μ</strong>加上<strong>第 i 组的效应 αᵢ</strong>（满足 Σ αᵢ = 0），
+  再加上随机误差。模型假设所有组的方差都是 σ²——这是"方差齐性"的前提。
+</p>
+
+<h2>平方和分解</h2>
+<p>方差分析的核心是<strong>平方和分解公式</strong>：</p>
+
+<div class="math">
+  S_T = S_A + S_E
+</div>
+
+<p>其中：</p>
+
+<table>
+  <tr><th>符号</th><th>名称</th><th>公式</th><th>自由度</th></tr>
+  <tr>
+    <td><strong>S_T</strong></td>
+    <td>总平方和</td>
+    <td>Σᵢ Σⱼ (xᵢⱼ − x̄)²</td>
+    <td>n − 1</td>
+  </tr>
+  <tr>
+    <td><strong>S_A</strong></td>
+    <td>因素平方和（组间）</td>
+    <td>Σᵢ nᵢ (x̄ᵢ − x̄)²</td>
+    <td>r − 1</td>
+  </tr>
+  <tr>
+    <td><strong>S_E</strong></td>
+    <td>误差平方和（组内）</td>
+    <td>Σᵢ Σⱼ (xᵢⱼ − x̄ᵢ)²</td>
+    <td>n − r</td>
+  </tr>
+</table>
+
+<p>
+  x̄ 是总样本均值，x̄ᵢ 是第 i 组的样本均值，nᵢ 是第 i 组样本量，n = Σ nᵢ 是总样本量，
+  r 是组数。
+</p>
+
+<div class="tip">
+  <span class="tip-label">直觉</span>
+  S_T 衡量<strong>所有数据点的离散程度</strong>。它被拆成两部分：
+  S_A 衡量<strong>各组均值之间的差异</strong>（因素效应），
+  S_E 衡量<strong>各组内部的随机波动</strong>（纯噪声）。
+  如果 S_A 比 S_E 大很多，因素效应就显著。
+</div>
+
+<h2>均方与 F 检验</h2>
+<p>把平方和除以自由度，得到"均方"（Mean Square）：</p>
+
+<div class="math">
+  MS_A = S_A / (r − 1)，&nbsp;&nbsp; MS_E = S_E / (n − r)
+</div>
+
+<p>
+  在 H₀ 成立时，MS_A 和 MS_E 都是 σ² 的无偏估计，它们的比值服从 F 分布：
+</p>
+
+<div class="math">
+  F = MS_A / MS_E &nbsp;~&nbsp; F(r − 1, n − r)
+</div>
+
+<p>
+  检验规则：若 F > F_α(r − 1, n − r)，则拒绝 H₀。
+</p>
+
+<h2>散点示意图</h2>
+<p>下图展示了"组间差异 vs 组内波动"的直觉：三组数据，红横线是各组均值，灰色虚线是总体均值。</p>
+
+<svg class="schematic" viewBox="0 0 560 360" width="100%" xmlns="http://www.w3.org/2000/svg" style="font-family: inherit;">
+  <!-- 坐标轴 -->
+  <line x1="60" y1="320" x2="540" y2="320" stroke="#333" stroke-width="1.5"/>
+  <line x1="60" y1="40"  x2="60"  y2="320" stroke="#333" stroke-width="1.5"/>
+
+  <!-- Y 轴刻度标签 -->
+  <text x="48" y="323" text-anchor="end" font-size="12" fill="#555">20</text>
+  <text x="48" y="283" text-anchor="end" font-size="12" fill="#555">22</text>
+  <text x="48" y="243" text-anchor="end" font-size="12" fill="#555">24</text>
+  <text x="48" y="203" text-anchor="end" font-size="12" fill="#555">26</text>
+  <text x="48" y="163" text-anchor="end" font-size="12" fill="#555">28</text>
+  <text x="48" y="123" text-anchor="end" font-size="12" fill="#555">30</text>
+  <text x="48" y="83"  text-anchor="end" font-size="12" fill="#555">32</text>
+
+  <!-- 总体均值 x̄ = 27，映射到 y=203 -->
+  <line x1="60" y1="203" x2="540" y2="203" stroke="#999" stroke-width="1" stroke-dasharray="5,4"/>
+  <text x="545" y="206" font-size="11" fill="#666">x̄ = 27</text>
+
+  <!-- 组 1：配方 A，x=140 附近；均值 26 → y=203；点：25(y=223),27(y=183),26(y=203),28(y=163),24(y=243) -->
+  <g fill="#2b6cb0">
+    <circle cx="140" cy="223" r="5"/>
+    <circle cx="145" cy="183" r="5"/>
+    <circle cx="135" cy="203" r="5"/>
+    <circle cx="148" cy="163" r="5"/>
+    <circle cx="138" cy="243" r="5"/>
+  </g>
+  <line x1="115" y1="203" x2="165" y2="203" stroke="#059669" stroke-width="2.5"/>
+  <text x="140" y="345" text-anchor="middle" font-size="13" fill="#333">配方 A</text>
+  <text x="140" y="360" text-anchor="middle" font-size="11" fill="#666">x̄₁ = 26</text>
+
+  <!-- 组 2：配方 B，x=280 附近；均值 30 → y=123；点：31(y=103),29(y=143),32(y=83),30(y=123),28(y=163) -->
+  <g fill="#2b6cb0">
+    <circle cx="275" cy="103" r="5"/>
+    <circle cx="280" cy="143" r="5"/>
+    <circle cx="285" cy="83"  r="5"/>
+    <circle cx="278" cy="123" r="5"/>
+    <circle cx="283" cy="163" r="5"/>
+  </g>
+  <line x1="255" y1="123" x2="305" y2="123" stroke="#059669" stroke-width="2.5"/>
+  <text x="280" y="345" text-anchor="middle" font-size="13" fill="#333">配方 B</text>
+  <text x="280" y="360" text-anchor="middle" font-size="11" fill="#666">x̄₂ = 30</text>
+
+  <!-- 组 3：配方 C，x=420 附近；均值 25 → y=223；点：24(y=243),26(y=203),25(y=223),27(y=183),23(y=263) -->
+  <g fill="#2b6cb0">
+    <circle cx="415" cy="243" r="5"/>
+    <circle cx="420" cy="203" r="5"/>
+    <circle cx="425" cy="223" r="5"/>
+    <circle cx="418" cy="183" r="5"/>
+    <circle cx="422" cy="263" r="5"/>
+  </g>
+  <line x1="395" y1="223" x2="445" y2="223" stroke="#059669" stroke-width="2.5"/>
+  <text x="420" y="345" text-anchor="middle" font-size="13" fill="#333">配方 C</text>
+  <text x="420" y="360" text-anchor="middle" font-size="11" fill="#666">x̄₃ = 25</text>
+
+  <!-- 标题 -->
+  <text x="300" y="28" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">三组配方的样本值（红横线=组均值）</text>
+</svg>
+
+<h2>完整数值例子</h2>
+<p>某化工厂研究<strong>三种配方</strong>的某种化工产品的得率。每种配方做 5 次独立试验，数据如下：</p>
+
+<table>
+  <tr><th>配方</th><th colspan="5">得率（%）</th><th>均值 x̄ᵢ</th></tr>
+  <tr><td>A</td><td>25</td><td>27</td><td>26</td><td>28</td><td>24</td><td>130/5 = <strong>26.0</strong></td></tr>
+  <tr><td>B</td><td>31</td><td>29</td><td>32</td><td>30</td><td>28</td><td>150/5 = <strong>30.0</strong></td></tr>
+  <tr><td>C</td><td>24</td><td>26</td><td>25</td><td>27</td><td>23</td><td>125/5 = <strong>25.0</strong></td></tr>
+</table>
+
+<p>已知 r=3，n₁=n₂=n₃=5，总样本量 n=15。总均值：</p>
+
+<div class="math">
+  x̄ = (130 + 150 + 125) / 15 = 405 / 15 = <strong>27.0</strong>
+</div>
+
+<h3>手算平方和</h3>
+
+<p><strong>第一步：总平方和 S_T</strong>，用简化公式 S_T = ΣΣ xᵢⱼ² − T²/(n) 更快：</p>
+
+<p>ΣΣ xᵢⱼ² = 25²+27²+26²+28²+24² + 31²+29²+32²+30²+28² + 24²+26²+25²+27²+23²<br>
+= (625+729+676+784+576) + (961+841+1024+900+784) + (576+676+625+729+529)<br>
+= 3390 + 4510 + 3135 = <strong>11035</strong></p>
+
+<div class="math">
+  S_T = 11035 − 405²/15 = 11035 − 164025/15 = 11035 − 10935 = <strong>100.0</strong>
+</div>
+
+<p>自由度 df_T = 15 − 1 = <strong>14</strong>。</p>
+
+<p><strong>第二步：因素平方和 S_A</strong>，用简化公式 S_A = Σ Tᵢ²/nᵢ − T²/(n)：</p>
+
+<p>Tᵢ 是各组数据之和：T₁=130，T₂=150，T₃=125。</p>
+
+<div class="math">
+  S_A = 130²/5 + 150²/5 + 125²/5 − 10935<br>
+  &nbsp;&nbsp;= 16900/5 + 22500/5 + 15625/5 − 10935<br>
+  &nbsp;&nbsp;= 3380 + 4500 + 3125 − 10935 = <strong>70.0</strong>
+</div>
+
+<p>自由度 df_A = 3 − 1 = <strong>2</strong>。</p>
+
+<p><strong>第三步：误差平方和 S_E</strong>：</p>
+
+<div class="math">
+  S_E = S_T − S_A = 100 − 70 = <strong>30.0</strong>
+</div>
+
+<p>自由度 df_E = n − r = 15 − 3 = <strong>12</strong>。</p>
+
+<p>也可以直接验证 S_E = ΣΣ(xᵢⱼ − x̄ᵢ)²：</p>
+
+<ul>
+  <li>配方 A：(25−26)²+(27−26)²+(26−26)²+(28−26)²+(24−26)² = 1+1+0+4+4 = <strong>10</strong></li>
+  <li>配方 B：(31−30)²+(29−30)²+(32−30)²+(30−30)²+(28−30)² = 1+1+4+0+4 = <strong>10</strong></li>
+  <li>配方 C：(24−25)²+(26−25)²+(25−25)²+(27−25)²+(23−25)² = 1+1+0+4+4 = <strong>10</strong></li>
+</ul>
+
+<p>合计 S_E = 10 + 10 + 10 = <strong>30.0</strong> ✓ 和间接计算一致。</p>
+
+<h3>方差分析表</h3>
+<table>
+  <tr><th>来源</th><th>平方和 SS</th><th>自由度 df</th><th>均方 MS</th><th>F 值</th></tr>
+  <tr>
+    <td><strong>因素（配方）</strong></td>
+    <td>70.0</td><td>2</td><td>70.0/2 = <strong>35.0</strong></td>
+    <td rowspan="2" style="text-align:center; vertical-align:middle;">35.0 / 2.5 = <strong>14.0</strong></td>
+  </tr>
+  <tr>
+    <td><strong>误差</strong></td>
+    <td>30.0</td><td>12</td><td>30.0/12 = <strong>2.5</strong></td>
+  </tr>
+  <tr>
+    <td><strong>总计</strong></td>
+    <td><strong>100.0</strong></td><td><strong>14</strong></td><td colspan="2" style="text-align:center; color:#888;">（100 = 70 + 30 ✓）</td>
+  </tr>
+</table>
+
+<h3>F 检验结论</h3>
+<p>
+  取显著性水平 α = 0.05，查 F 分布表得临界值 F₀.₀₅(2, 12) ≈ <strong>3.89</strong>。<br>
+  计算得到的 F = <strong>14.0</strong>，远大于 3.89。
+</p>
+
+<div class="tip">
+  <span class="tip-label">结论</span>
+  <strong>拒绝 H₀</strong>。三种配方的平均得率存在显著差异（p ≈ 0.0009 < 0.05）。
+  配方 B（均值 30）优于配方 A 和 C。
+</div>
+
+<h2>公式速查</h2>
+<table>
+  <tr><th>项目</th><th>公式</th></tr>
+  <tr><td>总平方和</td><td>S_T = ΣΣxᵢⱼ² − T²/n，其中 T = ΣΣxᵢⱼ</td></tr>
+  <tr><td>因素平方和</td><td>S_A = Σᵢ Tᵢ²/nᵢ − T²/n，其中 Tᵢ = Σⱼxᵢⱼ</td></tr>
+  <tr><td>误差平方和</td><td>S_E = S_T − S_A （或直接算 ΣΣ(xᵢⱼ−x̄ᵢ)²）</td></tr>
+  <tr><td>均方</td><td>MS_A = S_A/(r−1)，MS_E = S_E/(n−r)</td></tr>
+  <tr><td>检验统计量</td><td>F = MS_A / MS_E ~ F(r−1, n−r)</td></tr>
+</table>
+
+<h2>Quiz</h2>
+<div class="quiz" id="quiz-container"></div>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  茆诗松等《概率论与数理统计》（第二版）§10.2。单因素方差分析的"平方和分解→均方→F 检验"三步法是考研数理统计的标准套路。
+</div>
+
+<div class="ask-agent">
+  哪里算不通？想让我用别的数据再手算一遍？<br>
+  <strong>直接问我</strong>。
+</div>
+
+<div class="footer-nav">
+  <span class="lesson-counter">概率论 · Lesson 0002 / ∞</span>
+  <span><a href="0003-one-way-anova-and-two-factor.html">下一课：双因素方差分析 →</a></span>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "单因素方差分析中，总平方和 S_T 分解为：",
+    options: ["S_T = S_A + S_B", "S_T = S_A + S_E", "S_T = S_A + S_B + S_E", "S_T = SSR + SSE"],
+    correct: 1,
+    explain: "单因素只有一个因素平方和 S_A 和一个误差平方和 S_E。双因素才有 S_B。SSR/SSE 是回归里的记号。"
+  },
+  {
+    q: "某研究用方差分析比较 5 组，每组 8 个样本，则 F 检验的分子和分母自由度分别是：",
+    options: ["4 和 35", "5 和 40", "4 和 32", "5 和 35"],
+    correct: 0,
+    explain: "r=5 组 → df_A = r−1 = 4；总样本量 n = 5×8 = 40 → df_E = n−r = 40−5 = 35。所以 F(4,35)。"
+  },
+  {
+    q: "下列哪种情况最支持因素效应显著？",
+    options: ["MS_A 小，MS_E 大，F 小", "MS_A 大，MS_E 小，F 大", "MS_A 和 MS_E 都小", "MS_A 和 MS_E 都大"],
+    correct: 1,
+    explain: "F = MS_A/MS_E。MS_A 大说明组间差异大，MS_E 小说明组内噪声小，两者比值 F 越大，越容易拒绝 H₀。"
+  },
+  {
+    q: "在本课的三种配方例子中，如果 F = 14.0，临界值 F₀.₀₅(2,12) ≈ 3.89，正确结论是：",
+    options: ["接受 H₀：三种配方得率无差异", "拒绝 H₀：三种配方得率至少两种有差异", "接受 H₀：配方 B 显著优于其他", "拒绝 H₀：所有三种配方两两差异显著"],
+    correct: 1,
+    explain: "F > 临界值 → 拒绝 H₀。注意：方差分析只告诉我们'至少有两组不同'，并不能指明'哪两组不同'。要知道具体哪对有差异，需要事后多重比较（如 Tukey 法）。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+});
+</script>
+
+</body>
+</html>

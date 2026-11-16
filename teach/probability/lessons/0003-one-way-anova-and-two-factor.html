@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Lesson 0003 — 双因素方差分析</title>
+<link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+
+<h1>Lesson 0003 — 双因素方差分析</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">概率论 · 数理统计 · 约 22 分钟</p>
+
+<h2>为什么要双因素</h2>
+<p>
+  上一课我们只考虑一个因素。但现实中很多问题需要<strong>同时考虑两个因素</strong>：
+</p>
+<ul>
+  <li>产品得率 = f(<strong>温度</strong>, <strong>时间</strong>)</li>
+  <li>农作物产量 = f(<strong>肥料</strong>, <strong>水分</strong>)</li>
+  <li>零件强度 = f(<strong>材料</strong>, <strong>热处理工艺</strong>)</li>
+</ul>
+<p>
+  两个因素同时作用时，有一个新概念：<strong>交互作用</strong>。交互作用意味着"一个因素的效果依赖于另一个因素的水平"——
+  不是简单叠加。
+</p>
+
+<h2>两种实验情形</h2>
+
+<h3>情形一：无重复试验（等号意味着无交互检验）</h3>
+<p>
+  每个 (i, j) 组合只有一个观察值 xᵢⱼ。模型：
+</p>
+<div class="math">
+  xᵢⱼ = μ + αᵢ + βⱼ + εᵢⱼ，&nbsp;&nbsp;εᵢⱼ ~ N(0, σ²) 独立
+</div>
+<p>
+  其中 αᵢ 是因素 A 的第 i 个水平效应，βⱼ 是因素 B 的第 j 个水平效应。这种模型<strong>没有交互项</strong>，
+  因为只做了一次试验，无法区分"交互作用"和"随机误差"。
+</p>
+
+<h3>情形二：等重复试验（可以检验交互作用）</h3>
+<p>
+  每个 (i, j) 组合有 m ≥ 2 个观察值 xᵢⱼₖ（k = 1, 2, …, m）。模型：
+</p>
+<div class="math">
+  xᵢⱼₖ = μ + αᵢ + βⱼ + (αβ)ᵢⱼ + εᵢⱼₖ
+</div>
+<p>
+  其中 (αβ)ᵢⱼ 就是 <strong>A 和 B 的交互作用</strong>。这是本课的重点——它最常见也最能体现方差分析的威力。
+</p>
+
+<h2>平方和分解扩展</h2>
+<p>等重复试验（m ≥ 2），总平方和被拆成<strong>四部分</strong>：</p>
+
+<div class="math">
+  S_T = S_A + S_B + S_A×B + S_E
+</div>
+
+<table>
+  <tr><th>符号</th><th>名称</th><th>自由度</th></tr>
+  <tr>
+    <td><strong>S_T</strong></td><td>总平方和</td>
+    <td>abm − 1</td>
+  </tr>
+  <tr>
+    <td><strong>S_A</strong></td><td>A 因素平方和（主效应）</td>
+    <td>a − 1</td>
+  </tr>
+  <tr>
+    <td><strong>S_B</strong></td><td>B 因素平方和（主效应）</td>
+    <td>b − 1</td>
+  </tr>
+  <tr>
+    <td><strong>S_A×B</strong></td><td>交互作用平方和</td>
+    <td>(a − 1)(b − 1)</td>
+  </tr>
+  <tr>
+    <td><strong>S_E</strong></td><td>误差平方和</td>
+    <td>ab(m − 1)</td>
+  </tr>
+</table>
+
+<p>其中 a 是 A 因素的水平数，b 是 B 因素的水平数，m 是每个单元格的重复次数。</p>
+
+<div class="tip">
+  <span class="tip-label">自由度验证</span>
+  df_T = abm − 1 应该等于后面四项之和：<br>
+  (a−1) + (b−1) + (a−1)(b−1) + ab(m−1) = a−1 + b−1 + ab−a−b+1 + abm−ab<br>
+  = <strong>abm − 1</strong> ✓
+</div>
+
+<h2>简化计算公式</h2>
+<p>
+  定义几个和号：<br>
+  Tᵢⱼ = Σₖ xᵢⱼₖ &nbsp;&nbsp;（单元格 (i,j) 的和）<br>
+  Tᵢ. = Σⱼ Tᵢⱼ &nbsp;&nbsp;（A 因素第 i 水平的合计和）<br>
+  T..ⱼ = Σᵢ Tᵢⱼ &nbsp;&nbsp;（B 因素第 j 水平的合计和）<br>
+  T... = Σᵢ Σⱼ Σₖ xᵢⱼₖ &nbsp;&nbsp;（全部总和）
+</p>
+
+<p>校正项 C = T...² / (abm)。各平方和：</p>
+
+<div class="math">
+  S_T = ΣΣΣ xᵢⱼₖ² − C<br>
+  S_A = (1/(bm)) Σᵢ Tᵢ.² − C<br>
+  S_B = (1/(am)) Σⱼ T..ⱼ² − C<br>
+  S_A×B = (1/m) ΣᵢΣⱼ Tᵢⱼ² − C − S_A − S_B<br>
+  S_E = S_T − S_A − S_B − S_A×B
+</div>
+
+<h2>三个 F 检验</h2>
+<table>
+  <tr><th>检验</th><th>均方</th><th>F 值</th><th>零假设</th></tr>
+  <tr>
+    <td>A 的主效应</td>
+    <td>MS_A = S_A/(a−1)</td>
+    <td>F_A = MS_A / MS_E</td>
+    <td>H₀: α₁ = … = αₐ = 0</td>
+  </tr>
+  <tr>
+    <td>B 的主效应</td>
+    <td>MS_B = S_B/(b−1)</td>
+    <td>F_B = MS_B / MS_E</td>
+    <td>H₀: β₁ = … = β_b = 0</td>
+  </tr>
+  <tr>
+    <td>交互作用</td>
+    <td>MS_A×B = S_A×B/((a−1)(b−1))</td>
+    <td>F_A×B = MS_A×B / MS_E</td>
+    <td>H₀: (αβ)ᵢⱼ ≡ 0</td>
+  </tr>
+</table>
+
+<h2>交互作用示意图</h2>
+<p>
+  下图是经典的<strong>"交互作用图"</strong>：横轴是 B 因素的两个水平（短/长时间），
+  两条线分别对应 A 因素的两个水平（中/高温）。纵轴是单元格均值。
+</p>
+<p>
+  <strong>左图</strong>：两条线几乎平行 → 无交互作用，A 的效果在两个 B 水平下差不多。<br>
+  <strong>右图</strong>：两条线明显<strong>不平行</strong>（交叉或收敛）→ 存在交互作用。
+</p>
+
+<svg class="schematic" viewBox="0 0 640 320" width="100%" xmlns="http://www.w3.org/2000/svg" style="font-family: inherit;">
+
+  <!-- 左图标题 -->
+  <text x="170" y="28" text-anchor="middle" font-size="13" font-weight="bold">无交互作用（线平行）</text>
+
+  <!-- 左图坐标轴 -->
+  <line x1="70" y1="270" x2="270" y2="270" stroke="#333" stroke-width="1.5"/>
+  <line x1="70" y1="60"  x2="70"  y2="270" stroke="#333" stroke-width="1.5"/>
+  <text x="70" y="290" text-anchor="middle" font-size="12">短时间</text>
+  <text x="270" y="290" text-anchor="middle" font-size="12">长时间</text>
+  <text x="30" y="170" text-anchor="middle" font-size="12" transform="rotate(-90 30 170)">得率 (%)</text>
+
+  <!-- 左图：无交互。中温: 短→10, 长→22；高温: 短→13, 长→25 (两条平行) -->
+  <!-- 温度中：点 (120,220) 短, (220,88) 长 -->
+  <!-- 温度高：点 (120,193) 短, (220,61) 长 -->
+  <line x1="120" y1="220" x2="220" y2="88" stroke="#2b6cb0" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="120" y1="193" x2="220" y2="61" stroke="#c53030" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="120" cy="220" r="5" fill="#2b6cb0"/>
+  <circle cx="220" cy="88"  r="5" fill="#2b6cb0"/>
+  <circle cx="120" cy="193" r="5" fill="#c53030"/>
+  <circle cx="220" cy="61"  r="5" fill="#c53030"/>
+
+  <g font-size="11">
+    <rect x="160" y="160" width="8" height="8" fill="#2b6cb0"/>
+    <text x="174" y="168">中温</text>
+    <rect x="200" y="160" width="8" height="8" fill="#c53030"/>
+    <text x="214" y="168">高温</text>
+  </g>
+
+  <!-- 右图标题 -->
+  <text x="470" y="28" text-anchor="middle" font-size="13" font-weight="bold">有交互作用（线交叉/收敛）</text>
+
+  <!-- 右图坐标轴 -->
+  <line x1="370" y1="270" x2="570" y2="270" stroke="#333" stroke-width="1.5"/>
+  <line x1="370" y1="60"  x2="370" y2="270" stroke="#333" stroke-width="1.5"/>
+  <text x="370" y="290" text-anchor="middle" font-size="12">短时间</text>
+  <text x="570" y="290" text-anchor="middle" font-size="12">长时间</text>
+
+  <!-- 右图：有交互。中温: 短→20, 长→18；高温: 短→22, 长→8 -->
+  <!-- y轴范围：60→32, 270→28, 差值 238 对应 得率 4~24 -->
+  <!-- 中温: 短20→y≈77, 长18→y≈101 -->
+  <!-- 高温: 短22→y≈53, 长8→y≈201 -->
+  <line x1="420" y1="77"  x2="520" y2="101" stroke="#2b6cb0" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="420" y1="53"  x2="520" y2="201" stroke="#c53030" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="420" cy="77"  r="5" fill="#2b6cb0"/>
+  <circle cx="520" cy="101" r="5" fill="#2b6cb0"/>
+  <circle cx="420" cy="53"  r="5" fill="#c53030"/>
+  <circle cx="520" cy="201" r="5" fill="#c53030"/>
+
+  <g font-size="11">
+    <rect x="460" y="160" width="8" height="8" fill="#2b6cb0"/>
+    <text x="474" y="168">中温</text>
+    <rect x="500" y="160" width="8" height="8" fill="#c53030"/>
+    <text x="514" y="168">高温</text>
+  </g>
+</svg>
+
+<h2>完整数值例子</h2>
+<p>
+  某化工试验，因素 A = <strong>温度</strong>（a=2 水平：低温 / 高温），
+  因素 B = <strong>时间</strong>（b=2 水平：短 / 长）。每个 (温度, 时间) 组合做 m=3 次独立试验，
+  产品得率 (%) 如下：
+</p>
+
+<table>
+  <tr><th></th><th colspan="2">B：短时间</th><th colspan="2">B：长时间</th><th>合计 Tᵢ.</th></tr>
+  <tr>
+    <td><strong>A：低温</strong></td>
+    <td>10, 12, 14</td><td>T₁₁ = 36</td>
+    <td>18, 20, 22</td><td>T₁₂ = 60</td>
+    <td>T₁. = <strong>96</strong></td>
+  </tr>
+  <tr>
+    <td><strong>A：高温</strong></td>
+    <td>8, 10, 12</td><td>T₂₁ = 30</td>
+    <td>22, 24, 26</td><td>T₂₂ = 72</td>
+    <td>T₂. = <strong>102</strong></td>
+  </tr>
+  <tr>
+    <td><strong>合计 T..ⱼ</strong></td>
+    <td colspan="2"><strong>66</strong></td>
+    <td colspan="2"><strong>132</strong></td>
+    <td><strong>T... = 198</strong></td>
+  </tr>
+</table>
+
+<p>数据核对：Σxᵢⱼₖ = 36+60+30+72 = <strong>198</strong> ✓。Σxᵢⱼₖ² = 3692。</p>
+
+<h3>手算平方和</h3>
+
+<p><strong>校正项</strong>：C = T...²/(abm) = 198²/(2·2·3) = 39204/12 = <strong>3267.0</strong></p>
+
+<p><strong>总平方和 S_T</strong>：</p>
+<div class="math">
+  S_T = ΣΣΣ x² − C = 3692 − 3267 = <strong>425.0</strong>，&nbsp;&nbsp;df_T = 11
+</div>
+
+<p><strong>A 因素平方和（温度）</strong>：</p>
+<div class="math">
+  S_A = (1/(bm)) Σ Tᵢ.² − C = (96² + 102²)/(2·3) − 3267<br>
+  &nbsp;&nbsp;= (9216 + 10404)/6 − 3267 = 19620/6 − 3267 = 3270 − 3267 = <strong>3.0</strong>，&nbsp;&nbsp;df_A = 1
+</div>
+
+<p><strong>B 因素平方和（时间）</strong>：</p>
+<div class="math">
+  S_B = (1/(am)) Σ T..ⱼ² − C = (66² + 132²)/(2·3) − 3267<br>
+  &nbsp;&nbsp;= (4356 + 17424)/6 − 3267 = 21780/6 − 3267 = 3630 − 3267 = <strong>363.0</strong>，&nbsp;&nbsp;df_B = 1
+</div>
+
+<p><strong>交互作用平方和 S_A×B</strong>：</p>
+<div class="math">
+  (1/m) ΣΣ Tᵢⱼ² = (36² + 60² + 30² + 72²)/3 = (1296 + 3600 + 900 + 5184)/3 = 10980/3 = 3660<br>
+  S_A×B = 3660 − C − S_A − S_B = 3660 − 3267 − 3 − 363 = <strong>27.0</strong>，&nbsp;&nbsp;df_A×B = 1
+</div>
+
+<p><strong>误差平方和 S_E</strong>：</p>
+<div class="math">
+  S_E = S_T − S_A − S_B − S_A×B = 425 − 3 − 363 − 27 = <strong>32.0</strong>，&nbsp;&nbsp;df_E = ab(m−1) = 8
+</div>
+
+<div class="tip">
+  <span class="tip-label">一致性验证</span>
+  S_A + S_B + S_A×B + S_E = 3 + 363 + 27 + 32 = <strong>425 = S_T</strong> ✓<br>
+  自由度：1 + 1 + 1 + 8 = <strong>11 = df_T</strong> ✓
+</div>
+
+<p>S_E 也可以直接算单元格内平方和，每个单元格内三个数据与单元格均值的偏差平方和都是 8，四个单元格合计 32，完全一致 ✓。</p>
+
+<h3>方差分析表</h3>
+
+<table>
+  <tr><th>来源</th><th>SS</th><th>df</th><th>MS</th><th>F 值</th></tr>
+  <tr><td><strong>A（温度）</strong></td><td>3.0</td><td>1</td><td>3.00</td><td>3.00/4.00 = <strong>0.75</strong></td></tr>
+  <tr><td><strong>B（时间）</strong></td><td>363.0</td><td>1</td><td>363.00</td><td>363.00/4.00 = <strong>90.75</strong></td></tr>
+  <tr><td><strong>A×B（交互）</strong></td><td>27.0</td><td>1</td><td>27.00</td><td>27.00/4.00 = <strong>6.75</strong></td></tr>
+  <tr><td><strong>误差</strong></td><td>32.0</td><td>8</td><td><strong>4.00</strong></td><td>—</td></tr>
+  <tr><td><strong>总计</strong></td><td><strong>425.0</strong></td><td><strong>11</strong></td><td colspan="2" style="text-align:center; color:#888;">（425 = 3 + 363 + 27 + 32 ✓）</td></tr>
+</table>
+
+<h3>结论（α = 0.05）</h3>
+<p>临界值 F₀.₀₅(1, 8) ≈ <strong>5.32</strong>。</p>
+
+<table>
+  <tr><th>检验</th><th>计算 F</th><th>临界值</th><th>结论</th></tr>
+  <tr><td>A（温度）主效应</td><td>0.75</td><td>5.32</td><td>F < 临界值，<strong>不显著</strong>（p ≈ 0.41）</td></tr>
+  <tr><td>B（时间）主效应</td><td>90.75</td><td>5.32</td><td>F ≫ 临界值，<strong>高度显著</strong>（p ≪ 0.001）</td></tr>
+  <tr><td>A×B 交互作用</td><td>6.75</td><td>5.32</td><td>F > 临界值，<strong>显著</strong>（p ≈ 0.032）</td></tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">怎么解读</span>
+  <strong>温度</strong>主效应本身不显著——平均下来低温和高温的得率差不多（96/6=16, 102/6=17，差 1）。
+  但<strong>交互作用显著</strong>：高温在长时间下效果很好（均值 24），在短时间下反而略差（均值 10）。
+  这正是"交互作用图收敛"的情况！
+</div>
+
+<h2>无重复试验（无交互）公式</h2>
+<p>如果每个 (i, j) 只有一个观察值（m=1），则不能检验交互作用，平方和分解变为：</p>
+
+<div class="math">
+  S_T = S_A + S_B + S_E&thinsp;,&nbsp;&nbsp; 自由度分别为 ab−1, a−1, b−1, (a−1)(b−1)
+</div>
+
+<p>此时 S_A×B 被并入 S_E，自由度是 (a−1)(b−1)。</p>
+
+<h2>Quiz</h2>
+<div class="quiz" id="quiz-container"></div>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  同上一课。双因素方差分析的"等重复"vs"无重复"区分以及交互作用的 F 检验是考研数理统计的高频考点。
+</div>
+
+<div class="ask-agent">
+  平方和分解哪一步没看懂？交互作用的直觉是不是还是模糊？<br>
+  <strong>直接问我</strong>。
+</div>
+
+<div class="footer-nav">
+  <span class="lesson-counter">概率论 · Lesson 0003 / ∞</span>
+  <span><a href="0002-variance-analysis-basics.html">← 上一课</a> · <a href="0004-simple-linear-regression.html">下一课：一元线性回归 →</a></span>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "双因素等重复试验（每个组合 m≥2 次）的平方和分解是：",
+    options: ["S_T = S_A + S_B + S_E", "S_T = S_A + S_A×B + S_E", "S_T = S_A + S_B + S_A×B + S_E", "S_T = S_B + S_A×B + S_E"],
+    correct: 2,
+    explain: "双因素等重复有 4 部分：S_A、S_B（两个主效应）、S_A×B（交互）、S_E（误差）。无重复时才只有 3 部分（S_A×B 并到 S_E）。"
+  },
+  {
+    q: "某 3×4 双因素试验，每个单元格做 2 次。交互作用的自由度是：",
+    options: ["(3−1)·(4−1) = 6", "3·4·2 − 1 = 23", "(3−1) = 2", "3·4 − 1 = 11"],
+    correct: 0,
+    explain: "df_A×B = (a−1)(b−1) = (3−1)(4−1) = 6。记住：主效应自由度是水平数减一，交互作用是两者相乘。"
+  },
+  {
+    q: "如果交互作用显著，以下哪个结论最合理？",
+    options: ["两个主效应一定都显著", "两个主效应一定都不显著", "主效应的含义需要结合交互作用来解读", "应该忽略主效应，只报告交互作用"],
+    correct: 2,
+    explain: "交互作用显著时，主效应的平均效果会误导人。比如温度的平均效果不显著，但在长时间配合下高温效果很好——必须结合交互作用图解读。"
+  },
+  {
+    q: "本课的 2×2 例子中，F_B = 90.75, F₀.₀₅(1,8) ≈ 5.32，正确结论是：",
+    options: ["时间主效应显著，且是最显著的效应", "温度主效应也显著，只是数值小", "交互作用不显著，可以忽略", "可以直接选高温+长时间作为最佳方案"],
+    correct: 0,
+    explain: "F=90.75 远大于临界值，时间主效应高度显著（时间是得率的决定因素）。温度主效应 F=0.75 不显著。交互作用 F=6.75 刚过临界，说明温度效果在不同时间下有差异。不能直接按 A 答——得率 26（高温+长时间）> 22（低温+长时间），所以实际上高温+长时间最好。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+});
+</script>
+
+</body>
+</html>

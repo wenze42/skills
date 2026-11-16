@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Lesson 0004 — 一元线性回归</title>
+<link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+
+<h1>Lesson 0004 — 一元线性回归</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">概率论 · 数理统计 · 约 22 分钟</p>
+
+<h2>为什么用回归</h2>
+<p>
+  方差分析回答的是"X 的不同水平下 Y 是否不同"。但很多时候我们想知道更精细的关系——
+  "<strong>X 增加 1 单位，Y 平均增加多少？</strong>"回归分析就是干这个的。
+</p>
+
+<p>
+  本课讨论最简单的<strong>一元线性回归</strong>：只有一个自变量 x，一个因变量 y，
+  假设它们的关系可以用一条直线近似。
+</p>
+
+<h2>线性回归模型</h2>
+<div class="math">
+  yᵢ = a + b xᵢ + εᵢ，&nbsp;&nbsp;εᵢ ~ N(0, σ²) &nbsp;独立同分布
+</div>
+<p>
+  其中 <strong>a</strong> 是截距（x=0 时的 y 值），<strong>b</strong> 是斜率（x 每增加 1，y 平均变化 b）。
+  εᵢ 是随机误差，代表模型没捕捉到的部分。我们要从数据估计出 â 和 b̂。
+</p>
+
+<div class="tip">
+  <span class="tip-label">区分样本与总体</span>
+  a, b 是<strong>未知的总体参数</strong>；â, b̂ 是从样本算出来的<strong>估计值</strong>。
+  εᵢ 是<strong>不可观测的随机误差</strong>，而残差 êᵢ = yᵢ − (â + b̂xᵢ) 是可观测的、对 εᵢ 的估计。
+</div>
+
+<h2>最小二乘法推导</h2>
+<p>
+  最小二乘法（Ordinary Least Squares, OLS）的准则是：让<strong>所有点到回归线的垂直偏差平方和最小</strong>。
+  写成数学式就是最小化：
+</p>
+
+<div class="math">
+  Q(a, b) = Σᵢ [yᵢ − (a + b xᵢ)]²
+</div>
+
+<p>
+  对 a 和 b 分别求偏导令其为 0，解正规方程可得闭式解（闭式解 = 有公式直接算）：
+</p>
+
+<div class="math">
+  b̂ = &frac12;&frac12; (xᵢ − x̄)(yᵢ − ȳ) &nbsp;/&nbsp; &frac12;&frac12; (xᵢ − x̄)²<br>
+  â = ȳ − b̂ · x̄
+</div>
+
+<p>引入两个缩写，写起来更方便：</p>
+
+<div class="math">
+  SS_xx = Σ(xᵢ − x̄)²,&nbsp;&nbsp; SS_xy = Σ(xᵢ − x̄)(yᵢ − ȳ)
+</div>
+
+<p>则 <strong>b̂ = SS_xy / SS_xx</strong>。这是考研最常考的公式之一，建议记住。</p>
+
+<h2>平方和分解与 R²</h2>
+<p>
+  回到方差分解。记 ŷᵢ = â + b̂xᵢ 为第 i 个点的<strong>预测值</strong>，则：
+</p>
+
+<div class="math">
+  yᵢ − ȳ = (ŷᵢ − ȳ) + (yᵢ − ŷᵢ)
+</div>
+
+<p>两边平方求和，可以证明交叉项消失（关键！），得到：</p>
+
+<div class="math">
+  SST = SSR + SSE
+</div>
+
+<table>
+  <tr><th>记号</th><th>名称</th><th>公式</th><th>含义</th></tr>
+  <tr>
+    <td><strong>SST</strong></td>
+    <td>总平方和</td>
+    <td>Σ(yᵢ − ȳ)²</td>
+    <td>y 的<strong>全部波动</strong></td>
+  </tr>
+  <tr>
+    <td><strong>SSR</strong></td>
+    <td>回归平方和</td>
+    <td>Σ(ŷᵢ − ȳ)²</td>
+    <td>x 通过回归<strong>解释掉</strong>的部分</td>
+  </tr>
+  <tr>
+    <td><strong>SSE</strong></td>
+    <td>残差平方和</td>
+    <td>Σ(yᵢ − ŷᵢ)²</td>
+    <td>回归<strong>解释不掉</strong>的纯噪声</td>
+  </tr>
+</table>
+
+<p>由此定义<strong>决定系数 R²</strong>：</p>
+
+<div class="math">
+  R² = SSR / SST = 1 − SSE / SST
+</div>
+
+<p>
+  R² 衡量<strong>自变量 x 能够解释因变量 y 波动的比例</strong>，取值 [0, 1]。
+  R² 越接近 1，拟合越好。对于一元线性回归，R² = r²（r 是 x 和 y 的相关系数）——
+  这也给了 R² 一个直观的统计意义：就是相关系数的平方。
+</p>
+
+<h2>显著性检验</h2>
+<p>
+  回归做出来了，还要检验"b 是否真的不为 0"（零假设 H₀: b = 0）。有两种等价的检验：
+</p>
+
+<h3>F 检验</h3>
+<p>
+  MSR = SSR/1（回归只有一个自变量，自由度 1），MSE = SSE/(n−2)：
+</p>
+<div class="math">
+  F = MSR / MSE &nbsp;~&nbsp; F(1, n−2)
+</div>
+
+<h3>t 检验</h3>
+<div class="math">
+  t = b̂ / SE(b̂) &nbsp;~&nbsp; t(n−2)，&nbsp;&nbsp;SE(b̂) = √(MSE / SS_xx)
+</div>
+
+<div class="tip">
+  <span class="tip-label">关键结论：t² = F</span>
+  在一元线性回归中，F(1, n−2) 和 t²(n−2) 的分布完全相同。<br>
+  t 检验针对的是斜率 b，F 检验针对的是整体回归——这里二者等价。
+</div>
+
+<h2>置信区间 vs 预测区间</h2>
+<p>给定一个新的 x₀，有两个容易混淆的区间：</p>
+
+<table>
+  <tr><th>区间类型</th><th>估计什么</th><th>中心</th><th>标准差</th></tr>
+  <tr>
+    <td><strong>置信区间</strong></td>
+    <td>x₀ 处的<strong>均值</strong> E(y|x₀)</td>
+    <td>ŷ₀ = â + b̂x₀</td>
+    <td>√(MSE[1/n + (x₀−x̄)²/SS_xx])</td>
+  </tr>
+  <tr>
+    <td><strong>预测区间</strong></td>
+    <td>x₀ 处的<strong>单个 y 值</strong></td>
+    <td>ŷ₀ = â + b̂x₀</td>
+    <td>√(MSE[1 + 1/n + (x₀−x̄)²/SS_xx])</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">直觉</span>
+  预测区间多了一个 "1" 项——因为预测单个 y 时，不仅有 a、b 估计的不确定性，还有<strong>随机误差 ε₀ 本身</strong>。
+  所以预测区间总是比置信区间<strong>更宽</strong>。
+</div>
+
+<h2>散点示意图</h2>
+<p>下图是我们的数值例子对应的散点 + 回归线。</p>
+
+<svg class="schematic" viewBox="0 0 560 400" width="100%" xmlns="http://www.w3.org/2000/svg" style="font-family: inherit;">
+  <!-- 坐标轴 -->
+  <line x1="70" y1="350" x2="520" y2="350" stroke="#333" stroke-width="1.5"/>
+  <line x1="70" y1="60"  x2="70"  y2="350" stroke="#333" stroke-width="1.5"/>
+
+  <!-- X轴刻度: 0~10, 每单位 45px (520-70=450, 10单位) -->
+  <g font-size="11" fill="#555" text-anchor="middle">
+    <text x="70"  y="370">0</text>
+    <text x="115" y="370">1</text>
+    <text x="160" y="370">2</text>
+    <text x="205" y="370">3</text>
+    <text x="250" y="370">4</text>
+    <text x="295" y="370">5</text>
+    <text x="340" y="370">6</text>
+    <text x="385" y="370">7</text>
+    <text x="430" y="370">8</text>
+    <text x="475" y="370">9</text>
+    <text x="520" y="370">10</text>
+  </g>
+
+  <!-- Y轴刻度: 0~9, 每单位 32.22px (350-60=290, 9单位) -->
+  <g font-size="11" fill="#555" text-anchor="end">
+    <text x="62" y="353">0</text>
+    <text x="62" y="321">1</text>
+    <text x="62" y="289">2</text>
+    <text x="62" y="257">3</text>
+    <text x="62" y="225">4</text>
+    <text x="62" y="193">5</text>
+    <text x="62" y="161">6</text>
+    <text x="62" y="129">7</text>
+    <text x="62" y="97" >8</text>
+    <text x="62" y="65" >9</text>
+  </g>
+
+  <!-- 点：(x,y) → (70+45x, 350-32.22y) -->
+  <g fill="#c53030">
+    <circle cx="115" cy="286" r="5"/>  <!-- (1,2) -->
+    <circle cx="160" cy="221" r="5"/>  <!-- (2,4) -->
+    <circle cx="205" cy="253" r="5"/>  <!-- (3,3) -->
+    <circle cx="250" cy="189" r="5"/>  <!-- (4,5) -->
+    <circle cx="295" cy="221" r="5"/>  <!-- (5,4) -->
+    <circle cx="340" cy="157" r="5"/>  <!-- (6,6) -->
+    <circle cx="385" cy="189" r="5"/>  <!-- (7,5) -->
+    <circle cx="430" cy="125" r="5"/>  <!-- (8,7) -->
+    <circle cx="475" cy="157" r="5"/>  <!-- (9,6) -->
+    <circle cx="520" cy="92"  r="5"/>  <!-- (10,8) -->
+  </g>
+
+  <!-- 回归线 y = 2 + 0.54545x -->
+  <!-- x=0: y=2 → ypx = 350-32.22*2 = 285.56 -->
+  <!-- x=10: y=2+5.4545=7.4545 → ypx = 350-32.22*7.4545 ≈ 350-240 = 110 -->
+  <line x1="70" y1="285" x2="520" y2="110" stroke="#2b6cb0" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- y=ȳ=5 基准线 -->
+  <line x1="70" y1="189" x2="520" y2="189" stroke="#999" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="525" y="193" font-size="11" fill="#666">ȳ = 5</text>
+
+  <!-- 标题和图例 -->
+  <text x="295" y="40" text-anchor="middle" font-size="13" font-weight="bold">散点 + 回归线 ŷ = 2 + 0.545x</text>
+  <g font-size="11">
+    <circle cx="100" cy="54" r="4" fill="#c53030"/>
+    <text x="110" y="57">样本点</text>
+    <line x1="170" y1="52" x2="200" y2="52" stroke="#2b6cb0" stroke-width="2"/>
+    <text x="206" y="57">回归线</text>
+    <line x1="265" y1="52" x2="295" y2="52" stroke="#999" stroke-width="1" stroke-dasharray="4,4"/>
+    <text x="301" y="57">均值线</text>
+  </g>
+</svg>
+
+<h2>完整数值例子</h2>
+<p>某工厂记录了 10 批产品的<strong>投入 x</strong>（千元）和<strong>产出 y</strong>（单位）：</p>
+
+<table>
+  <tr><th>批次</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><th>合计</th></tr>
+  <tr><th>x</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td><strong>55</strong></td></tr>
+  <tr><th>y</th><td>2</td><td>4</td><td>3</td><td>5</td><td>4</td><td>6</td><td>5</td><td>7</td><td>6</td><td>8</td><td><strong>50</strong></td></tr>
+</table>
+
+<p>先算基础统计量：n=10，</p>
+<div class="math">
+  x̄ = 55/10 = <strong>5.5</strong>，&nbsp;&nbsp; ȳ = 50/10 = <strong>5.0</strong>
+</div>
+
+<h3>第一步：算 SS_xx 和 SS_xy</h3>
+<p>
+  逐个点算 (xᵢ − 5.5)(yᵢ − 5)，把它加起来。为了展示，我们用表格：
+</p>
+
+<table>
+  <tr><th>i</th><th>xᵢ − 5.5</th><th>yᵢ − 5.0</th><th>(xᵢ−5.5)(yᵢ−5)</th><th>(xᵢ−5.5)²</th><th>(yᵢ−5)²</th></tr>
+  <tr><td>1</td><td>−4.5</td><td>−3</td><td>13.5</td><td>20.25</td><td>9</td></tr>
+  <tr><td>2</td><td>−3.5</td><td>−1</td><td>3.5</td><td>12.25</td><td>1</td></tr>
+  <tr><td>3</td><td>−2.5</td><td>−2</td><td>5.0</td><td>6.25</td><td>4</td></tr>
+  <tr><td>4</td><td>−1.5</td><td>0</td><td>0.0</td><td>2.25</td><td>0</td></tr>
+  <tr><td>5</td><td>−0.5</td><td>−1</td><td>0.5</td><td>0.25</td><td>1</td></tr>
+  <tr><td>6</td><td>+0.5</td><td>+1</td><td>0.5</td><td>0.25</td><td>1</td></tr>
+  <tr><td>7</td><td>+1.5</td><td>0</td><td>0.0</td><td>2.25</td><td>0</td></tr>
+  <tr><td>8</td><td>+2.5</td><td>+2</td><td>5.0</td><td>6.25</td><td>4</td></tr>
+  <tr><td>9</td><td>+3.5</td><td>+1</td><td>3.5</td><td>12.25</td><td>1</td></tr>
+  <tr><td>10</td><td>+4.5</td><td>+3</td><td>13.5</td><td>20.25</td><td>9</td></tr>
+  <tr><th>Σ</th><td colspan="2"></td><th><strong>45.0</strong></th><th><strong>82.5</strong></th><th><strong>30</strong></th></tr>
+</table>
+
+<p>所以 SS_xy = <strong>45</strong>，SS_xx = <strong>82.5</strong>，SST = Σ(yᵢ−ȳ)² = <strong>30</strong>。</p>
+
+<h3>第二步：算斜率和截距</h3>
+
+<div class="math">
+  b̂ = SS_xy / SS_xx = 45 / 82.5 = 6/11 ≈ <strong>0.5455</strong>
+</div>
+<div class="math">
+  â = ȳ − b̂ · x̄ = 5.0 − (6/11) × 5.5 = 5.0 − 3.0 = <strong>2.0</strong>
+</div>
+
+<p>回归方程：<strong>ŷ = 2 + 0.5455 x</strong>。</p>
+
+<h3>第三步：算 SSR、SSE、R²</h3>
+<p>
+  SSR = b̂² · SS_xx = (45/82.5)² × 82.5 = 45²/82.5 = 2025/82.5 ≈ <strong>24.5455</strong>
+</p>
+<div class="math">
+  SSE = SST − SSR = 30 − 24.5455 ≈ <strong>5.4545</strong>
+</div>
+<div class="math">
+  R² = SSR / SST = 24.5455 / 30 ≈ <strong>0.8182</strong>
+</div>
+
+<p>
+  相关系数 r = √R² ≈ <strong>0.9045</strong>，确认正相关很强。
+</p>
+
+<h3>第四步：F 检验和 t 检验</h3>
+
+<p>自由度：回归 1，残差 n−2 = 8。</p>
+
+<div class="math">
+  MSR = SSR/1 = 24.5455<br>
+  MSE = SSE/8 = 5.4545/8 ≈ 0.6818<br>
+  F = MSR/MSE = 24.5455 / 0.6818 ≈ <strong>36.00</strong>
+</div>
+
+<p>
+  F₀.₀₅(1, 8) ≈ <strong>5.32</strong>，计算 F ≈ 36 ≫ 临界值 → <strong>拒绝 H₀</strong>，b 显著不为 0。
+</p>
+
+<p>t 检验：</p>
+<div class="math">
+  SE(b̂) = √(MSE / SS_xx) = √(0.6818 / 82.5) ≈ √0.00826 ≈ 0.0909<br>
+  t = b̂ / SE(b̂) = 0.5455 / 0.0909 ≈ <strong>6.00</strong>
+</div>
+
+<p>t² = 36 = F ✓，和 F 检验完全一致。t₀.₀₂₅(8) = 2.31，6 > 2.31 → 同样显著。</p>
+
+<h3>方差分析表</h3>
+
+<table>
+  <tr><th>来源</th><th>SS</th><th>df</th><th>MS</th><th>F 值</th></tr>
+  <tr><td><strong>回归</strong></td><td>24.5455</td><td>1</td><td>24.5455</td><td rowspan="2" style="text-align:center; vertical-align:middle;">36.00</td></tr>
+  <tr><td><strong>残差</strong></td><td>5.4545</td><td>8</td><td>0.6818</td></tr>
+  <tr><td><strong>总计</strong></td><td><strong>30.0000</strong></td><td><strong>9</strong></td><td colspan="2" style="text-align:center; color:#888;">（30 = 24.55 + 5.45 ✓，R² = 0.8182）</td></tr>
+</table>
+
+<h3>数值一致性检查清单</h3>
+
+<table>
+  <tr><th>检查项</th><th>结果</th></tr>
+  <tr><td>SST ≥ 0，SSR ≥ 0，SSE ≥ 0</td><td>30 ≥ 0，24.55 ≥ 0，5.45 ≥ 0 ✓</td></tr>
+  <tr><td>SST = SSR + SSE</td><td>24.55 + 5.45 = 30 ✓</td></tr>
+  <tr><td>0 ≤ R² ≤ 1</td><td>0.8182 ✓</td></tr>
+  <tr><td>|r| ≤ 1</td><td>0.9045 ✓</td></tr>
+  <tr><td>R² = r²</td><td>0.9045² ≈ 0.8181 ≈ R² ✓</td></tr>
+  <tr><td>F ≥ 0</td><td>36.00 ✓</td></tr>
+  <tr><td>t² = F</td><td>6.00² = 36.00 = F ✓</td></tr>
+  <tr><td>MS = SS/df</td><td>MSR = 24.5455/1 = 24.5455；MSE = 5.4545/8 = 0.6818 ✓</td></tr>
+</table>
+
+<h2>公式速查</h2>
+
+<table>
+  <tr><th>项目</th><th>公式</th></tr>
+  <tr><td>斜率估计</td><td>b̂ = Σ(xᵢ−x̄)(yᵢ−ȳ) / Σ(xᵢ−x̄)² = SS_xy / SS_xx</td></tr>
+  <tr><td>截距估计</td><td>â = ȳ − b̂x̄</td></tr>
+  <tr><td>决定系数</td><td>R² = SSR/SST = b̂²·SS_xx / Σ(yᵢ−ȳ)²</td></tr>
+  <tr><td>F 检验</td><td>F = MSR/MSE ~ F(1, n−2)</td></tr>
+  <tr><td>t 检验</td><td>t = b̂ / √(MSE/SS_xx) ~ t(n−2)</td></tr>
+  <tr><td>MSE</td><td>SSE/(n−2)，其中 SSE = SST − SSR</td></tr>
+</table>
+
+<h2>Quiz</h2>
+<div class="quiz" id="quiz-container"></div>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  茆诗松等《概率论与数理统计》§11。考研数理统计中，一元线性回归的"b̂ 的公式 + F/t 检验 + R² 含义"是必考组合。
+</div>
+
+<div class="ask-agent">
+  哪个公式没记住？想换另一组数据再手算一遍？<br>
+  <strong>直接问我</strong>。
+</div>
+
+<div class="footer-nav">
+  <span class="lesson-counter">概率论 · Lesson 0004 / ∞</span>
+  <span><a href="0003-one-way-anova-and-two-factor.html">← 上一课：双因素方差分析</a></span>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "在一元线性回归中，决定系数 R² = 0.818，说明：",
+    options: ["x 和 y 有强负相关", "x 能解释约 81.8% 的 y 波动", "x 不能解释 y 的任何波动", "相关系数 r = 0.818"],
+    correct: 1,
+    explain: "R² = SSR/SST，就是 x 解释掉的 y 波动比例。r = ±√R² = ±0.904，符号由 b̂ 的正负决定。"
+  },
+  {
+    q: "本课例子中，t 检验算出 t ≈ 6.0，F 检验算出 F ≈ 36.0。这说明了什么关系？",
+    options: ["t 和 F 没关系", "t² = F（一元回归中两个检验等价）", "F = 2t", "哪个都不准"],
+    correct: 1,
+    explain: "在一元线性回归中，F(1, n−2) = t²(n−2)，所以 t² = F。这也解释了为什么我们既可以做 t 检验也可以做 F 检验——它们完全等价。"
+  },
+  {
+    q: "以下关于置信区间和预测区间的说法，正确的是：",
+    options: ["置信区间估计单个 y 值", "预测区间估计均值 E(y|x₀)", "同一 x₀ 下，预测区间比置信区间更宽", "两者中心不同"],
+    correct: 2,
+    explain: "置信区间估计的是均值 E(y|x₀)（不确定性只来自 a、b 的估计误差），预测区间估计的是单个 y 值（还要加上随机误差 ε₀ 本身的波动）。所以预测区间总比置信区间宽。"
+  },
+  {
+    q: "某回归分析中 SST = 100，SSR = 64。则 SSE 和 R² 分别是：",
+    options: ["SSE = 36, R² = 0.64", "SSE = 36, R² = 0.36", "SSE = 64, R² = 0.64", "SSE = 164, R² = 1.64"],
+    correct: 0,
+    explain: "SST = SSR + SSE → SSE = 100 − 64 = 36。R² = SSR/SST = 64/100 = 0.64。也可以用 1 − SSE/SST = 1 − 36/100 = 0.64，答案必须自洽。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+});
+</script>
+
+</body>
+</html>

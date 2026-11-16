@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 0011 — 时间序列分析初步</title>
+<link rel="stylesheet" href="../assets/teach.css">
+<style>
+.schematic {
+  display: block;
+  margin: 1.5rem auto;
+  max-width: 640px;
+  height: auto;
+}
+.schematic-label {
+  text-align: center;
+  font-size: 0.85em;
+  color: var(--text-light);
+  margin-top: -0.5rem;
+  margin-bottom: 1.5rem;
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0011 — 时间序列分析初步</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">平稳过程实战 · 离散时间 · 约 30 分钟</p>
+
+<h2>从连续到离散：时间序列</h2>
+
+<p>
+  前两课讲的是<strong>连续时间</strong>平稳过程 <code>{X(t), t∈ℝ}</code>。
+  但实际工作中——经济数据、股票价格、天气记录、网络流量——我们拿到的几乎都是
+  <strong>离散采样</strong>的数据：
+</p>
+
+<div class="math">
+  {Xₜ, t ∈ ℤ} = {..., X₋₂, X₋₁, X₀, X₁, X₂, ...}
+</div>
+
+<p>这就是<strong>时间序列</strong>（Time Series）——离散参数的随机过程。
+它是平稳过程理论在数据科学中的<strong>主战场</strong>。</p>
+
+<h2>宽平稳时间序列</h2>
+
+<p>宽平稳的条件和连续情形完全一致，只是 t 变成了整数：</p>
+
+<ol>
+  <li><strong>均值常数</strong>：<code>E[Xₜ] = μ</code>（不随 t 变化）</li>
+  <li><strong>自相关仅依赖间隔</strong>：<code>γₖ = Cov(Xₜ, Xₜ₊ₖ)</code>（自协方差）</li>
+  <li><strong>二阶矩存在</strong>：<code>E[Xₜ²] < ∞</code></li>
+</ol>
+
+<p>注意：在时间序列中，通常用 <code>γₖ</code> 表示<strong>自协方差</strong>，
+用 <code>ρₖ = γₖ / γ₀</code> 表示<strong>自相关系数</strong>（标准化后的版本，|ρₖ| ≤ 1）。</p>
+
+<h3>自相关函数的样本估计</h3>
+
+<p>
+  各态历经性保证了：一条足够长的样本序列 <code>{x₁, x₂, ..., x_T}</code>
+  可以用来估计自相关系数：
+</p>
+
+<div class="math">
+  ρ̂ₖ = [Σ_{t=1}^{T−k} (xₜ − x̄)(xₜ₊ₖ − x̄)] / [Σ_{t=1}^{T} (xₜ − x̄)²]
+</div>
+
+<p>其中 <code>x̄ = 1/T Σxₜ</code> 是样本均值。这就是我们在 Python/R 中调用
+<code>acf()</code> 函数时底层在做的事。</p>
+
+<h2>三大经典模型</h2>
+
+<p>
+  时间序列分析的核心思想是：<strong>用简单的模型来拟合数据的相关结构</strong>。
+  最基本的三个模型是 AR、MA、ARMA——它们是 Box-Jenkins 方法的基石。
+</p>
+
+<h3>白噪声：所有模型的"原子"</h3>
+
+<p>首先定义<strong>白噪声</strong>作为基本构件：</p>
+
+<div class="math">
+  εₜ ~ WN(0, σ²)，即 E[εₜ]=0，Var(εₜ)=σ²，Cov(εₜ, εₛ)=0（t≠s）
+</div>
+
+<p>白噪声是"完全无记忆"的序列——每个时刻独立于其他时刻。
+所有平稳过程都可以看作白噪声经过某种"滤波器"产生的。</p>
+
+<h2>自回归模型 AR(p)</h2>
+
+<h3>定义</h3>
+
+<p><strong>自回归</strong>（Autoregressive）的思想：当前值是过去若干期的线性组合，
+加上一点白噪声"创新"：</p>
+
+<div class="math">
+  Xₜ = c + φ₁Xₜ₋₁ + φ₂Xₜ₋₂ + ... + φₚXₜ₋ₚ + εₜ
+</div>
+
+<p>其中：
+  <code>φ₁, ..., φₚ</code> 是<strong>自回归系数</strong>，
+  <code>c</code> 是常数项，
+  <code>εₜ</code> 是白噪声（独立于 Xₜ₋₁, Xₜ₋₂, ...）。
+</p>
+
+<h3>平稳条件</h3>
+
+<p>AR(p) 平稳的充要条件是<strong>特征方程</strong>的所有根都在单位圆外：</p>
+
+<div class="math">
+  1 − φ₁z − φ₂z² − ... − φₚzᵖ = 0 的所有根 zᵢ 满足 |zᵢ| > 1
+</div>
+
+<p>对于最常见的 AR(1)，这个条件简化为 <code>|φ₁| < 1</code>——非常好记！</p>
+
+<h3>ACF 性质：拖尾</h3>
+
+<p>
+  AR(p) 的自相关系数 <code>ρₖ</code> 是<strong>拖尾</strong>的——要么指数衰减，
+  要么正弦衰减（取决于特征根是实根还是复根），但永远不会"突然截断"。
+</p>
+
+<div class="tip">
+  <span class="tip-label">AR(1) 的例子</span>
+  设 <code>Xₜ = 0.5 Xₜ₋₁ + εₜ</code>（φ₁ = 0.5 < 1，平稳）。
+  自相关系数可以递推得到：<code>ρₖ = 0.5ᵏ</code>。
+  这是一个完美的指数衰减，永远不会降到 0，只是越来越小。
+</div>
+
+<svg class="schematic" viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg">
+  <rect x="60" y="30" width="500" height="200" fill="#fafbfc" stroke="#e2e8f0"/>
+  <!-- 坐标轴 -->
+  <line x1="60" y1="230" x2="560" y2="230" stroke="#1a1a1a" stroke-width="1.5"/>
+  <line x1="60" y1="30" x2="60" y2="230" stroke="#1a1a1a" stroke-width="1.5"/>
+  <line x1="60" y1="130" x2="560" y2="130" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"/>
+  <!-- 轴标签 -->
+  <text x="570" y="234" font-size="13" fill="#4a4a4a">k (滞后)</text>
+  <text x="45" y="35" font-size="13" fill="#4a4a4a">ρₖ</text>
+  <text x="55" y="234" font-size="10" fill="#4a4a4a">0</text>
+  <text x="55" y="134" font-size="10" fill="#4a4a4a">0</text>
+  <text x="55" y="34" font-size="10" fill="#4a4a4a">1</text>
+
+  <!-- 指数衰减曲线 (AR(1) φ=0.6) -->
+  <path d="M 60,30
+           C 100,40 120,70 140,105
+           C 160,125 180,140 200,155
+           C 230,170 270,185 310,195
+           C 360,205 420,215 480,222
+           L 560,229"
+        fill="none" stroke="#2b6cb0" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- 数据点 -->
+  <circle cx="100" cy="58" r="3.5" fill="#2b6cb0"/>
+  <circle cx="140" cy="105" r="3.5" fill="#2b6cb0"/>
+  <circle cx="180" cy="140" r="3.5" fill="#2b6cb0"/>
+  <circle cx="220" cy="165" r="3.5" fill="#2b6cb0"/>
+  <circle cx="260" cy="182" r="3.5" fill="#2b6cb0"/>
+  <circle cx="300" cy="195" r="3.5" fill="#2b6cb0"/>
+  <circle cx="340" cy="204" r="3.5" fill="#2b6cb0"/>
+  <circle cx="380" cy="212" r="3.5" fill="#2b6cb0"/>
+  <circle cx="420" cy="217" r="3.5" fill="#2b6cb0"/>
+  <circle cx="460" cy="221" r="3.5" fill="#2b6cb0"/>
+
+  <!-- 阴影区域: 95% 置信带 -->
+  <path d="M 60,230 L 560,230 L 560,230 L 60,230 Z" fill="none"/>
+  <rect x="60" y="125" width="500" height="110" fill="#fef2f2" opacity="0.5"/>
+  <text x="450" y="200" font-size="10" fill="#dc2626" font-style="italic">ρₖ ≈ 0.6ᵏ 指数衰减</text>
+  <text x="220" y="22" font-size="13" fill="#2b6cb0" font-weight="600">AR(1) 自相关系数（拖尾）</text>
+</svg>
+<div class="schematic-label">图 1: AR(1) 模型 Xₜ = 0.6Xₜ₋₁ + εₜ 的自相关系数 ρₖ = 0.6ᵏ，展示典型的拖尾特征</div>
+
+<h2>滑动平均模型 MA(q)</h2>
+
+<h3>定义</h3>
+
+<p><strong>滑动平均</strong>（Moving Average）的思想：当前值是<strong>当前及过去若干期的白噪声</strong>的线性组合：</p>
+
+<div class="math">
+  Xₜ = c + εₜ + θ₁εₜ₋₁ + θ₂εₜ₋₂ + ... + θ_qεₜ₋q
+</div>
+
+<p>MA 模型和 AR 模型的"因果方向"相反：AR 是"过去的 X 影响现在的 X"，
+MA 是"过去的噪声影响现在的 X"。</p>
+
+<h3>MA 模型总是平稳的</h3>
+
+<p>只要 q 是有限的，MA(q) 一定是平稳的。但它有一个新条件——<strong>可逆性</strong>：</p>
+
+<div class="math">
+  1 + θ₁z + θ₂z² + ... + θ_qz^q = 0 的所有根 zᵢ 满足 |zᵢ| > 1
+</div>
+
+<p>可逆性保证了 MA 模型可以"翻转"成一个 AR(∞) 模型，方便分析。</p>
+
+<h3>ACF 性质：截尾</h3>
+
+<p>MA(q) 的自相关系数有一个非常鲜明的特征——<strong>k > q 时 ρₖ = 0</strong>！
+只有前 q 个滞后有非零自相关，之后<strong>突然截断</strong>。</p>
+
+<p>这是因为 Xₜ 只和 εₜ, εₜ₋₁, ..., εₜ₋q 有关，而白噪声不同时刻独立，
+所以当间隔超过 q 后，两个变量之间完全没有公共的"噪声源"。</p>
+
+<svg class="schematic" viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg">
+  <rect x="60" y="30" width="500" height="200" fill="#fafbfc" stroke="#e2e8f0"/>
+  <!-- 坐标轴 -->
+  <line x1="60" y1="230" x2="560" y2="230" stroke="#1a1a1a" stroke-width="1.5"/>
+  <line x1="60" y1="30" x2="60" y2="230" stroke="#1a1a1a" stroke-width="1.5"/>
+  <line x1="60" y1="130" x2="560" y2="130" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"/>
+  <!-- 轴标签 -->
+  <text x="570" y="234" font-size="13" fill="#4a4a4a">k (滞后)</text>
+  <text x="45" y="35" font-size="13" fill="#4a4a4a">ρₖ</text>
+  <text x="55" y="234" font-size="10" fill="#4a4a4a">0</text>
+  <text x="55" y="134" font-size="10" fill="#4a4a4a">0</text>
+  <text x="55" y="34" font-size="10" fill="#4a4a4a">1</text>
+
+  <!-- 截尾点标记: q=2 -->
+  <line x1="210" y1="30" x2="210" y2="230" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,3" opacity="0.7"/>
+  <text x="195" y="25" font-size="10" fill="#dc2626">q=2</text>
+
+  <!-- 垂直线 (柱状图风格) -->
+  <!-- ρ₀ = 1 -->
+  <line x1="80" y1="50" x2="80" y2="230" stroke="#059669" stroke-width="3"/>
+  <circle cx="80" cy="50" r="4" fill="#059669"/>
+  <text x="85" y="52" font-size="10" fill="#059669">ρ₀=1</text>
+
+  <!-- ρ₁ ≈ 0.5 -->
+  <line x1="150" y1="130" x2="150" y2="230" stroke="#059669" stroke-width="3"/>
+  <circle cx="150" cy="130" r="4" fill="#059669"/>
+  <text x="155" y="132" font-size="10" fill="#059669">ρ₁≈0.5</text>
+
+  <!-- ρ₂ ≈ -0.2 (负的) -->
+  <line x1="210" y1="180" x2="210" y2="230" stroke="#059669" stroke-width="3"/>
+  <circle cx="210" cy="180" r="4" fill="#059669"/>
+  <text x="215" y="182" font-size="10" fill="#059669">ρ₂≈−0.2</text>
+
+  <!-- ρ₃ 及之后都是 0 -->
+  <circle cx="280" cy="230" r="3" fill="#94a3b8"/>
+  <circle cx="350" cy="230" r="3" fill="#94a3b8"/>
+  <circle cx="420" cy="230" r="3" fill="#94a3b8"/>
+  <circle cx="490" cy="230" r="3" fill="#94a3b8"/>
+  <circle cx="560" cy="230" r="3" fill="#94a3b8"/>
+
+  <text x="370" y="225" font-size="10" fill="#94a3b8" font-style="italic">k > q : ρₖ = 0</text>
+  <text x="220" y="22" font-size="13" fill="#059669" font-weight="600">MA(2) 自相关系数（截尾）</text>
+</svg>
+<div class="schematic-label">图 2: MA(2) 模型的自相关系数——在 k > 2 时突然截断为零，这是 MA 模型的标志性特征</div>
+
+<h2>ARMA(p, q)：两者的组合</h2>
+
+<p>把 AR 和 MA 组合起来，得到<strong>自回归滑动平均</strong>模型：</p>
+
+<div class="math">
+  Xₜ = c + φ₁Xₜ₋₁ + ... + φₚXₜ₋ₚ + εₜ + θ₁εₜ₋₁ + ... + θ_qεₜ₋q
+</div>
+
+<p>ARMA 结合了两者的优点：用较少的参数（p 和 q 都不大）就能灵活拟合各种相关结构。
+它的 ACF 是<strong>混合的</strong>——既有 AR 部分的拖尾，又有 MA 部分的影响。</p>
+
+<h2>ARIMA(p, d, q)：处理非平稳</h2>
+
+<p>现实数据经常有<strong>趋势</strong>（比如 GDP 逐年增长），这时序列不是平稳的。
+解决方法是先<strong>差分</strong>：</p>
+
+<div class="math">
+  ΔXₜ = Xₜ − Xₜ₋₁
+</div>
+
+<p>做了 d 次差分之后，如果差分后的序列是平稳的，就对它拟合 ARMA(p, q)——
+整体就是 <strong>ARIMA(p, d, q)</strong>。</p>
+
+<div class="tip">
+  <span class="tip-label">怎么选 d？</span>
+  最常用的方法是<strong>ADF 检验</strong>（Augmented Dickey-Fuller）——
+  一个假设检验，原假设"序列有单位根（非平稳）"。如果 p-value 很小（< 0.05），
+  就拒绝原假设，认为序列平稳；否则继续差分。
+</div>
+
+<h2>ACF / PACF 图形识别</h2>
+
+<p>这是 Box-Jenkins 方法论的核心——用 ACF 和 PACF 图来<strong>识别模型阶数</strong>：</p>
+
+<table>
+  <tr>
+    <th>模型</th>
+    <th>ACF 特征</th>
+    <th>PACF 特征</th>
+  </tr>
+  <tr>
+    <td><strong>AR(p)</strong></td>
+    <td>拖尾（指数或正弦衰减）</td>
+    <td><strong>截尾</strong>（k > p 时为 0）</td>
+  </tr>
+  <tr>
+    <td><strong>MA(q)</strong></td>
+    <td><strong>截尾</strong>（k > q 时为 0）</td>
+    <td>拖尾（指数或正弦衰减）</td>
+  </tr>
+  <tr>
+    <td><strong>ARMA(p,q)</strong></td>
+    <td>拖尾</td>
+    <td>拖尾</td>
+  </tr>
+</table>
+
+<p><strong>PACF</strong>（偏自相关函数）衡量的是"剔除了中间变量影响后，Xₜ 和 Xₜ₊ₖ 的直接相关"。
+AR 和 MA 在 ACF/PACF 上是<strong>对偶</strong>的关系——AR 的 PACF 截尾，MA 的 ACF 截尾。</p>
+
+<h2>样本时间序列与拟合</h2>
+
+<p>下面是一段模拟的 AR(1) 时间序列样本（φ₁ = 0.7），叠加了拟合线：</p>
+
+<svg class="schematic" viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg">
+  <rect x="60" y="30" width="500" height="200" fill="#fafbfc" stroke="#e2e8f0"/>
+  <!-- 坐标轴 -->
+  <line x1="60" y1="230" x2="560" y2="230" stroke="#1a1a1a" stroke-width="1.5"/>
+  <line x1="60" y1="30" x2="60" y2="230" stroke="#1a1a1a" stroke-width="1.5"/>
+  <line x1="60" y1="130" x2="560" y2="130" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"/>
+  <!-- 轴标签 -->
+  <text x="570" y="234" font-size="13" fill="#4a4a4a">t</text>
+  <text x="45" y="35" font-size="13" fill="#4a4a4a">Xₜ</text>
+  <text x="55" y="234" font-size="10" fill="#4a4a4a">0</text>
+  <text x="55" y="134" font-size="10" fill="#4a4a4a">0</text>
+
+  <!-- 样本散点 -->
+  <g fill="#2b6cb0" opacity="0.7">
+    <circle cx="70" cy="145" r="2.2"/><circle cx="80" cy="155" r="2.2"/><circle cx="90" cy="175" r="2.2"/>
+    <circle cx="100" cy="195" r="2.2"/><circle cx="110" cy="180" r="2.2"/><circle cx="120" cy="190" r="2.2"/>
+    <circle cx="130" cy="160" r="2.2"/><circle cx="140" cy="170" r="2.2"/><circle cx="150" cy="140" r="2.2"/>
+    <circle cx="160" cy="110" r="2.2"/><circle cx="170" cy="100" r="2.2"/><circle cx="180" cy="80" r="2.2"/>
+    <circle cx="190" cy="100" r="2.2"/><circle cx="200" cy="90" r="2.2"/><circle cx="210" cy="120" r="2.2"/>
+    <circle cx="220" cy="130" r="2.2"/><circle cx="230" cy="100" r="2.2"/><circle cx="240" cy="85" r="2.2"/>
+    <circle cx="250" cy="75" r="2.2"/><circle cx="260" cy="105" r="2.2"/><circle cx="270" cy="120" r="2.2"/>
+    <circle cx="280" cy="110" r="2.2"/><circle cx="290" cy="130" r="2.2"/><circle cx="300" cy="150" r="2.2"/>
+    <circle cx="310" cy="145" r="2.2"/><circle cx="320" cy="165" r="2.2"/><circle cx="330" cy="180" r="2.2"/>
+    <circle cx="340" cy="170" r="2.2"/><circle cx="350" cy="160" r="2.2"/><circle cx="360" cy="140" r="2.2"/>
+    <circle cx="370" cy="155" r="2.2"/><circle cx="380" cy="135" r="2.2"/><circle cx="390" cy="120" r="2.2"/>
+    <circle cx="400" cy="110" r="2.2"/><circle cx="410" cy="95" r="2.2"/><circle cx="420" cy="115" r="2.2"/>
+    <circle cx="430" cy="130" r="2.2"/><circle cx="440" cy="150" r="2.2"/><circle cx="450" cy="170" r="2.2"/>
+    <circle cx="460" cy="165" r="2.2"/><circle cx="470" cy="180" r="2.2"/><circle cx="480" cy="190" r="2.2"/>
+    <circle cx="490" cy="175" r="2.2"/><circle cx="500" cy="160" r="2.2"/><circle cx="510" cy="150" r="2.2"/>
+    <circle cx="520" cy="135" r="2.2"/><circle cx="530" cy="120" r="2.2"/><circle cx="540" cy="140" r="2.2"/>
+    <circle cx="550" cy="155" r="2.2"/><circle cx="560" cy="170" r="2.2"/>
+  </g>
+
+  <!-- 拟合平滑线 -->
+  <path d="M 70,155
+           C 110,180 140,155 170,100
+           C 200,85 230,105 260,115
+           C 290,125 320,160 350,165
+           C 380,150 410,115 440,125
+           C 470,170 500,165 560,150"
+        fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="5,3"/>
+
+  <text x="470" y="65" font-size="10" fill="#dc2626" font-style="italic">拟合线 X̂ₜ</text>
+  <text x="85" y="65" font-size="10" fill="#2b6cb0" font-style="italic">样本点 xₜ</text>
+  <text x="220" y="22" font-size="13" fill="#1a1a1a" font-weight="600">AR(1) 样本序列 + 拟合线</text>
+</svg>
+<div class="schematic-label">图 3: 模拟的 AR(1) 时间序列样本（蓝色散点）与模型拟合线（红色虚线）。序列围绕均值 0 波动，但因为 φ₁ = 0.7 有较强自相关，一个"高点"之后往往跟着另一个"高点"，体现了自回归结构。</div>
+
+<h2>模型选择实战流程</h2>
+
+<ol>
+  <li><strong>看图 + ADF 检验</strong>判断是否平稳 → 不平稳则差分（记录 d）</li>
+  <li>算 <code>ACF</code> 和 <code>PACF</code> 图</li>
+  <li>根据"截尾/拖尾"特征判断 AR 还是 MA，估计 p 或 q</li>
+  <li>拟合候选模型（AR(p)、MA(q)、ARMA(p,q)）</li>
+  <li>用 <strong>AIC/BIC 信息准则</strong>选择最优模型</li>
+  <li>残差检验：残差应该接近白噪声</li>
+</ol>
+
+<div class="tip">
+  <span class="tip-label">AIC/BIC 准则</span>
+  两个都是衡量模型"拟合好 + 参数不要太多"的权衡：
+  <ul>
+    <li><strong>AIC</strong>（赤池信息准则）= 2k − 2ln(L)，k 是参数个数</li>
+    <li><strong>BIC</strong>（贝叶斯信息准则）= k·ln(n) − 2ln(L)，n 是样本量</li>
+  </ul>
+  值越小越好。BIC 对参数个数惩罚更重，倾向选更简单的模型。
+</div>
+
+<h2>交互式测验</h2>
+
+<div class="quiz" id="quiz-container"></div>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  Hamilton《Time Series Analysis》第一章（自回归与滑动平均基础）；
+  Box & Jenkins《Time Series Analysis: Forecasting and Control》（方法论原创经典）；
+  王梓坤《随机过程论》§4.3 离散参数平稳过程。
+</div>
+
+<div class="footer-nav">
+  <span class="lesson-counter">概率论 · Lesson 0011 / ∞</span>
+  <span>
+    <a href="0010-power-spectral-density.html">← 上一课</a> ·
+    <a href="0012-coming-soon.html">下一课 →</a>
+  </span>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "AR(1) 模型 Xₜ = φXₜ₋₁ + εₜ 平稳的充要条件是：",
+    options: [
+      "φ > 0",
+      "|φ| < 1",
+      "φ < 1",
+      "φ ≠ 0"
+    ],
+    correct: 1,
+    explain: "AR(1) 的特征方程 1 − φz = 0 的根是 z = 1/φ。平稳要求 |z| > 1，即 |1/φ| > 1，也就是 |φ| < 1。如果 φ = 1，就是随机游走（单位根，非平稳）；如果 |φ| > 1，序列会指数爆炸。"
+  },
+  {
+    q: "MA(2) 模型 Xₜ = εₜ + θ₁εₜ₋₁ + θ₂εₜ₋₂ 的自相关系数 ρₖ 在 k > 2 时等于多少？",
+    options: [
+      "继续指数衰减",
+      "等于 1",
+      "等于 0",
+      "取决于 θ₁ 和 θ₂"
+    ],
+    correct: 2,
+    explain: "MA(q) 的 ACF 在 k > q 时<strong>截尾</strong>为 0。这是 MA 模型的标志性特征——因为 Xₜ 只和 εₜ, εₜ₋₁, ..., εₜ₋q 有关，而白噪声不同时刻独立，间隔超过 q 后两者没有公共噪声源。"
+  },
+  {
+    q: "如果一个时间序列的 ACF 图是拖尾的（逐渐衰减），PACF 图在 p=2 后截尾为 0，那么这个序列最可能适合什么模型？",
+    options: [
+      "MA(2)",
+      "AR(2)",
+      "ARMA(1,1)",
+      "白噪声"
+    ],
+    correct: 1,
+    explain: "ACF 拖尾 + PACF 在 p 后截尾 = AR(p) 的经典识别特征。MA(q) 的特征正好相反：ACF 在 q 后截尾，PACF 拖尾。这是 Box-Jenkins 方法论中最核心的判别规则。"
+  },
+  {
+    q: "关于 ARIMA(p, d, q)，参数 d 的含义是什么？",
+    options: [
+      "AR 部分的阶数",
+      "MA 部分的阶数",
+      "差分的次数，使差分后序列平稳",
+      "数据维度"
+    ],
+    correct: 2,
+    explain: "ARIMA(p,d,q) 中，d 是<strong>差分阶数</strong>。先对原始序列做 d 次差分，得到平稳序列，再对平稳序列拟合 ARMA(p,q)。p 是 AR 阶数，q 是 MA 阶数。例如 d=1 意味着做一次差分 ΔXₜ = Xₜ − Xₜ₋₁。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = [];
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+
+  if (userAnswers.filter(v => v !== undefined).length === quizzes.length) {
+    setTimeout(showResult, 300);
+  }
+});
+
+function showResult() {
+  const right = userAnswers.filter(v => v).length;
+  let msg;
+  if (right === 4) msg = '🎉 全对！AR/MA/ARIMA 的识别逻辑已经完全理清。';
+  else if (right === 3) msg = '👍 不错，模型识别和定阶的核心思路掌握了。';
+  else if (right === 2) msg = '📚 AR 和 MA 的 ACF/PACF 对偶关系需要再对照表格看一遍。';
+  else msg = '🔄 先把 AR(1) 的平稳条件和 MA 的截尾性质记牢，再扩展到一般情形。';
+
+  const summary = document.createElement('div');
+  summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+  summary.innerHTML = `<strong>📊 测验结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+  container.after(summary);
+}
+</script>
+
+</body>
+</html>

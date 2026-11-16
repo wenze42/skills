@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0005 — 随机过程基本概念</title>
+<link rel="stylesheet" href="../assets/teach.css">
+<style>
+.schematic { display: block; width: 100%; max-width: 560px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-size: 16px; fill: var(--text);
+}
+.schematic .lbl { font-size: 14px; fill: var(--text-light); }
+.schematic .main-curve { fill: none; stroke: var(--accent); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.schematic .other-curve { fill: none; stroke: #718096; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.5; }
+.schematic .axis { stroke: var(--text); stroke-width: 1.5; fill: none; }
+.schematic .tick { stroke: var(--text); stroke-width: 1.2; }
+.schematic .step-curve { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; }
+</style>
+</head>
+<body>
+
+<h1>Lesson 0005 — 随机过程基本概念</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">概率论 · 随机过程入门 · 约 35 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">从单个到一族——思维方式的跃迁</span>
+  前三课我们讨论的都是<strong>单个</strong>随机变量 X：它取什么值、概率分布是什么。
+  而随机过程是<strong>无穷多个</strong>随机变量排成一排：X(t) 对每个时刻 t 都是一个随机变量。
+  这是从"静态随机"到"动态随机"的关键一步。
+</div>
+
+<h2>一、随机过程的定义</h2>
+
+<div class="math">
+{ X(t), t ∈ T } 是一个<strong>随机过程</strong>，指的是：对每个参数 t ∈ T，
+X(t) 都是一个定义在同一概率空间上的随机变量。
+</div>
+
+<p>这里有两个核心集合必须分清：</p>
+
+<table>
+  <tr><th>记号</th><th>名称</th><th>含义</th></tr>
+  <tr>
+    <td><strong>T</strong>（参数集）</td>
+    <td>时间轴</td>
+    <td>离散 T = {0, ±1, ±2, …} 或连续 T = [0, ∞)</td>
+  </tr>
+  <tr>
+    <td><strong>S</strong>（状态空间）</td>
+    <td>X(t) 能取的值域</td>
+    <td>可数集（离散状态）或实数域 ℝ（连续状态）</td>
+  </tr>
+</table>
+
+<p>直观上，随机过程就是"随时间演化的<strong>随机</strong>系统"。比如：</p>
+<ul>
+  <li>某只股票每天的收盘价——参数集 T 离散（交易日），状态空间 S 连续（价格）</li>
+  <li>布朗运动中某个粒子的位置——参数集 T 连续，状态空间 S 是 ℝ³</li>
+  <li>医院急诊室的就诊人数——状态空间 S 是 {0, 1, 2, …}（离散）</li>
+</ul>
+
+<h3>样本函数（样本曲线 / 轨道）</h3>
+
+<p>
+  固定一个<strong>样本点 ω</strong>（即一次完整的物理实现），让 t 在 T 上变化，
+  你会得到一个确定的函数 x(t) = X(t, ω)——这就是<strong>样本函数</strong>。
+  一次硬币抛掷序列、一次金融市场的价格轨迹、一个粒子从起点开始的具体路径——
+  都是各自随机过程的<strong>一条样本函数</strong>。
+</p>
+
+<p>
+  随机过程本身是"抽象的概率集合"，但<strong>样本函数才是你在现实中看到的东西</strong>。
+  同一时刻可以画出许多条不同的样本函数——它们叠加在一起，就构成了过程的完整图景。
+</p>
+
+<svg class="schematic" viewBox="0 0 560 320" role="img">
+  <title>多条布朗运动样本函数叠加：同一坐标系下的不同实现</title>
+  <!-- 坐标轴 -->
+  <line class="axis" x1="70" y1="280" x2="530" y2="280"/>
+  <polygon points="530,274 530,286 544,280" fill="#1a1a1a"/>
+  <line class="axis" x1="70" y1="280" x2="70" y2="30"/>
+  <polygon points="64,30 76,30 70,16" fill="#1a1a1a"/>
+  <text x="540" y="300" text-anchor="end" class="lbl">时间 t</text>
+  <text x="56" y="40" text-anchor="end" class="lbl">X(t)</text>
+
+  <!-- 多条灰色辅助曲线（其他样本函数） -->
+  <path class="other-curve" d="M70,280 C100,260 120,220 150,190 C180,160 210,200 240,170 C270,140 300,180 330,210 C360,240 390,200 420,230 C450,260 480,220 510,250"/>
+  <path class="other-curve" d="M70,280 C100,300 130,270 160,290 C190,310 220,260 250,280 C280,300 310,270 340,250 C370,230 400,260 430,280 C460,300 490,270 520,260"/>
+  <path class="other-curve" d="M70,280 C100,240 130,260 160,230 C190,200 220,240 250,220 C280,200 310,170 340,200 C370,230 400,190 430,170 C460,150 490,180 520,200"/>
+  <path class="other-curve" d="M70,280 C100,300 130,320 160,310 C190,300 220,330 250,310 C280,290 310,320 340,300 C370,280 400,310 430,290 C460,270 490,300 520,290"/>
+
+  <!-- 主样本函数（蓝色粗线） -->
+  <path class="main-curve" d="M70,280 C90,265 110,285 130,255 C150,225 170,260 190,240 C210,220 230,255 250,235 C270,215 290,250 310,220 C330,190 350,225 370,200 C390,175 410,210 430,185 C450,160 470,195 490,170 C510,145 520,175 530,155"/>
+
+  <!-- 标签 -->
+  <text x="450" y="140" class="lbl">主样本函数 X(t, ω₁)</text>
+  <text x="200" y="310" class="lbl">其他可能的实现 X(t, ω₂), X(t, ω₃), …</text>
+  <text x="62" y="284" class="lbl">0</text>
+
+  <!-- 垂直虚线标记某个时刻 -->
+  <line class="axis" x1="300" y1="280" x2="300" y2="40" stroke-dasharray="4 3"/>
+  <text x="304" y="50" class="lbl">t₀</text>
+  <text x="304" y="292" class="lbl">在 t₀ 处所有样本函数的取值不同 → X(t₀) 是随机变量</text>
+</svg>
+
+<div class="tip">
+  <span class="tip-label">关键洞察</span>
+  任意固定时刻 t₀，<strong>X(t₀) 是一个普通的随机变量</strong>；
+  固定样本点 ω，<strong>X(·, ω) 是一条普通的确定函数</strong>。
+  随机过程就是"时间轴"和"随机性"两个维度的结合。
+</div>
+
+<h2>二、参数集 × 状态空间——四类随机过程</h2>
+
+<table>
+  <tr><th></th><th><strong>离散状态 S</strong>（可数）</th><th><strong>连续状态 S</strong>（实数域）</th></tr>
+  <tr>
+    <td><strong>离散参数 T</strong></td>
+    <td>离散时间离散状态链<br>例：抛掷硬币序列</td>
+    <td>时间序列<br>例：每日气温记录</td>
+  </tr>
+  <tr>
+    <td><strong>连续参数 T</strong></td>
+    <td>连续时间计数过程<br>例：电话总机来话数</td>
+    <td>连续参数连续状态过程<br>例：布朗运动、股票价格</td>
+  </tr>
+</table>
+
+<p>
+  这个分类<strong>穷尽所有</strong>。考研里高频出现的，是离散参数链和泊松/维纳这两个连续参数特例。
+</p>
+
+<h3>例子 1：抛掷硬币——离散状态离散参数</h3>
+
+<p>
+  抛掷一枚均匀硬币，设正面 X=1，反面 X=0。每次抛出后观测结果。
+  参数集 T = {0, 1, 2, …}（抛掷序号），状态空间 S = {0, 1}。
+</p>
+
+<svg class="schematic" viewBox="0 0 560 280" role="img">
+  <title>抛掷硬币过程的样本函数——阶梯状，只能取0或1</title>
+  <!-- 坐标轴 -->
+  <line class="axis" x1="70" y1="230" x2="530" y2="230"/>
+  <polygon points="530,224 530,236 544,230" fill="#1a1a1a"/>
+  <line class="axis" x1="70" y1="230" x2="70" y2="40"/>
+  <polygon points="64,40 76,40 70,26" fill="#1a1a1a"/>
+  <text x="540" y="250" text-anchor="end" class="lbl">n（抛掷次数）</text>
+  <text x="56" y="50" text-anchor="end" class="lbl">X(n)</text>
+
+  <!-- 刻度 -->
+  <line class="tick" x1="70" y1="135" x2="74" y2="135"/>
+  <text x="62" y="139" text-anchor="end" class="lbl">1</text>
+  <line class="tick" x1="70" y1="230" x2="74" y2="230"/>
+  <text x="62" y="234" text-anchor="end" class="lbl">0</text>
+
+  <!-- 阶梯曲线：0, 1, 0, 0, 1, 1, 0, 1, 0, 1 -->
+  <!-- 每段宽度 = 46, 高度差 = 95 -->
+  <!-- n=0: y=135(1), n=1: y=230(0), n=2: y=230(0), n=3: y=135(1), n=4: y=135(1), n=5: y=230(0), n=6: y=135(1), n=7: y=230(0), n=8: y=230(0), n=9: y=135(1) -->
+  <!-- 用水平线加垂直线画阶梯 -->
+  <polyline class="step-curve" points="70,135 116,135 116,230 162,230 162,230 208,230 208,230 254,135 254,135 300,135 300,135 346,230 346,230 392,135 392,135 438,230 438,230 484,230 484,230 530,135"/>
+
+  <!-- 红点标记每个抛掷点 -->
+  <circle cx="70" cy="135" r="4" fill="var(--accent)"/>
+  <circle cx="116" cy="230" r="4" fill="var(--accent)"/>
+  <circle cx="162" cy="230" r="4" fill="var(--accent)"/>
+  <circle cx="208" cy="230" r="4" fill="var(--accent)"/>
+  <circle cx="254" cy="135" r="4" fill="var(--accent)"/>
+  <circle cx="300" cy="135" r="4" fill="var(--accent)"/>
+  <circle cx="346" cy="230" r="4" fill="var(--accent)"/>
+  <circle cx="392" cy="135" r="4" fill="var(--accent)"/>
+  <circle cx="438" cy="230" r="4" fill="var(--accent)"/>
+  <circle cx="484" cy="230" r="4" fill="var(--accent)"/>
+  <circle cx="530" cy="135" r="4" fill="var(--accent)"/>
+
+  <text x="300" y="275" text-anchor="middle" class="lbl">样本：1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1</text>
+</svg>
+
+<h3>例子 2：随机相位正弦波——连续状态连续参数</h3>
+
+<p>
+  设 X(t) = A·cos(ωt + Θ)，其中 A、ω 为常数，Θ ~ U(0, 2π)（均匀分布）。
+  对每个固定的 t，X(t) 是 Θ 的函数，因此是随机变量。但参数集 T = ℝ 连续，
+  状态空间 S = [-A, A] 也是连续的。三条样本函数（三种不同的 Θ 值）叠在一起就构成了过程。
+</p>
+
+<div class="math">
+均值函数 μ<sub>X</sub>(t) = E[X(t)] = 0
+<br>自相关函数 R<sub>X</sub>(s, t) = E[A cos(ωs+Θ) · A cos(ωt+Θ)] = (A²/2) cos ω(t − s)
+</div>
+
+<p>这个例子很重要——它告诉你 <strong>过程的统计性质可以通过有限维分布完全确定</strong>。</p>
+
+<h2>三、有限维分布函数族——随机过程的"全息照相"</h2>
+
+<p>
+  单个随机变量用分布函数 F(x) = P(X ≤ x) 描述。对于随机过程，我们需要描述它在
+  <strong>多个时刻的联合行为</strong>。为此定义：
+</p>
+
+<div class="math">
+对任意 n ≥ 1 和 t₁, t₂, …, tₙ ∈ T，n 维分布函数
+<br>F(t₁, …, tₙ; x₁, …, xₙ) = P( X(t₁) ≤ x₁, …, X(tₙ) ≤ xₙ )
+</div>
+
+<p>
+  <strong>有限维分布函数族</strong> { F(t₁, …, tₙ; x₁, …, xₙ) } 当 n 取遍所有自然数、
+  t₁…tₙ 取遍 T 中所有可能值时，这个族<strong>完全刻画</strong>了随机过程的概率性质。
+  它比均值、方差、相关函数<strong>包含更多信息</strong>——后者只是它的特殊边缘。
+</p>
+
+<div class="tip">
+  <span class="tip-label">一致条件（Kolmogorov 相容性定理）</span>
+  有限维分布族必须满足两个一致性：① 对任意排列 σ，F 的变量可以重排；
+  ② 对任意 m < n，m 维分布是 n 维分布的边缘（令多余的 x → ∞）。
+  Kolmogorov 定理说：只要满足这两个条件，就一定存在一个随机过程以这些函数为有限维分布。
+  这是随机过程理论的存在性基础，考研中不会直接考，但你应当知道它是一切推导的前提。
+</div>
+
+<h2>四、数字特征——均值、方差、自相关、自协方差</h2>
+
+<p>
+  数字特征是有限维分布族的"压缩表示"。最重要的是四个函数，它们都是关于参数的函数，
+  而不是常数：
+</p>
+
+<table>
+  <tr><th>名称</th><th>记号</th><th>定义</th></tr>
+  <tr>
+    <td><strong>均值函数</strong></td>
+    <td>μ<sub>X</sub>(t)</td>
+    <td>E[X(t)]</td>
+  </tr>
+  <tr>
+    <td><strong>方差函数</strong></td>
+    <td>D<sub>X</sub>(t)</td>
+    <td>E[(X(t) − μ<sub>X</sub>(t))²]</td>
+  </tr>
+  <tr>
+    <td><strong>自相关函数</strong></td>
+    <td>R<sub>X</sub>(s, t)</td>
+    <td>E[X(s) · X(t)]</td>
+  </tr>
+  <tr>
+    <td><strong>自协方差函数</strong></td>
+    <td>C<sub>X</sub>(s, t)</td>
+    <td>Cov(X(s), X(t)) = R<sub>X</sub>(s, t) − μ<sub>X</sub>(s)μ<sub>X</sub>(t)</td>
+  </tr>
+</table>
+
+<p>
+  注意几个<strong>常用推论</strong>：
+</p>
+<ul>
+  <li>方差函数是自协方差的特例：D<sub>X</sub>(t) = C<sub>X</sub>(t, t)</li>
+  <li>自相关函数总是对称的：R<sub>X</sub>(s, t) = R<sub>X</sub>(t, s)</li>
+  <li>C<sub>X</sub>(s, t) = 0 ⟺ X(s) 与 X(t) 不相关（注意：不相关 ≠ 独立，但正态过程两者等价）</li>
+</ul>
+
+<h2>五、两类常用过程</h2>
+
+<h3>5.1 二阶矩过程</h3>
+
+<p>
+  若对所有 t ∈ T，E[X(t)²] &lt; ∞（即二阶矩有限），则称 {X(t)} 为<strong>二阶矩过程</strong>。
+  这类过程的均值函数和自相关函数<strong>一定存在</strong>，是随机过程分析中最基础的假设前提。
+</p>
+
+<h3>5.2 正态过程</h3>
+
+<p>
+  若对任意 n ≥ 1 和 t₁, …, tₙ ∈ T，(X(t₁), …, X(tₙ)) 的联合分布是<strong>n 维正态分布</strong>，
+  则称 {X(t)} 为<strong>正态过程</strong>（也叫高斯过程）。
+</p>
+
+<div class="tip">
+  <span class="tip-label">正态过程的极简定理</span>
+  正态过程<strong>完全由均值函数 μ<sub>X</sub>(t) 和自协方差函数 C<sub>X</sub>(s, t) 决定</strong>。
+  这是正态族最深刻的性质：联合正态 = 均值向量 + 协方差矩阵。
+  后面的维纳过程就是一个标准正态过程——抓住这两个函数就抓住了一切。
+</div>
+
+<h3>5.3 独立增量过程</h3>
+
+<p>
+  若对任意一组不重叠的区间 (s₁, t₁], (s₂, t₂], …, (sₙ, tₙ]（即 tₖ ≤ sₖ₊₁），
+  对应的增量 X(t₁) − X(s₁), X(t₂) − X(s₂), …, X(tₙ) − X(sₙ) 相互独立，
+  则称 {X(t)} 为<strong>独立增量过程</strong>。
+</p>
+
+<p>
+  若进一步增量的分布只依赖于区间<strong>长度</strong>而与起点无关，
+  即 X(t) − X(s) 与 X(t+h) − X(s+h) 同分布（∀ h &gt; 0），
+  则称过程是<strong>时齐的</strong>。
+  下一课的泊松过程和维纳过程<strong>都满足独立增量 + 时齐</strong>——这两条公理非常强。
+</p>
+
+<table>
+  <tr><th>过程类型</th><th>核心特征</th><th>典型例子</th></tr>
+  <tr>
+    <td>独立增量过程</td>
+    <td>任意不重叠区间的增量相互独立</td>
+    <td>泊松过程、维纳过程</td>
+  </tr>
+  <tr>
+    <td>时齐过程</td>
+    <td>统计性质不随时间平移而变</td>
+    <td>时齐泊松、时齐马尔可夫链</td>
+  </tr>
+  <tr>
+    <td>平稳过程（宽平稳）</td>
+    <td>均值函数为常数，自相关只与 s−t 有关</td>
+    <td>随机相位正弦波、白噪声</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">三个概念的层次关系</span>
+  时齐性 ⊂ 宽平稳（二阶矩有限时）；独立增量 + 时齐 ⇒ 宽平稳（零均值时）。
+  但独立增量过程<strong>不一定</strong>是平稳的，因为均值函数可能随 t 增长（如泊松过程 E[N(t)] = λt）。
+</div>
+
+<h2>六、速查表</h2>
+
+<table>
+  <tr><th>项目</th><th>公式 / 结论</th></tr>
+  <tr><td>均值函数</td><td>μ<sub>X</sub>(t) = E[X(t)]</td></tr>
+  <tr><td>方差函数</td><td>D<sub>X</sub>(t) = E[(X(t) − μ<sub>X</sub>(t))²]</td></tr>
+  <tr><td>自相关函数</td><td>R<sub>X</sub>(s, t) = E[X(s)X(t)]</td></tr>
+  <tr><td>自协方差函数</td><td>C<sub>X</sub>(s, t) = R<sub>X</sub>(s, t) − μ<sub>X</sub>(s)μ<sub>X</sub>(t)</td></tr>
+  <tr><td>核心关系</td><td>D<sub>X</sub>(t) = C<sub>X</sub>(t, t)</td></tr>
+  <tr><td>正态过程</td><td>由 μ<sub>X</sub>(t) 和 C<sub>X</sub>(s, t) 完全决定</td></tr>
+  <tr><td>独立增量</td><td>不重叠区间增量独立；时齐时仅与区间长度有关</td></tr>
+</table>
+
+<h2>七、课堂测验</h2>
+
+<div class="quiz" id="quiz-container"></div>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong> 王梓坤《随机过程》第一章（高等教育出版社）。
+  这本教材是国内考研和本科随机过程课程的标准参考书，定义清晰、例子经典，适合建立直觉。
+</div>
+
+<div class="footer-nav">
+  <a href="./0004-placeholder.html">← 上一课</a>
+  <span class="lesson-counter">概率论 · Lesson 0005 / ∞</span>
+  <a href="./0006-poisson-process-and-wiener.html">下一课：泊松过程与维纳过程 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "设 X(t) 是一个随机过程。固定时刻 t₀，X(t₀) 是什么？",
+    options: [
+      "一个确定的实数",
+      "一个普通的随机变量",
+      "一个样本函数",
+      "整个随机过程"
+    ],
+    correct: 1,
+    explain: "固定 t₀ 后，X(t₀) 的取值随样本点 ω 变化，因此它是一个普通的随机变量。样本函数是固定 ω 后让 t 变化得到的确定函数。随机过程本身是无穷多个这样的随机变量的集合。"
+  },
+  {
+    q: "随机过程的有限维分布函数族 F(t₁,…,tₙ;x₁,…,xₙ) 要完全刻画随机过程，必须满足什么条件？",
+    options: [
+      "均值和自相关函数存在",
+      "Kolmogorov 相容性条件（重排不变 + 边缘一致）",
+      "过程是时齐的",
+      "增量相互独立"
+    ],
+    correct: 1,
+    explain: "Kolmogorov 相容性定理给出了随机过程存在的充要条件：有限维分布族必须满足重排不变性和边缘一致性。均值/自相关只是二阶矩性质，独立增量/时齐是额外假设。"
+  },
+  {
+    q: "设正态过程 X(t) 的均值函数 μ<sub>X</sub>(t) 和自协方差 C<sub>X</sub>(s,t) 已知。下列说法正确的是？",
+    options: [
+      "还需要知道方差函数才能确定整个过程",
+      "还需要知道自相关函数才能确定整个过程",
+      "μ<sub>X</sub>(t) 和 C<sub>X</sub>(s,t) 已经完全确定了过程的所有有限维分布",
+      "正态过程不能用这两个函数完全描述"
+    ],
+    correct: 2,
+    explain: "正态过程的 n 维联合分布完全由均值向量和协方差矩阵决定。均值函数和自协方差函数给出了所有时刻的均值和任意两时刻的协方差，等价于给出了所有 n 的 n 维均值向量和协方差矩阵——因此完全确定了过程。"
+  },
+  {
+    q: "随机相位正弦波 X(t) = A cos(ωt + Θ)，Θ ~ U(0,2π)。它的均值函数和自相关函数分别是？",
+    options: [
+      "μ=0, R(s,t)=A²/2",
+      "μ=0, R(s,t)=(A²/2)cos ω(t−s)",
+      "μ=A/2, R(s,t)=(A²/4)cos ω(t−s)",
+      "μ=0, R(s,t)=A²"
+    ],
+    correct: 1,
+    explain: "由 E[cos(ωt+Θ)] = 0（Θ 在 0~2π 均匀，正弦/余弦期望为 0），得 μ(t)=0。自相关 R(s,t) = E[A cos(ωs+Θ)·A cos(ωt+Θ)]，利用三角积化和差和 E[cos(2ωt+…)]=0，得到 R(s,t) = (A²/2)cos ω(t−s)。注意它只依赖于时间差 τ = t−s——这正是宽平稳的特征。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！随机过程的基本框架已经建立，可以进入泊松过程和维纳过程了。' :
+        right >= 2 ? '👍 不错。建议把"均值函数、自协方差、正态过程、独立增量"四个关键词再默写一遍。' :
+        '📚 回看"参数集×状态空间"和"有限维分布函数族"两节——这是后续一切推导的基础。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

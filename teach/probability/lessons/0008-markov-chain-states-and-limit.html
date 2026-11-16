@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0008 — 马尔可夫链状态分类与极限分布</title>
+<link rel="stylesheet" href="../assets/teach.css">
+<style>
+.schematic { display: block; width: 100%; max-width: 560px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-size: 15px; fill: var(--text);
+}
+.schematic .lbl { font-size: 13px; fill: var(--text-light); }
+.schematic .lbl-box { font-size: 13px; fill: var(--text); font-family: inherit; }
+.schematic .circle-faint { fill: none; stroke: var(--border); stroke-width: 1.5; }
+.schematic .circle-type1 { fill: #dbeafe; stroke: var(--accent); stroke-width: 2.2; }
+.schematic .circle-type2 { fill: #fce7f3; stroke: #c2185b; stroke-width: 2.2; }
+.schematic .circle-transient { fill: #fef3c7; stroke: #b45309; stroke-width: 2.2; }
+.schematic .arc { fill: none; stroke: var(--text); stroke-width: 1.6; stroke-linecap: round; }
+.schematic .arrow { fill: var(--text); }
+
+.matrix-box {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-size: 1.05em;
+  text-align: center;
+  padding: 1rem;
+  background: var(--math-bg);
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  margin: 1rem 0;
+}
+
+.example-box {
+  padding: 1.25rem;
+  background: var(--accent-light);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  margin: 1rem 0;
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0008 — 马尔可夫链状态分类与极限分布</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">概率论 · 状态空间结构与平稳分布 · 约 45 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">为什么要分类？</span>
+  上一课我们会算 P、会算 Pⁿ，但算出来的数字怎么解读？答案取决于链的"长期行为"——
+  某个状态会不会被反复访问？访问的频率是多少？时间趋于无穷后，链最终会停在哪里？
+  这一课用一套完整的分类体系回答这些问题，并给出<strong>平稳分布</strong>的计算方法。
+</div>
+
+<h2>一、可达性与互通</h2>
+
+<p>
+  先定义两个最基本的关系：
+</p>
+
+<div class="math">
+可达 i → j：存在 n ≥ 1 使得 p<sub>ij</sub><sup>(n)</sup> > 0
+<br>互通 i ↔ j：同时 i → j 和 j → i 成立
+</div>
+
+<p>
+  互通是<strong>等价关系</strong>（自反、对称、传递），因此它把状态空间 S 划分成若干
+  <strong>互通类</strong>。每个互通类内部所有状态两两互通，不同类之间要么互不可达，
+  要么单向可达（从一个类可以到另一个，但回不来）。
+</p>
+
+<div class="tip">
+  <span class="tip-label">一个状态属于哪个类，由 P 的<strong>非零元素结构</strong>决定</span>
+  只需从每个状态出发，沿着 p<sub>ij</sub> > 0 的箭头走，看能到达哪些状态。
+  考研中如果转移矩阵不大（3-4 状态），画一张状态转移图就能肉眼看出所有互通类。
+</div>
+
+<h2>二、暂留态 vs 常返态</h2>
+
+<h3>2.1 首次返回概率</h3>
+
+<p>
+  记 f<sub>ii</sub> 为<strong>从状态 i 出发，最终回到 i 的概率</strong>。
+  这是区分常返性的关键量：
+</p>
+<ul>
+  <li>f<sub>ii</sub> = 1 → <strong>常返态</strong>：必然能回来，无穷多次访问</li>
+  <li>f<sub>ii</sub> < 1 → <strong>暂留态</strong>：有一定概率永远不回来，只能访问有限次</li>
+</ul>
+
+<h3>2.2 平均返回时间</h3>
+
+<p>
+  对常返态，进一步看<strong>首次返回的期望时间</strong> μ<sub>i</sub> = E[T<sub>i</sub>]，
+  其中 T<sub>i</sub> 是从 i 出发首次回到 i 的步数：
+</p>
+<ul>
+  <li>μ<sub>i</sub> < ∞ → <strong>正常返态</strong>：虽然一定回来，但平均等待时间有限</li>
+  <li>μ<sub>i</sub> = ∞ → <strong>零常返态</strong>：虽然一定回来，但平均等待时间无限</li>
+</ul>
+
+<h2>三、周期性</h2>
+
+<p>
+  状态 i 的<strong>周期</strong>定义为：
+</p>
+
+<div class="math">
+d<sub>i</sub> = gcd{ n ≥ 1 : p<sub>ii</sub><sup>(n)</sup> > 0 }
+</div>
+
+<p>
+  gcd 是最大公约数。如果集合为空（即永远回不来），则 d<sub>i</sub> 无定义（暂留态可能出现）。
+</p>
+
+<ul>
+  <li>d<sub>i</sub> = 1 → <strong>非周期</strong>（aperiodic）</li>
+  <li>d<sub>i</sub> > 1 → <strong>周期</strong>（periodic），即"每 d 步才能回到自己"</li>
+</ul>
+
+<p>
+  周期的直观例子：两步循环 0↔1，p<sub>00</sub><sup>(1)</sup> = 0, p<sub>00</sub><sup>(2)</sup> > 0, p<sub>00</sub><sup>(3)</sup> = 0,
+  p<sub>00</sub><sup>(4)</sup> > 0, …，gcd{2, 4, 6, …} = 2，所以 d₀ = d₁ = 2，两状态链是周期为 2 的。
+</p>
+
+<h3>遍历态 = 正常返 + 非周期</h3>
+
+<p>
+  这是最重要的一类状态，因为<strong>只有遍历态才会有极限分布</strong>（第四节详解）。
+</p>
+
+<h2>四、闭集与不可约性</h2>
+
+<p>
+  若 C ⊆ S 是<strong>闭集</strong>，则：从 C 中任何状态出发，永远不可能跳到 C 之外。
+  等价条件：∑<sub>j∈C</sub> p<sub>ij</sub> = 1 对所有 i ∈ C 成立。
+</p>
+
+<p>
+  如果整个状态空间 S 是<strong>唯一的闭集</strong>，链内部所有状态两两互通，
+  则称链是<strong>不可约的</strong>（irreducible）。否则可约。
+</p>
+
+<p>
+  对于<strong>不可约链</strong>，所有状态的<strong>常返性、周期性、正常/零常返属性都相同</strong>——
+  这是一个非常强的结论。只需验证<strong>任意一个</strong>状态的属性，就知道整个链的状态类型。
+</p>
+
+<h2>五、有限状态链基本定理</h2>
+
+<p>
+  当 |S| &lt; ∞ 时，有几条结论非常简洁且高频：
+</p>
+<ol>
+  <li><strong>有限状态链至少有一个常返态</strong>（不可能全部都是暂留态）</li>
+  <li>任何<strong>闭集</strong>中至少有一个常返态</li>
+  <li>暂留态全体<strong>不是闭集</strong>（必然会从暂留态跳到某个常返类里，然后再也出不来）</li>
+  <li>有限状态的<strong>不可约链</strong>中，所有状态<strong>必为正常返</strong></li>
+  <li>有限状态不可约 + 非周期 → <strong>所有状态遍历</strong>，极限分布存在</li>
+</ol>
+
+<div class="tip">
+  <span class="tip-label">一个反例：无限状态</span>
+  对称随机游动（一维，状态 Z 无限）不可约且非周期，但是<strong>零常返</strong>——
+  一定回来，但平均要等无穷久。所以"有限"这个条件不能丢。
+</div>
+
+<svg class="schematic" viewBox="0 0 560 320" role="img">
+  <title>状态空间分解示意图：两个常返类 C1、C2（各自内部互通）和暂留类 T（会被吸收到常返类）</title>
+  <defs>
+    <marker id="arrow2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#1a1a1a"/>
+    </marker>
+  </defs>
+
+  <!-- 大框：整个状态空间 S -->
+  <rect x="20" y="40" width="520" height="260" class="circle-faint" rx="12"/>
+  <text x="40" y="58" class="lbl">整个状态空间 S</text>
+
+  <!-- 常返类 C1（左上蓝色） -->
+  <rect x="50" y="80" width="190" height="150" class="circle-type1" rx="8"/>
+  <text x="145" y="102" text-anchor="middle" class="lbl" style="font-weight:600;color:var(--accent);">常返类 C₁（闭集）</text>
+
+  <!-- C1 内部三个状态节点 -->
+  <circle cx="100" cy="160" r="22" class="node" style="fill:#fff;stroke:var(--accent);stroke-width:2;"/>
+  <text x="100" y="165" text-anchor="middle">c₁</text>
+  <circle cx="190" cy="140" r="22" class="node" style="fill:#fff;stroke:var(--accent);stroke-width:2;"/>
+  <text x="190" y="145" text-anchor="middle">c₂</text>
+  <circle cx="145" cy="200" r="22" class="node" style="fill:#fff;stroke:var(--accent);stroke-width:2;"/>
+  <text x="145" y="205" text-anchor="middle">c₃</text>
+
+  <!-- C1 内部互通箭头 -->
+  <path class="arc" d="M118,152 Q140,125 172,135" marker-end="url(#arrow2)"/>
+  <path class="arc" d="M172,148 Q140,175 118,168" marker-end="url(#arrow2)"/>
+  <path class="arc" d="M118,168 Q130,185 128,188" marker-end="url(#arrow2)"/>
+  <path class="arc" d="M162,195 Q175,180 172,157" marker-end="url(#arrow2)"/>
+
+  <!-- 暂留类 T（中间黄色） -->
+  <rect x="260" y="80" width="130" height="150" class="circle-transient" rx="8"/>
+  <text x="325" y="102" text-anchor="middle" class="lbl" style="font-weight:600;color:#b45309;">暂留类 T（非闭）</text>
+
+  <!-- T 内部三个状态 -->
+  <circle cx="290" cy="150" r="18" style="fill:#fff;stroke:#b45309;stroke-width:1.8;"/>
+  <text x="290" y="155" text-anchor="middle" style="font-size:13px;">t₁</text>
+  <circle cx="340" cy="130" r="18" style="fill:#fff;stroke:#b45309;stroke-width:1.8;"/>
+  <text x="340" y="135" text-anchor="middle" style="font-size:13px;">t₂</text>
+  <circle cx="315" cy="200" r="18" style="fill:#fff;stroke:#b45309;stroke-width:1.8;"/>
+  <text x="315" y="205" text-anchor="middle" style="font-size:13px;">t₃</text>
+
+  <!-- T 内部箭头 + 离开 T 到 C1 -->
+  <path class="arc" d="M306,148 L324,135" marker-end="url(#arrow2)"/>
+  <path class="arc" d="M300,175 C260,180 240,160 215,170" marker-end="url(#arrow2)" stroke="#b45309" stroke-width="2"/>
+  <text x="235" y="163" text-anchor="middle" class="lbl" style="color:#b45309;">→ 进入 C₁</text>
+  <!-- 离开 T 到 C2 -->
+  <path class="arc" d="M350,150 C380,170 410,160 430,160" marker-end="url(#arrow2)" stroke="#c2185b" stroke-width="2"/>
+  <text x="390" y="155" text-anchor="middle" class="lbl" style="color:#c2185b;">→ 进入 C₂</text>
+
+  <!-- 常返类 C2（右下粉色） -->
+  <rect x="410" y="200" width="120" height="90" class="circle-type2" rx="8"/>
+  <text x="470" y="218" text-anchor="middle" class="lbl" style="font-weight:600;color:#c2185b;">常返类 C₂（闭集）</text>
+
+  <!-- C2 内部两个状态 -->
+  <circle cx="445" cy="250" r="18" style="fill:#fff;stroke:#c2185b;stroke-width:2;"/>
+  <text x="445" y="255" text-anchor="middle" style="font-size:14px;">c₄</text>
+  <circle cx="500" cy="250" r="18" style="fill:#fff;stroke:#c2185b;stroke-width:2;"/>
+  <text x="500" y="255" text-anchor="middle" style="font-size:14px;">c₅</text>
+  <path class="arc" d="M463,250 L482,250" marker-end="url(#arrow2)" stroke="#c2185b"/>
+  <path class="arc" d="M482,250 L463,250" marker-end="url(#arrow2)" stroke="#c2185b"/>
+
+  <!-- 图例 -->
+  <text x="280" y="312" text-anchor="middle" class="lbl">常返类 C₁, C₂ 各自是闭集，内部互通；暂留类 T 会被"吸收"到某个常返类</text>
+</svg>
+
+<h2>六、极限分布与平稳分布</h2>
+
+<h3>6.1 极限分布定义</h3>
+
+<p>
+  若对任意状态 i, j ∈ S，极限
+</p>
+
+<div class="math">
+π<sub>j</sub> = lim<sub>n→∞</sub> p<sub>ij</sub><sup>(n)</sup>
+</div>
+
+<p>
+  存在且与初始态 i 无关，则 {π<sub>j</sub>} 称为链的<strong>极限分布</strong>。
+</p>
+
+<div class="tip">
+  <span class="tip-label">极限存在的充分条件</span>
+  有限状态 + 不可约 + 非周期（即所有状态遍历） ⇒ 极限分布存在且与初始态无关。
+  考研中<strong>90% 的计算题都满足这个条件</strong>——给你一个 3×3 不可约非周期链，让你解 π。
+</div>
+
+<h3>6.2 平稳分布方程</h3>
+
+<p>
+  如果存在一个概率分布 π = (π₁, π₂, …) 使得
+</p>
+
+<div class="math">
+π = π P， 即 π<sub>j</sub> = ∑<sub>i∈S</sub> π<sub>i</sub> p<sub>ij</sub>，且 ∑<sub>j</sub> π<sub>j</sub> = 1
+</div>
+
+<p>
+  则 π 称为链的<strong>平稳分布</strong>。"平稳"的含义：如果初始分布就是 π，那么对所有 n ≥ 0，
+  π<sub>n</sub> = π₀ Pⁿ = π 保持不变。
+</p>
+
+<h3>6.3 极限 = 平稳 = 唯一</h3>
+
+<p>
+  在有限状态 + 不可约 + 非周期条件下，三者<strong>完全等价</strong>：
+</p>
+
+<div class="math">
+极限分布 = 唯一的平稳分布 = (π₁, π₂, …, π<sub>|S|</sub>)
+<br>且 π<sub>j</sub> = 1 / μ<sub>j</sub>（与状态 j 的平均返回时间成反比）
+</div>
+
+<p>
+  这是马尔可夫链理论中最"漂亮"的定理之一——极限分布就是平稳分布，且唯一。
+  因此所有考研计算题都归结为：<strong>解方程 π = πP，外加约束 ∑π<sub>j</sub> = 1</strong>。
+</p>
+
+<h3>6.4 详细平衡方程（充分条件，非必要）</h3>
+
+<p>
+  有时候直接解 π = πP 比较麻烦，若能找到满足
+</p>
+
+<div class="math">
+π<sub>i</sub> p<sub>ij</sub> = π<sub>j</sub> p<sub>ji</sub>， 对所有 i ≠ j
+</div>
+
+<p>
+  的 π，那么<strong>这个 π 一定是平稳分布</strong>。这个条件叫<strong>详细平衡</strong>（detailed balance）
+  或<strong>局部平衡</strong>。它比 π = πP 更强（对所有 i, j 对成立），但好解。
+  例如在生灭链中，详细平衡给出简洁的闭式解：π<sub>n</sub> ∝ (λ/μ)ⁿ。
+</p>
+
+<h2>七、完整数值例子：解一个 3×3 不可约非周期链</h2>
+
+<div class="example-box">
+<p><strong>题目</strong>：设链有三个状态 {1, 2, 3}，转移矩阵：</p>
+
+<div class="matrix-box">
+P =
+[[ 0.4,  0.4,  0.2 ],
+ [ 0.3,  0.5,  0.2 ],
+ [ 0.2,  0.4,  0.4 ]]
+</div>
+
+<p>(1) 验证这是不可约非周期链；(2) 求平稳分布 π = (π₁, π₂, π₃)；(3) 求各状态的平均返回时间。</p>
+
+<p><strong>解 (1)</strong>：不可约性——从 1 能到 2,3；从 2 能到 1,3；从 3 能到 1,2，所有状态互通 ✅。
+非周期性——p₁₁ = 0.4 > 0 说明从 1 出发一步就能回到 1，所以 d₁ = gcd{1, 2, 3, …} = 1（非周期）。
+不可约链中所有状态周期相同，所以整个链非周期 ✅。有限状态 + 不可约 + 非周期 ⇒ 遍历，极限分布存在且唯一。</p>
+
+<p><strong>解 (2)</strong>：由 π = πP，写出三个方程：</p>
+<ul>
+  <li>π₁ = 0.4π₁ + 0.3π₂ + 0.2π₃</li>
+  <li>π₂ = 0.4π₁ + 0.5π₂ + 0.4π₃</li>
+  <li>π₃ = 0.2π₁ + 0.2π₂ + 0.4π₃</li>
+</ul>
+
+<p>化简第 1 个方程：π₁ − 0.4π₁ − 0.3π₂ − 0.2π₃ = 0 ⇒ 0.6π₁ − 0.3π₂ − 0.2π₃ = 0 …… (A)
+化简第 2 个方程：π₂ − 0.4π₁ − 0.5π₂ − 0.4π₃ = 0 ⇒ −0.4π₁ + 0.5π₂ − 0.4π₃ = 0 …… (B)
+第三个方程是前两个的线性组合（K-C 保证 π = πP 只有独立方程数 = |S| − 1），所以我们取 (A)、(B) 加约束：
+</p>
+<ul>
+  <li>(A):  6π₁ − 3π₂ − 2π₃ = 0（乘 10）</li>
+  <li>(B): −4π₁ + 5π₂ − 4π₃ = 0（乘 10）</li>
+  <li>(C): π₁ + π₂ + π₃ = 1</li>
+</ul>
+
+<p>由 (A): π₃ = (6π₁ − 3π₂) / 2 = 3π₁ − 1.5π₂。代入 (B)：
+−4π₁ + 5π₂ − 4(3π₁ − 1.5π₂) = −4π₁ + 5π₂ − 12π₁ + 6π₂ = −16π₁ + 11π₂ = 0
+⇒ π₂ = (16/11)π₁
+⇒ π₃ = 3π₁ − 1.5×(16/11)π₁ = 3π₁ − (24/11)π₁ = (33/11 − 24/11)π₁ = (9/11)π₁
+</p>
+
+<p>代入 (C)：π₁ + (16/11)π₁ + (9/11)π₁ = (36/11)π₁ = 1 ⇒ π₁ = 11/36 ≈ 0.3056
+所以 π₂ = 16/36 ≈ 0.4444，π₃ = 9/36 = 0.25
+</p>
+
+<p><strong>验证</strong>：用 πP 的第 1 个分量：0.4×(11/36) + 0.3×(16/36) + 0.2×(9/36) = (4.4 + 4.8 + 1.8)/36 = 11/36 = π₁ ✅
+同理其他分量也验证成立 ✅</p>
+
+<p><strong>解 (3)</strong>：平均返回时间 μ<sub>j</sub> = 1 / π<sub>j</sub>：</p>
+<ul>
+  <li>μ₁ = 36/11 ≈ 3.27 步</li>
+  <li>μ₂ = 36/16 = 2.25 步</li>
+  <li>μ₃ = 36/9 = 4 步</li>
+</ul>
+</div>
+
+<div class="tip">
+  <span class="tip-label">解方程的快捷步骤</span>
+  π = πP 实际上是 |S| 个方程，但只有 |S| − 1 个独立。最稳妥的做法：
+  <ol>
+    <li>由 π = πP 写出第一个分量的方程，化简</li>
+    <li>用它把 π₃ (或某个分量) 用 π₁, π₂ 表示</li>
+    <li>代入第二个独立方程，再把 π₂ 用 π₁ 表示</li>
+    <li>代入归一化约束 ∑π₁ = 1，解出 π₁</li>
+    <li>回代得到所有分量</li>
+  </ol>
+</div>
+
+<h2>八、速查表</h2>
+
+<table>
+  <tr><th>概念</th><th>定义 / 判据</th></tr>
+  <tr>
+    <td>互通 i ↔ j</td>
+    <td>p<sub>ij</sub><sup>(n)</sup> > 0 且 p<sub>ji</sub><sup>(m)</sup> > 0</td>
+  </tr>
+  <tr>
+    <td>暂留态</td>
+    <td>f<sub>ii</sub> < 1（有概率不返回）</td>
+  </tr>
+  <tr>
+    <td>常返态</td>
+    <td>f<sub>ii</sub> = 1（必返回）</td>
+  </tr>
+  <tr>
+    <td>正常返</td>
+    <td>常返 + 平均返回时间 μ<sub>i</sub> < ∞</td>
+  </tr>
+  <tr>
+    <td>零常返</td>
+    <td>常返 + 平均返回时间 μ<sub>i</sub> = ∞</td>
+  </tr>
+  <tr>
+    <td>周期 d<sub>i</sub></td>
+    <td>d<sub>i</sub> = gcd{ n ≥ 1 : p<sub>ii</sub><sup>(n)</sup> > 0 }；d=1 为非周期</td>
+  </tr>
+  <tr>
+    <td>遍历态</td>
+    <td>正常返 + 非周期</td>
+  </tr>
+  <tr>
+    <td>闭集</td>
+    <td>从 C 出发永远留在 C：∑<sub>j∈C</sub> p<sub>ij</sub> = 1</td>
+  </tr>
+  <tr>
+    <td>不可约链</td>
+    <td>整个 S 是唯一闭集（所有状态互通）</td>
+  </tr>
+  <tr>
+    <td>平稳分布</td>
+    <td>π = πP，∑π<sub>j</sub> = 1</td>
+  </tr>
+  <tr>
+    <td>详细平衡</td>
+    <td>π<sub>i</sub> p<sub>ij</sub> = π<sub>j</sub> p<sub>ji</sub>（充分条件）</td>
+  </tr>
+  <tr>
+    <td>有限状态定理</td>
+    <td>至少一个常返态；不可约 + 非周期 ⇒ 遍历 + 唯一平稳分布</td>
+  </tr>
+  <tr>
+    <td>极限 = 平稳</td>
+    <td>π<sub>j</sub> = lim p<sub>ij</sub><sup>(n)</sup> = 1/μ<sub>j</sub></td>
+  </tr>
+</table>
+
+<h2>九、课堂测验</h2>
+
+<div class="quiz" id="quiz-container"></div>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong> 王梓坤《随机过程》第 3 章。以及概率论与数理统计考研真题——
+  3×3 不可约非周期链解平稳分布几乎每年都有。
+</div>
+
+<div class="footer-nav">
+  <a href="./0007-markov-chain-def-and-transition.html">← 上一课：定义与转移概率</a>
+  <span class="lesson-counter">概率论 · Lesson 0008 / ∞</span>
+  <a href="#">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "一个两状态链 P = [[0.6, 0.4], [0.4, 0.6]]。它的状态类型是？",
+    options: [
+      "状态 0 常返，状态 1 暂留",
+      "状态 0 和 1 都暂留",
+      "状态 0 和 1 都遍历（正常返 + 非周期）",
+      "状态 0 周期为 2，状态 1 周期为 2"
+    ],
+    correct: 2,
+    explain: "两状态互通（p₀₁=0.4 > 0, p₁₀=0.4 > 0），不可约。有限状态不可约链必全部正常返。又 p₀₀=0.6 > 0 说明从 0 出发一步就能回 0，所以 d₀=1（非周期），所有状态周期相同，因此非周期。综上全部状态遍历。D 错误，周期是 1 不是 2。"
+  },
+  {
+    q: "一个三状态链转移矩阵 P = [[0, 1, 0], [0.5, 0, 0.5], [0, 1, 0]]。状态 1 的周期 d₁ 是？",
+    options: [
+      "d₁ = 1（非周期）",
+      "d₁ = 2",
+      "d₁ = 3",
+      "d₁ = gcd{1, 2, 3} = 1"
+    ],
+    correct: 1,
+    explain: "算 p₁₁<sup>(n)</sup>：p₁₁<sup>(1)</sup> = 0（一步回不去），p₁₁<sup>(2)</sup> = P(1→0→1 或 1→2→1) = 0.5×1 + 0.5×1 = 1 > 0，p₁₁<sup>(3)</sup> = 0（因为从 1 走 3 步必然走路径 1→0→1→0 或 1→2→1→2，无法回 1），p₁₁<sup>(4)</sup> > 0（两步两步回）。所以周期集合 = {2, 4, 6, …}，gcd = 2。选 B。"
+  },
+  {
+    q: "不可约有限状态链的结论中，正确的是？",
+    options: [
+      "所有状态可能全部暂留",
+      "所有状态必为正常返（平均返回时间有限）",
+      "所有状态要么全部正常返，要么全部零常返，要么全部暂留",
+      "不可约链一定是非周期的"
+    ],
+    correct: 2,
+    explain: "有限状态不可约链中所有状态性质相同。A 错——有限状态链不可能全部暂留，至少一个常返态；B 只在有限状态下成立，无限状态对称随机游动是零常返的；D 错——不可约不等于非周期，如 p₀₀=0, p₀₁=1, p₁₀=1, p₁₁=0 的两状态链不可约但周期 d=2；C 正确（即使无限状态也有这个结论：互通类内所有状态同为常返/暂留，常返则同为正常返/零常返）。"
+  },
+  {
+    q: "某 3×3 不可约非周期链的平稳分布 π = (π₁, π₂, π₃) 满足 π₁ + π₂ + π₃ = 1 且 π = πP。已知 π₁ = π₂，π₃ = π₁/2，则 π₁ 等于？",
+    options: [
+      "2/5",
+      "4/10 = 0.4",
+      "2/3",
+      "1/2"
+    ],
+    correct: 1,
+    explain: "由 π₁ = π₂ = 2π₃，代入归一化：2π₃ + 2π₃ + π₃ = 5π₃ = 1 ⇒ π₃ = 1/5。所以 π₁ = 2π₃ = 2/5 = 0.4 = 4/10。选项 A 和 B 数值相同，都是 0.4。这是纯代数题，关键是把三个变量化成一个再归一化。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！马尔可夫链的完整理论框架已掌握，可以进入真题训练了。' :
+        right >= 2 ? '👍 不错。重点记：有限不可约链必全部正常返；平稳分布的解方程步骤。' :
+        '📚 回看"状态分类"和"极限/平稳/遍历的三等价"——这是马尔可夫链理论的核心定理。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>
