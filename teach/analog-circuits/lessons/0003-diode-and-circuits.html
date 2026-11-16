@@ -418,12 +418,23 @@ th { background: var(--code-bg); font-weight: 600; }
     <line class="wire" x1="240" y1="230" x2="240" y2="248"/>
     <line class="wire" x1="218" y1="248" x2="262" y2="248"/>
     <line class="wire" x1="227" y1="258" x2="253" y2="258"/>
-    <text x="318" y="126" class="lbl">D 导通：</text>
-    <text x="318" y="146" class="lbl">v_o &gt; V_ref + 0.7 V</text>
-    <text x="318" y="178" class="lbl">→ 上限幅在</text>
-    <text x="318" y="198" class="lbl">V_ref + 0.7 V</text>
+
+    <circle class="dot" cx="340" cy="80" r="4"/>
+    <line class="wire" x1="340" y1="80" x2="340" y2="110"/>
+    <rect class="area" x="322" y="110" width="36" height="60" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="366" y="146" class="lbl">R_L</text>
+    <line class="wire" x1="340" y1="170" x2="340" y2="210"/>
+    <line class="wire" x1="318" y1="210" x2="362" y2="210"/>
+    <line class="wire" x1="327" y1="220" x2="353" y2="220"/>
   </svg>
 </div>
+
+<p>
+  注意：这里的“并联”指「D + V_ref」这条支路与<strong>负载 R_L 并联</strong>，不是与负载串联。
+  D 截止时这条支路<strong>开路、相当于不存在</strong>，但 R → R_L 的主通路完好，
+  所以 <code>v_o = v_i·R_L/(R + R_L)</code>，信号正常送到负载；
+  D 只在 <code>v_o</code> 超过 <code>V_ref + 0.7 V</code> 的瞬间导通，把多余电压引到基准支路。
+</p>
 
 <div class="tip">
   <span class="tip-label">记法</span>
