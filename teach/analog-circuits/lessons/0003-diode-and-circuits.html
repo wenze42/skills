@@ -409,25 +409,28 @@ th { background: var(--code-bg); font-weight: 600; }
     <text x="406" y="86" class="lbl">v_o</text>
 
     <line class="wire" x1="240" y1="80" x2="240" y2="120"/>
-    <line class="wire" x1="212" y1="120" x2="268" y2="120"/>
-    <polygon points="214,168 266,168 240,122" fill="#1a1a1a"/>
+    <polygon points="214,122 266,122 240,168" fill="#1a1a1a"/>
+    <line class="wire" x1="212" y1="170" x2="268" y2="170"/>
     <text x="286" y="150" class="lbl">D</text>
-    <line class="wire" x1="240" y1="168" x2="240" y2="188"/>
+    <line class="wire" x1="240" y1="170" x2="240" y2="188"/>
     <rect class="area" x="206" y="188" width="68" height="42" rx="5" stroke="#1a1a1a" stroke-width="2.5"/>
     <text x="240" y="216" text-anchor="middle">V_ref</text>
     <line class="wire" x1="240" y1="230" x2="240" y2="248"/>
     <line class="wire" x1="218" y1="248" x2="262" y2="248"/>
     <line class="wire" x1="227" y1="258" x2="253" y2="258"/>
-    <text x="318" y="150" class="lbl">v_o 最高被钳在</text>
-    <text x="318" y="172" class="lbl">V_ref + 0.7 V</text>
+    <text x="318" y="126" class="lbl">D 导通：</text>
+    <text x="318" y="146" class="lbl">v_o &gt; V_ref + 0.7 V</text>
+    <text x="318" y="178" class="lbl">→ 上限幅在</text>
+    <text x="318" y="198" class="lbl">V_ref + 0.7 V</text>
   </svg>
 </div>
 
 <div class="tip">
   <span class="tip-label">记法</span>
-  串联限幅：D 串在通路里 → 截止时断路 → 信号过不去
-  并联限幅：D 并在输出端 → 导通时短路 → 输出被钳住
-  削掉哪个极性 → 看二极管的导通方向
+  串联限幅：D 串在通路里 → 截止时断路 → 信号过不去<br>
+  并联限幅：D 并在输出端 → 导通时短路 → 输出被钳住<br>
+  削掉哪个极性 → 看二极管的导通方向<br>
+  <strong>并联限幅没有电容</strong> → 只削峰、不搬电平，波形不会整体平移（这是它和钳位电路最本质的区别）
 </div>
 
 <h3>应用 2：钳位电路（箱位电路）</h3>
@@ -457,14 +460,58 @@ th { background: var(--code-bg); font-weight: 600; }
     <line class="wire" x1="228" y1="214" x2="272" y2="214"/>
     <line class="wire" x1="237" y1="225" x2="263" y2="225"/>
     <line class="wire" x1="245" y1="236" x2="255" y2="236"/>
-    <text x="90" y="180" class="lbl">v_o = v_i + V_p</text>
-    <text x="90" y="204" class="lbl">负峰钳在 0 V</text>
-    <text x="90" y="228" class="lbl">正峰 → +2V_p</text>
+    <text x="316" y="118" class="lbl">v_o = v_i + U_C</text>
+    <text x="316" y="140" class="lbl">≈ v_i + V_p</text>
+    <text x="316" y="174" class="lbl">V_p：输入峰值</text>
+    <text x="316" y="198" class="lbl">负峰 ≈ 0 V</text>
+    <text x="316" y="222" class="lbl">正峰 ≈ +2V_p</text>
   </svg>
 </div>
 
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 460 240" role="img" aria-label="钳位前后的波形对比：输入以 0 V 为中心上下对称，输出整体上移一个峰值，负峰落在 0 V">
+    <line class="wire thin" x1="70" y1="70" x2="300" y2="70"/>
+    <line class="wire thin" x1="70" y1="110" x2="300" y2="110"/>
+    <line class="wire" x1="70" y1="150" x2="300" y2="150"/>
+    <line class="wire thin" x1="70" y1="190" x2="300" y2="190"/>
+    <text x="62" y="74" class="lbl" text-anchor="end">+2V_p</text>
+    <text x="62" y="114" class="lbl" text-anchor="end">+V_p</text>
+    <text x="62" y="154" class="lbl" text-anchor="end">0</text>
+    <text x="62" y="194" class="lbl" text-anchor="end">−V_p</text>
+
+    <path class="wire ideal" d="M80,150 q20,-40 40,0 q20,40 40,0 q20,-40 40,0 q20,40 40,0"/>
+    <path class="wire" d="M80,110 q20,-40 40,0 q20,40 40,0 q20,-40 40,0 q20,40 40,0" stroke="var(--accent)"/>
+
+    <line class="wire ideal" x1="314" y1="100" x2="334" y2="100"/>
+    <text x="342" y="106" class="lbl">v_i</text>
+    <line class="wire" x1="314" y1="130" x2="334" y2="130" stroke="var(--accent)"/>
+    <text x="342" y="136" class="lbl">v_o</text>
+    <text x="314" y="176" class="lbl">整体上移</text>
+    <text x="314" y="198" class="lbl">形状不变</text>
+  </svg>
+</div>
+
+<p>
+  <strong>“钳位”= 用钳子夹住最负的那一点</strong>，把它钉在 0 V 附近。波形并没有被削平，
+  而是<strong>整体向上平移</strong>了一个峰值——这就是“钳位加直流、限幅削幅度”的区别：
+  钳位电路只是给信号叠加了一个直流分量。
+</p>
+
+<p>
+  <strong>稳态时 D 大部分时间是截止的。</strong>负峰到来时 D 导通，把电容充到
+  <code>U_C ≈ V_p − 0.7 V</code>；此后整个周期里 D 都反偏、等效为<strong>开路</strong>（不是电阻），
+  输出由 <code>v_o = v_i + U_C</code> 决定——电容在这里相当于一个串联的小电池，
+  所以整条波形被抬高。只有下一个负峰再把电容补一次电。
+</p>
+
+<div class="tip">
+  <span class="tip-label">易错点</span>
+  V_p 是<strong>输入信号的峰值幅度</strong>，不是二极管的管压降（管压降只贡献 0.7 V 的偏差）。
+  按理想模型忽略 0.7 V 时，负峰正好钳在 0 V；按实际硅管算，负峰钳在 −0.7 V，整条波形少抬 0.7 V。
+</div>
+
 <ul>
-  <li><strong>负钳位</strong>：二极管阴极接输出节点（如上图）→ 负峰钳到 0 V，正峰抬到 +2V_p</li>
+  <li><strong>负钳位</strong>：二极管阴极接输出节点（如上图）→ 负峰钳到 0 V（实际 −0.7 V），正峰抬到 +2V_p</li>
   <li><strong>正钳位</strong>：二极管反接 → 正峰钳到 0 V，负峰降到 −2V_p</li>
   <li><strong>双向钳位</strong>：两个二极管 + 两个电容，分别钳正负峰</li>
 </ul>
