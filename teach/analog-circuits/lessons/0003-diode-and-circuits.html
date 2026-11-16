@@ -575,19 +575,30 @@ th { background: var(--code-bg); font-weight: 600; }
 
 <div class="circuit">
   <svg class="schematic" viewBox="0 0 460 380" role="img" aria-label="桥式整流电路：四个二极管组成桥臂，交流输入接左右两端，负载接上下两端">
-    <defs>
-      <g id="bdio">
-        <line class="wire" x1="0" y1="0" x2="52" y2="0"/>
-        <polygon points="52,-12 52,12 84,0" fill="#1a1a1a"/>
-        <line class="wire" x1="84" y1="-13" x2="84" y2="13"/>
-        <line class="wire" x1="84" y1="0" x2="128" y2="0"/>
-      </g>
-    </defs>
-
-    <use href="#bdio" transform="translate(130,150) rotate(-38.66)"/>
-    <use href="#bdio" transform="translate(330,150) rotate(-141.34)"/>
-    <use href="#bdio" transform="translate(230,230) rotate(-141.34)"/>
-    <use href="#bdio" transform="translate(230,230) rotate(-38.66)"/>
+    <g transform="translate(130,150) rotate(-38.66)">
+      <line class="wire" x1="0" y1="0" x2="52" y2="0"/>
+      <polygon points="52,-12 52,12 84,0" fill="#1a1a1a"/>
+      <line class="wire" x1="84" y1="-13" x2="84" y2="13"/>
+      <line class="wire" x1="84" y1="0" x2="128" y2="0"/>
+    </g>
+    <g transform="translate(330,150) rotate(-141.34)">
+      <line class="wire" x1="0" y1="0" x2="52" y2="0"/>
+      <polygon points="52,-12 52,12 84,0" fill="#1a1a1a"/>
+      <line class="wire" x1="84" y1="-13" x2="84" y2="13"/>
+      <line class="wire" x1="84" y1="0" x2="128" y2="0"/>
+    </g>
+    <g transform="translate(230,230) rotate(-141.34)">
+      <line class="wire" x1="0" y1="0" x2="52" y2="0"/>
+      <polygon points="52,-12 52,12 84,0" fill="#1a1a1a"/>
+      <line class="wire" x1="84" y1="-13" x2="84" y2="13"/>
+      <line class="wire" x1="84" y1="0" x2="128" y2="0"/>
+    </g>
+    <g transform="translate(230,230) rotate(-38.66)">
+      <line class="wire" x1="0" y1="0" x2="52" y2="0"/>
+      <polygon points="52,-12 52,12 84,0" fill="#1a1a1a"/>
+      <line class="wire" x1="84" y1="-13" x2="84" y2="13"/>
+      <line class="wire" x1="84" y1="0" x2="128" y2="0"/>
+    </g>
 
     <text x="164" y="100" text-anchor="end" class="lbl">D1</text>
     <text x="296" y="100" class="lbl">D2</text>
