@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01 · 受控源：把“放大”变成一道电路题</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body data-lesson="0001">
+<main class="page">
+
+  <p class="eyebrow">模拟电路基础 · Lesson 01</p>
+  <h1>受控源：把“放大”变成一道电路题</h1>
+  <p class="lede">三极管不是电阻，运放也不是魔法。它们之所以能用电路方程算，是因为都被等效成了同一种东西：受控源。这一课只做一件事——让你看到“放大”两个字时，脑子里出现的是一张可计算的电路。</p>
+  <p class="mission-note"><strong>本课服务于</strong> 能独立分析放大电路的静态工作点、输入输出电阻与增益</p>
+
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span>练习进度</span>
+      <span>一次答对 <strong id="score">0 / 7</strong></span>
+    </div>
+    <div class="progress"><span id="bar"></span></div>
+  </div>
+
+  <!-- ============================================================ -->
+  <section id="why">
+    <div class="section-head"><span class="num">01</span><h2>先解决一个矛盾</h2></div>
+    <p>你学过戴维南、叠加、节点法，它们都假设电路里只有<strong>独立源</strong>：电压源的值是 5 V 就是 5 V，电流源的值是 2 mA 就是 2 mA，不受别人影响。</p>
+    <p>但三极管不是这样。它的集电极电流 <var>i</var><sub>C</sub> 由基极电流 <var>i</var><sub>B</sub> 控制：<var>i</var><sub>C</sub> = β<var>i</var><sub>B</sub>。输出端的电流，取决于输入端的一条支路。运放也是：输出电压取决于同相端与反相端之间的电压差。</p>
+    <p>于是电路理论里补了一种元件：<strong>受控源</strong>（dependent source，又叫相关源）。它的值由<em>另一条支路</em>的电压或电流控制。它不是独立源，不能自己决定输出；它只是把“器件的行为”翻译成电路语言。<a href="../.uploads/3a682fb4-c075-4c69-9b32-e5874612f743_《模拟电路基础》.pdf#page=16">教材 §1.1.2（书 p.5 / PDF p.16）</a></p>
+
+    <div class="callout">
+      <p><span class="tag">一句话</span> 独立源自己决定自己；受控源由别人决定自己。放大电路的核心，就是把器件换成一个受控源，然后按你熟悉的电路方法去算。</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="types">
+    <div class="section-head"><span class="num">02</span><h2>四种受控源，一张图认全</h2></div>
+    <p>只有两个问题：<strong>控制量</strong>是电压还是电流？<strong>输出量</strong>是电压还是电流？两两组合，正好四种。</p>
+
+    <figure class="figure">
+      <div class="panel-grid">
+
+        <div class="panel">
+          <svg viewBox="0 0 300 170" role="img" aria-label="VCVS 电压控制电压源符号">
+            <g class="wire">
+              <line x1="44" y1="55" x2="72" y2="55"/>
+              <line x1="44" y1="115" x2="72" y2="115"/>
+              <line x1="200" y1="50" x2="270" y2="50"/>
+              <line x1="200" y1="120" x2="270" y2="120"/>
+            </g>
+            <circle cx="44" cy="55" r="3.2" class="node"/>
+            <circle cx="44" cy="115" r="3.2" class="node"/>
+            <circle cx="270" cy="50" r="3.2" class="node"/>
+            <circle cx="270" cy="120" r="3.2" class="node"/>
+            <text x="27" y="51" class="sym plus">+</text>
+            <text x="27" y="126" class="sym plus">−</text>
+            <text x="14" y="89" class="lbl">v₁</text>
+            <polygon points="200,50 228,85 200,120 172,85" class="dep"/>
+            <text x="184" y="66" class="sym plus">+</text>
+            <text x="184" y="112" class="sym plus">−</text>
+            <text x="200" y="148" class="lbl" text-anchor="middle">A_V v₁</text>
+            <text x="279" y="46" class="sym plus">+</text>
+            <text x="279" y="132" class="sym plus">−</text>
+            <text x="282" y="89" class="lbl">v₂</text>
+          </svg>
+          <h3>VCVS</h3>
+          <div class="eq">v₂ = A_V · v₁</div>
+          <div class="uses">A_V 无量纲 · 运放、电压放大器</div>
+        </div>
+
+        <div class="panel">
+          <svg viewBox="0 0 300 170" role="img" aria-label="VCCS 电压控制电流源符号">
+            <g class="wire">
+              <line x1="44" y1="55" x2="72" y2="55"/>
+              <line x1="44" y1="115" x2="72" y2="115"/>
+              <line x1="200" y1="50" x2="270" y2="50"/>
+              <line x1="200" y1="120" x2="270" y2="120"/>
+            </g>
+            <circle cx="44" cy="55" r="3.2" class="node"/>
+            <circle cx="44" cy="115" r="3.2" class="node"/>
+            <circle cx="270" cy="50" r="3.2" class="node"/>
+            <circle cx="270" cy="120" r="3.2" class="node"/>
+            <text x="27" y="51" class="sym plus">+</text>
+            <text x="27" y="126" class="sym plus">−</text>
+            <text x="14" y="89" class="lbl">v₁</text>
+            <polygon points="200,50 228,85 200,120 172,85" class="dep"/>
+            <line x1="200" y1="104" x2="200" y2="68" class="wire" marker-end="url(#arrow)"/>
+            <text x="200" y="148" class="lbl" text-anchor="middle">g_m v₁</text>
+            <text x="246" y="42" class="lbl small">i₂</text>
+            <line x1="232" y1="50" x2="264" y2="50" class="wire" marker-end="url(#arrow)"/>
+            <text x="279" y="46" class="sym plus">+</text>
+            <text x="279" y="132" class="sym plus">−</text>
+            <text x="282" y="89" class="lbl">v₂</text>
+          </svg>
+          <h3>VCCS</h3>
+          <div class="eq">i₂ = g_m · v₁</div>
+          <div class="uses">g_m 单位 S · MOS 管、跨导放大器</div>
+        </div>
+
+        <div class="panel">
+          <svg viewBox="0 0 300 170" role="img" aria-label="CCVS 电流控制电压源符号">
+            <g class="wire">
+              <line x1="44" y1="55" x2="44" y2="115"/>
+              <line x1="200" y1="50" x2="270" y2="50"/>
+              <line x1="200" y1="120" x2="270" y2="120"/>
+            </g>
+            <circle cx="44" cy="55" r="3.2" class="node"/>
+            <circle cx="44" cy="115" r="3.2" class="node"/>
+            <circle cx="270" cy="50" r="3.2" class="node"/>
+            <circle cx="270" cy="120" r="3.2" class="node"/>
+            <line x1="44" y1="64" x2="44" y2="100" class="wire" marker-end="url(#arrow)"/>
+            <text x="22" y="89" class="lbl">i₁</text>
+            <polygon points="200,50 228,85 200,120 172,85" class="dep"/>
+            <text x="184" y="66" class="sym plus">+</text>
+            <text x="184" y="112" class="sym plus">−</text>
+            <text x="200" y="148" class="lbl" text-anchor="middle">r_m i₁</text>
+            <text x="279" y="46" class="sym plus">+</text>
+            <text x="279" y="132" class="sym plus">−</text>
+            <text x="282" y="89" class="lbl">v₂</text>
+          </svg>
+          <h3>CCVS</h3>
+          <div class="eq">v₂ = r_m · i₁</div>
+          <div class="uses">r_m 单位 Ω · 电流—电压变换器</div>
+        </div>
+
+        <div class="panel">
+          <svg viewBox="0 0 300 170" role="img" aria-label="CCCS 电流控制电流源符号">
+            <g class="wire">
+              <line x1="44" y1="55" x2="44" y2="115"/>
+              <line x1="200" y1="50" x2="270" y2="50"/>
+              <line x1="200" y1="120" x2="270" y2="120"/>
+            </g>
+            <circle cx="44" cy="55" r="3.2" class="node"/>
+            <circle cx="44" cy="115" r="3.2" class="node"/>
+            <circle cx="270" cy="50" r="3.2" class="node"/>
+            <circle cx="270" cy="120" r="3.2" class="node"/>
+            <line x1="44" y1="64" x2="44" y2="100" class="wire" marker-end="url(#arrow)"/>
+            <text x="22" y="89" class="lbl">i₁</text>
+            <polygon points="200,50 228,85 200,120 172,85" class="dep"/>
+            <line x1="200" y1="104" x2="200" y2="68" class="wire" marker-end="url(#arrow)"/>
+            <text x="200" y="148" class="lbl" text-anchor="middle">A_i i₁</text>
+            <text x="246" y="42" class="lbl small">i₂</text>
+            <line x1="232" y1="50" x2="264" y2="50" class="wire" marker-end="url(#arrow)"/>
+            <text x="279" y="46" class="sym plus">+</text>
+            <text x="279" y="132" class="sym plus">−</text>
+            <text x="282" y="89" class="lbl">v₂</text>
+          </svg>
+          <h3>CCCS</h3>
+          <div class="eq">i₂ = A_i · i₁</div>
+          <div class="uses">A_i 无量纲 · 三极管、电流放大器</div>
+        </div>
+
+      </div>
+      <figcaption>四种线性受控源。符号为菱形；电压源标 +/−，电流源标箭头。参考方向决定关系式前的正负号。仿教材图 1.1.4（书 p.5 / PDF p.16）。</figcaption>
+    </figure>
+
+    <p>记忆不用背表，先看<strong>单位</strong>：</p>
+    <table>
+      <thead>
+        <tr><th>系数</th><th>单位</th><th>含义</th><th>直接暴露的类型</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono"><var>A</var><sub>V</sub></td><td>无量纲</td><td>电压 / 电压</td><td>VCVS</td></tr>
+        <tr><td class="mono"><var>g</var><sub>m</sub></td><td>S（A/V）</td><td>电流 / 电压</td><td>VCCS</td></tr>
+        <tr><td class="mono"><var>r</var><sub>m</sub></td><td>Ω（V/A）</td><td>电压 / 电流</td><td>CCVS</td></tr>
+        <tr><td class="mono"><var>A</var><sub>i</sub></td><td>无量纲</td><td>电流 / 电流</td><td>CCCS</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn">
+      <p><strong>别急着背符号。</strong>先问“谁控制谁、输出是什么量”，再写关系式。符号只是关系式的图。教材在 §1.1.2 明确给了四种对应：BJT 的 <var>i</var><sub>C</sub> = β<var>i</var><sub>B</sub> 是 CCCS；MOS 的 <var>i</var><sub>D</sub> 受 <var>v</var><sub>GS</sub> 控制，是 VCCS；运放输出与输入电压成线性关系，是 VCVS。<a href="../.uploads/3a682fb4-c075-4c69-9b32-e5874612f743_《模拟电路基础》.pdf#page=17">书 p.6 / PDF p.17</a></p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="practice-a">
+    <div class="section-head"><span class="num">03</span><h2>练习 A：先认类型</h2></div>
+    <p>四道题，凭第一反应选。答错会立刻给提示，可以再选。</p>
+
+    <section class="quiz" data-answer="cccs"
+             data-explain="I_C = βI_B：输出是电流，控制量也是电流，所以是 CCCS。"
+             data-hint="看两点：输出是电流还是电压？控制量是电流还是电压？">
+      <p class="q"><span class="qno">01</span>三极管的集电极电流由基极电流控制，应等效为哪种受控源？</p>
+      <div class="options">
+        <button class="option" data-key="cccs">CCCS</button>
+        <button class="option" data-key="vccs">VCCS</button>
+        <button class="option" data-key="ccvs">CCVS</button>
+        <button class="option" data-key="vcvs">VCVS</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <section class="quiz" data-answer="vccs"
+             data-explain="MOS 管的漏极电流受栅源电压控制，系数是跨导 g_m，所以是 VCCS。"
+             data-hint="漏极电流是输出量；栅源电压是控制量。输出电流、控制电压。">
+      <p class="q"><span class="qno">02</span>MOS 管的漏极电流由栅源电压控制，应等效为哪种受控源？</p>
+      <div class="options">
+        <button class="option" data-key="vcvs">VCVS</button>
+        <button class="option" data-key="cccs">CCCS</button>
+        <button class="option" data-key="vccs">VCCS</button>
+        <button class="option" data-key="ccvs">CCVS</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <section class="quiz" data-answer="vccs"
+             data-explain="2 mA/V 就是 2 mS，单位是电导；输出是电流、控制量是电压，所以是 VCCS。"
+             data-hint="先把 mA/V 化成 S，单位会直接告诉你类型。">
+      <p class="q"><span class="qno">03</span>某受控源满足 <var>i</var><sub>2</sub> = (2 mA/V) · <var>v</var><sub>1</sub>，它属于？</p>
+      <div class="options">
+        <button class="option" data-key="ccvs">CCVS</button>
+        <button class="option" data-key="vcvs">VCVS</button>
+        <button class="option" data-key="cccs">CCCS</button>
+        <button class="option" data-key="vccs">VCCS</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <section class="quiz" data-answer="ccvs"
+             data-explain="5000 Ω 是跨阻；输出是电压、控制量是电流，所以是 CCVS。"
+             data-hint="Ω = V/A，说明输出是电压、控制量是电流。">
+      <p class="q"><span class="qno">04</span>某受控源满足 <var>v</var><sub>2</sub> = (5000 Ω) · <var>i</var><sub>1</sub>，它属于？</p>
+      <div class="options">
+        <button class="option" data-key="vcvs">VCVS</button>
+        <button class="option" data-key="ccvs">CCVS</button>
+        <button class="option" data-key="vccs">VCCS</button>
+        <button class="option" data-key="cccs">CCCS</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="model">
+    <div class="section-head"><span class="num">04</span><h2>放大器：一个受控源 + 两个电阻</h2></div>
+    <p>在单向化近似下，一个线性电压放大器可以用三个参数描述：输入端口看进去的电阻 <var>R</var><sub>i</sub>；输出端口的一个受控电压源 <var>A</var><sub>V</sub><var>v</var><sub>i</sub> 串联输出电阻 <var>R</var><sub>o</sub>。就这三样。</p>
+
+    <figure class="figure">
+      <svg viewBox="0 0 600 250" role="img" aria-label="放大器二端口模型：输入电阻、受控电压源、输出电阻与负载">
+        <g class="wire">
+          <!-- ground rail -->
+          <line x1="40" y1="210" x2="560" y2="210"/>
+          <!-- source -->
+          <line x1="80" y1="115" x2="80" y2="85"/>
+          <line x1="80" y1="155" x2="80" y2="210"/>
+          <circle cx="80" cy="135" r="20"/>
+          <!-- Rs -->
+          <line x1="80" y1="85" x2="115" y2="85"/>
+          <rect x="115" y="73" width="60" height="24" rx="2"/>
+          <line x1="175" y1="85" x2="230" y2="85"/>
+          <!-- input node down to Ri -->
+          <line x1="230" y1="85" x2="230" y2="120"/>
+          <rect x="218" y="120" width="24" height="56" rx="2"/>
+          <line x1="230" y1="176" x2="230" y2="210"/>
+          <!-- dependent source -->
+          <line x1="340" y1="85" x2="385" y2="85"/>
+          <line x1="340" y1="175" x2="340" y2="210"/>
+          <!-- Ro -->
+          <rect x="385" y="73" width="60" height="24" rx="2"/>
+          <line x1="445" y1="85" x2="490" y2="85"/>
+          <!-- RL -->
+          <line x1="490" y1="85" x2="490" y2="120"/>
+          <rect x="478" y="120" width="24" height="56" rx="2"/>
+          <line x1="490" y1="176" x2="490" y2="210"/>
+          <!-- ground symbol -->
+          <line x1="280" y1="210" x2="280" y2="222"/>
+          <line x1="266" y1="222" x2="294" y2="222"/>
+          <line x1="271" y1="228" x2="289" y2="228"/>
+          <line x1="276" y1="234" x2="284" y2="234"/>
+        </g>
+        <circle cx="230" cy="85" r="3.5" class="node"/>
+        <circle cx="340" cy="85" r="3.5" class="node"/>
+        <circle cx="490" cy="85" r="3.5" class="node"/>
+        <text x="90" y="122" class="sym plus">+</text>
+        <text x="90" y="154" class="sym plus">−</text>
+        <text x="50" y="140" class="lbl" text-anchor="end">v<tspan dy="3" font-size="9">s</tspan></text>
+        <text x="145" y="66" class="lbl" text-anchor="middle">R<tspan dy="3" font-size="9">s</tspan></text>
+        <text x="252" y="152" class="lbl">R<tspan dy="3" font-size="9">i</tspan></text>
+        <text x="212" y="103" class="sym plus">+</text>
+        <text x="212" y="198" class="sym plus">−</text>
+        <text x="190" y="152" class="lbl" text-anchor="end">v<tspan dy="3" font-size="9">i</tspan></text>
+        <polygon points="340,85 370,130 340,175 310,130" class="dep"/>
+        <text x="327" y="102" class="sym plus">+</text>
+        <text x="327" y="166" class="sym plus">−</text>
+        <text x="340" y="66" class="lbl" text-anchor="middle">A<tspan dy="3" font-size="9">V</tspan><tspan dy="-3">·v</tspan><tspan dy="3" font-size="9">i</tspan></text>
+        <text x="415" y="66" class="lbl" text-anchor="middle">R<tspan dy="3" font-size="9">o</tspan></text>
+        <text x="470" y="152" class="lbl" text-anchor="end">R<tspan dy="3" font-size="9">L</tspan></text>
+        <text x="518" y="103" class="sym plus">+</text>
+        <text x="518" y="198" class="sym plus">−</text>
+        <text x="512" y="152" class="lbl">v<tspan dy="3" font-size="9">o</tspan></text>
+      </svg>
+      <figcaption>线性放大器的二端口模型。受控源 <var>A</var><sub>V</sub><var>v</var><sub>i</sub> 是“本征增益”，但输入源和负载都会分走一部分电压。</figcaption>
+    </figure>
+
+    <p>于是总增益不是 <var>A</var><sub>V</sub>，而是三段相乘：</p>
+
+    <div class="math">
+      <span class="eq"><var>v</var><sub>i</sub> = <var>v</var><sub>s</sub> · <var>R</var><sub>i</sub> / (<var>R</var><sub>s</sub> + <var>R</var><sub>i</sub>)</span>
+      <span class="eq"><var>v</var><sub>o</sub> = <var>A</var><sub>V</sub><var>v</var><sub>i</sub> · <var>R</var><sub>L</sub> / (<var>R</var><sub>o</sub> + <var>R</var><sub>L</sub>)</span>
+      <span class="eq"><var>A</var> = <var>v</var><sub>o</sub> / <var>v</var><sub>s</sub> = [<var>R</var><sub>i</sub>/(<var>R</var><sub>s</sub>+<var>R</var><sub>i</sub>)] · <var>A</var><sub>V</sub> · [<var>R</var><sub>L</sub>/(<var>R</var><sub>o</sub>+<var>R</var><sub>L</sub>)]</span>
+      <span class="where">输入分压 × 本征增益 × 输出分压</span>
+    </div>
+
+    <div class="callout">
+      <p><strong>这就是“加载效应”。</strong>只要信号源有内阻、输出接负载，你测到的增益就不是 <var>A</var><sub>V</sub>，而是被 <var>R</var><sub>s</sub> 和 <var>R</var><sub>L</sub> 各砍一刀之后的结果。分析放大电路时，先算 <var>R</var><sub>i</sub>、<var>R</var><sub>o</sub>，再谈增益，顺序不能反。</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="practice-b">
+    <div class="section-head"><span class="num">05</span><h2>练习 B：把数字代进去</h2></div>
+
+    <section class="quiz" data-answer="81"
+             data-explain="0.9 × 100 × 0.9 = 81。输入分压 9/(1+9)=0.9；输出分压 9/(1+9)=0.9。"
+             data-hint="先算两个分压比，再乘本征增益。注意是相乘，不是相加。">
+      <p class="q"><span class="qno">05</span><var>R</var><sub>s</sub> = 1 kΩ，<var>R</var><sub>i</sub> = 9 kΩ，<var>A</var><sub>V</sub> = 100，<var>R</var><sub>o</sub> = 1 kΩ，<var>R</var><sub>L</sub> = 9 kΩ。总电压增益 <var>A</var> = <var>v</var><sub>o</sub>/<var>v</var><sub>s</sub> 约为？</p>
+      <div class="options">
+        <button class="option" data-key="90">90</button>
+        <button class="option" data-key="81">81</button>
+        <button class="option" data-key="72">72</button>
+        <button class="option" data-key="45">45</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <details>
+      <summary>想看完整代入过程</summary>
+      <p>输入分压：<var>R</var><sub>i</sub>/(<var>R</var><sub>s</sub>+<var>R</var><sub>i</sub>) = 9/(1+9) = 0.9。<br>
+      输出分压：<var>R</var><sub>L</sub>/(<var>R</var><sub>o</sub>+<var>R</var><sub>L</sub>) = 9/(1+9) = 0.9。<br>
+      总增益：0.9 × 100 × 0.9 = <strong>81</strong>。如果忽略输入输出电阻，你会得到 100——高估了 23%。</p>
+    </details>
+
+    <section class="quiz" data-answer="true"
+             data-explain="R_o 越小，输出分压 R_L/(R_o+R_L) 越接近 1，接上负载后增益下降越少。"
+             data-hint="把 R_o 想成输出端串联的一堵墙：墙越矮，负载拿到的电压越多。">
+      <p class="q"><span class="qno">06</span>判断：输出电阻 <var>R</var><sub>o</sub> 越小，接上负载后电压增益下降越少。</p>
+      <div class="options">
+        <button class="option" data-key="true">正确</button>
+        <button class="option" data-key="false">错误</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="boundary">
+    <div class="section-head"><span class="num">06</span><h2>一个必须记住的边界</h2></div>
+    <p>受控源长得很像独立源，但它<strong>不能</strong>像独立源那样“置零”。求戴维南等效电阻时，独立电压源短路、独立电流源开路；但受控源必须保留，因为它还受电路里的变量控制。正确做法是外加测试源，再求 <var>v</var><sub>t</sub>/<var>i</var><sub>t</sub>。</p>
+    <p>这条规则在教材 <a href="../.uploads/3a682fb4-c075-4c69-9b32-e5874612f743_《模拟电路基础》.pdf#page=20">§1.2.3 戴维南定理（书 p.9 / PDF p.20）</a>里出现，也是后面分析放大器输出电阻的关键。下一课会专门练。</p>
+
+    <section class="quiz" data-answer="false"
+             data-explain="受控源不能置零。求含受控源的戴维南等效电阻时，要保留受控源，用外加测试源法。"
+             data-hint="回想独立源和受控源的区别：受控源的值由别的支路决定，不能当作 0。">
+      <p class="q"><span class="qno">07</span>判断：求戴维南等效电阻时，受控源可以像独立源一样直接置零。</p>
+      <div class="options">
+        <button class="option" data-key="true">正确</button>
+        <button class="option" data-key="false">错误</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="wrap-up">
+    <div class="section-head"><span class="num">07</span><h2>带走三句话</h2></div>
+    <ol class="takeaways">
+      <li>受控源的类型 = 控制量（电压/电流）× 输出量（电压/电流）；先看单位，能秒判类型。</li>
+      <li>放大器 = <var>R</var><sub>i</sub> + 受控源 <var>A</var><sub>V</sub><var>v</var><sub>i</sub> + <var>R</var><sub>o</sub>；真实增益 = 输入分压 × 本征增益 × 输出分压。</li>
+      <li>受控源不是独立源：求戴维南等效时不能置零，必须保留控制关系。</li>
+    </ol>
+
+    <h3 id="checklist">30 秒自测</h3>
+    <ul class="checklist">
+      <li>我能不看表写出四种受控源的关系式和单位。</li>
+      <li>我能把 <var>i</var><sub>C</sub> = β<var>i</var><sub>B</sub> 和 MOS 的 <var>i</var><sub>D</sub>–<var>v</var><sub>GS</sub> 对应到受控源类型。</li>
+      <li>我能用 <var>R</var><sub>i</sub>、<var>A</var><sub>V</sub>、<var>R</var><sub>o</sub> 算出带源内阻和负载的总增益。</li>
+      <li>我知道受控源为什么不能像独立源一样置零。</li>
+    </ul>
+
+    <div class="teacher-note">
+      <strong>卡住了就直接问我。</strong>把题号或你卡住的那一步发给我——我可以换一种讲法,也可以用 Falstad 仿真把波形跑给你看。别带着模糊往下走，模电的后面每一章都踩在这张图上。
+    </div>
+
+    <div class="callout">
+      <p><strong>本课主读材料：</strong><a href="../.uploads/3a682fb4-c075-4c69-9b32-e5874612f743_《模拟电路基础》.pdf#page=16">教材 §1.1.2 线性受控源（书 p.5–6 / PDF p.16–17）</a>。只读这两页：四种符号、四个关系式、四个单位。读完再扫一眼 §1.2.3 的开头，为下一课埋钉子。</p>
+    </div>
+
+    <div class="next">
+      <a href="../reference/controlled-source-model.html">
+        <span class="k">Reference</span>
+        <span class="t">参考卡：受控源与放大器二端口模型</span>
+      </a>
+      <a href="#practice-a">
+        <span class="k">Review</span>
+        <span class="t">重做本课练习，争取一次全对</span>
+      </a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>Lesson 01 · 《模拟电路基础》系统补课 · 教材页码映射：书页 N ↔ PDF 第 N+11 页。</p>
+    <p>下一课预告：含受控源的戴维南等效——把放大器的输出端化成“一个电压源 + 一个电阻”。</p>
+  </footer>
+
+</main>
+
+<!-- 全局 SVG 箭头定义 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+    </marker>
+  </defs>
+</svg>
+
+<script src="../assets/quiz.js" defer></script>
+</body>
+</html>

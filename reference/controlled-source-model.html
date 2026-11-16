@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>参考卡 01 · 受控源与放大器二端口模型</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main class="page">
+
+  <p class="eyebrow">模拟电路基础 · Reference 01</p>
+  <h1>受控源与放大器二端口模型</h1>
+  <p class="lede">一页纸版本：四种受控源的判别、单位、典型器件，以及放大器增益为什么总被“分压”砍两刀。打印出来夹在教材里。</p>
+
+  <section>
+    <div class="section-head"><span class="num">A</span><h2>四象限判别</h2></div>
+    <p>只问两个问题：<strong>控制量</strong>是什么？<strong>输出量</strong>是什么？</p>
+    <table>
+      <thead>
+        <tr><th></th><th>输出是电压</th><th>输出是电流</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>控制量是电压</th>
+          <td><strong>VCVS</strong><br><span class="mono">v₂ = A_V v₁</span><br>A_V 无量纲</td>
+          <td><strong>VCCS</strong><br><span class="mono">i₂ = g_m v₁</span><br>g_m 单位 S</td>
+        </tr>
+        <tr>
+          <th>控制量是电流</th>
+          <td><strong>CCVS</strong><br><span class="mono">v₂ = r_m i₁</span><br>r_m 单位 Ω</td>
+          <td><strong>CCCS</strong><br><span class="mono">i₂ = A_i i₁</span><br>A_i 无量纲</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="num">B</span><h2>符号与单位速查</h2></div>
+    <table>
+      <thead>
+        <tr><th>类型</th><th>关系式</th><th>系数单位</th><th>典型器件 / 场景</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>VCVS</strong></td><td class="mono">v₂ = A_V v₁</td><td>无量纲</td><td>运放、电压放大器</td></tr>
+        <tr><td><strong>VCCS</strong></td><td class="mono">i₂ = g_m v₁</td><td>S（A/V）</td><td>MOS 管、跨导放大器</td></tr>
+        <tr><td><strong>CCVS</strong></td><td class="mono">v₂ = r_m i₁</td><td>Ω（V/A）</td><td>电流—电压变换器</td></tr>
+        <tr><td><strong>CCCS</strong></td><td class="mono">i₂ = A_i i₁</td><td>无量纲</td><td>BJT、电流放大器</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <p><span class="tag">秒判</span> 先用单位判类型：无量纲 → 电压/电压或电流/电流；S → 电压控电流；Ω → 电流控电压。再看参考方向补正负号。</p>
+    </div>
+    <p>教材依据：§1.1.2（书 p.5–6 / PDF p.16–17）。BJT 的 <span class="mono">i_C = β i_B</span> 对应 CCCS；MOS 的漏极电流受 <span class="mono">v_GS</span> 控制，对应 VCCS；运放对应 VCVS。</p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="num">C</span><h2>放大器二端口模型</h2></div>
+    <p>输入端看进去是 <var>R</var><sub>i</sub>；输出端是受控电压源 <var>A</var><sub>V</sub><var>v</var><sub>i</sub> 串联 <var>R</var><sub>o</sub>。</p>
+    <div class="math">
+      <span class="eq"><var>A</var> = <var>v</var><sub>o</sub>/<var>v</var><sub>s</sub> = [<var>R</var><sub>i</sub>/(<var>R</var><sub>s</sub>+<var>R</var><sub>i</sub>)] · <var>A</var><sub>V</sub> · [<var>R</var><sub>L</sub>/(<var>R</var><sub>o</sub>+<var>R</var><sub>L</sub>)]</span>
+      <span class="where">输入分压 × 本征增益（开路增益）× 输出分压</span>
+    </div>
+    <table>
+      <thead>
+        <tr><th>量</th><th>怎么读</th><th>理想方向</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">R_i</td><td>输入端口看进去的等效电阻</td><td>越大，从信号源拿到的电压越多</td></tr>
+        <tr><td class="mono">A_V</td><td>输出开路时的本征电压增益</td><td>由器件和电路结构决定</td></tr>
+        <tr><td class="mono">R_o</td><td>输出端口看进去的等效电阻</td><td>越小，带负载后增益掉得越少</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="num">D</span><h2>三个常见坑</h2></div>
+    <ol class="takeaways">
+      <li><strong>把受控源当独立源置零。</strong>求戴维南/诺顿等效电阻时，独立源可以置零，受控源必须保留；用外加测试源求 <var>v</var><sub>t</sub>/<var>i</var><sub>t</sub>（§1.2.3，书 p.9 / PDF p.20）。</li>
+      <li><strong>只看系数不看单位。</strong>单位已经暴露类型；写关系式前先把单位写出来，能避免一半的方向错误。</li>
+      <li><strong>把本征增益当实测增益。</strong>只要信号源有内阻、输出接负载，就一定有两次分压；先算 <var>R</var><sub>i</sub>、<var>R</var><sub>o</sub>，再算增益。</li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="num">E</span><h2>30 秒自测</h2></div>
+    <details>
+      <summary>1. 为什么 BJT 是 CCCS，而 MOS 是 VCCS？</summary>
+      <p>BJT 的集电极电流由基极<strong>电流</strong>控制（<span class="mono">i_C = β i_B</span>）；MOS 的漏极电流由栅源<strong>电压</strong>控制（<span class="mono">i_D = f(v_GS)</span>）。输出都是电流，控制量不同，所以一个是 CCCS，一个是 VCCS。</p>
+    </details>
+    <details>
+      <summary>2. R_s = 2 kΩ，R_i = 8 kΩ，A_V = 50，R_o = 2 kΩ，R_L = 8 kΩ，总增益是多少？</summary>
+      <p>0.8 × 50 × 0.8 = <strong>32</strong>。两次分压各 0.8；如果直接用 50，会高估 56%。</p>
+    </details>
+    <details>
+      <summary>3. 求含受控源电路的戴维南电阻，第一步做什么？</summary>
+      <p>把独立源置零，但<strong>保留受控源</strong>；在端口外加测试源 <var>v</var><sub>t</sub>，求出流入的 <var>i</var><sub>t</sub>，则 <span class="mono">R_th = v_t / i_t</span>。不能直接把受控源短路或开路。</p>
+    </details>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="num">F</span><h2>术语卡</h2></div>
+    <table>
+      <thead>
+        <tr><th>术语</th><th>一句话定义</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>独立源</strong></td><td>值不受电路其他部分控制，自己决定输出。</td></tr>
+        <tr><td><strong>受控源</strong></td><td>值由另一条支路的电压或电流控制；分 VCVS、VCCS、CCVS、CCCS 四种。</td></tr>
+        <tr><td><strong>跨导 g<sub>m</sub></strong></td><td>输出电流与输入电压之比，单位 S（A/V）。</td></tr>
+        <tr><td><strong>跨阻 r<sub>m</sub></strong></td><td>输出电压与输入电流之比，单位 Ω（V/A）。</td></tr>
+        <tr><td><strong>输入电阻 R<sub>i</sub></strong></td><td>从输入端口看进去的等效电阻；越大，从信号源分到的电压越多。</td></tr>
+        <tr><td><strong>输出电阻 R<sub>o</sub></strong></td><td>从输出端口看进去的等效电阻；越小，带负载后增益掉得越少。</td></tr>
+        <tr><td><strong>本征增益 A<sub>V</sub></strong></td><td>输出开路、无负载时的电压增益，是受控源的系数，不是实测增益。</td></tr>
+        <tr><td><strong>加载效应</strong></td><td>源内阻与负载分别对输入、输出电压分压，使实测增益低于本征增益。</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer class="footer">
+    <p><a href="../lessons/0001-controlled-sources.html">← 回到 Lesson 01：受控源</a> · 下一课：含受控源的戴维南等效。</p>
+    <p>《模拟电路基础》系统补课 · 页码映射：书页 N ↔ PDF 第 N+11 页。</p>
+  </footer>
+
+</main>
+</body>
+</html>
