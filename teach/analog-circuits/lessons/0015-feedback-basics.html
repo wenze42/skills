@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0015 — 反馈的基本概念与四种组态</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0015 — 反馈的基本概念与四种组态</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0015 / 0020 · 约 35 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  需要 <a href="./0007-common-emitter-amplifier.html">Lesson 0007（共射放大电路）</a>、
+  <a href="./0012-multistage-amplifier.html">Lesson 0012（多级放大）</a> 和
+  <a href="./0014-frequency-response.html">Lesson 0014（频率响应）</a>。
+  你至少要能一眼看出共射、共集、共基三种组态的相位关系——瞬时极性法全靠它。
+</div>
+
+<p>
+  前十四课我们一直在“开环”地看放大电路。这一课开始在输出与输入之间拉一根线，
+  把输出的一部分送回去。增益、带宽、失真随之全变，甚至可能自己振荡——
+  反馈是模电后半程的总开关。
+</p>
+
+<h2>一、反馈的定义与框图</h2>
+
+<p>
+  <strong>反馈</strong>：把放大电路输出量（电压或电流）的一部分或全部，
+  通过<strong>反馈网络</strong>送回输入回路，与输入量进行比较，
+  用比较的结果去控制净输入量。带反馈的放大电路称为<strong>闭环</strong>放大电路，
+  原来的放大电路称为<strong>基本放大电路</strong>（开环）。
+</p>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="反馈放大电路框图：输入量经求和点得到净输入，送入基本放大电路A，输出经反馈网络F送回输入端">
+    <text x="30" y="80" class="lbl">X_i</text>
+    <line class="wire" x1="30" y1="95" x2="92" y2="95"/>
+    <polygon points="80,89 80,101 92,95" fill="#1a1a1a"/>
+    <circle class="area" cx="112" cy="95" r="20" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="99" y="86" text-anchor="middle" class="lbl">+</text>
+    <text x="99" y="112" text-anchor="middle" class="lbl">−</text>
+
+    <line class="wire" x1="132" y1="95" x2="190" y2="95"/>
+    <text x="161" y="82" text-anchor="middle" class="lbl">X_id</text>
+    <rect class="area" x="190" y="66" width="110" height="58" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="245" y="92" text-anchor="middle">A</text>
+    <text x="245" y="111" text-anchor="middle" class="lbl">基本放大</text>
+
+    <line class="wire" x1="300" y1="95" x2="480" y2="95"/>
+    <circle class="dot" cx="430" cy="95" r="4"/>
+    <text x="438" y="80" class="lbl">X_o</text>
+
+    <polyline class="wire" points="430,95 430,190 345,190"/>
+    <rect class="area" x="245" y="172" width="100" height="36" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="295" y="188" text-anchor="middle">F</text>
+    <text x="295" y="203" text-anchor="middle" class="lbl">反馈网络</text>
+    <polyline class="wire" points="245,190 112,190 112,123"/>
+    <polygon points="107,123 117,123 112,115" fill="#1a1a1a"/>
+    <text x="170" y="210" text-anchor="middle" class="lbl">反馈量 X_f</text>
+  </svg>
+</div>
+
+<div class="math">
+  X_id = X_i − X_f　　X_o = A · X_id　　X_f = F · X_o<br>
+  A_f = X_o / X_i = A / (1 + AF)
+</div>
+
+<table>
+  <tr><th>量</th><th>名称</th><th>含义</th></tr>
+  <tr><td><strong>A</strong></td><td>开环增益</td><td>基本放大电路本身的增益，不含反馈</td></tr>
+  <tr><td><strong>F</strong></td><td>反馈系数</td><td>反馈网络把输出量送回输入端的比例，F = X_f / X_o</td></tr>
+  <tr><td><strong>AF</strong></td><td>环路增益</td><td>信号绕“放大 → 反馈”一整圈获得的总增益</td></tr>
+  <tr><td><strong>1 + AF</strong></td><td>反馈深度</td><td>闭环后净输入被削弱的倍数，也是性能改善的倍数</td></tr>
+  <tr><td><strong>A_f</strong></td><td>闭环增益</td><td>加反馈后整个电路的增益，A_f = X_o / X_i</td></tr>
+</table>
+
+<p>
+  分母 <code>1 + AF</code> 是整个负反馈理论的“心脏”。它大于 1，说明反馈削弱了净输入，
+  是负反馈；它在 0 与 1 之间，说明反馈增强了净输入，是正反馈；
+  它等于 0，闭环增益趋于无穷大，电路不需要输入就能输出——这就是<strong>自激</strong>，
+  我们会在 Lesson 0017 专门处理。
+</p>
+
+<h2>二、有无反馈的判断</h2>
+
+<p>
+  判断有没有反馈，只需要问一个问题：<strong>输出回路有没有一条通路把信号送回输入回路？</strong>
+  具体做法是在电路图上找“跨接”在输出与输入之间的元件（电阻、电容、导线），
+  看它是否把输出节点连到了输入节点。
+</p>
+
+<ul>
+  <li><strong>无反馈</strong>：固定偏置共射只有 R_b、R_c，输出只连 V_CC 和地，没有元件回到输入。</li>
+  <li><strong>有反馈</strong>：分压偏置共射在发射极串 R_e，其电压又影响 U_BE，等于把输出信息送回输入。</li>
+  <li><strong>局部反馈</strong>：反馈只出现在某一级内部；考研题问“有没有反馈”通常指级间反馈。</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">易错点</span>
+  不能因为“有电阻连到输入端”就判有反馈：V_CC 在交流通路里是地，接 V_CC 的电阻不构成反馈通路。
+  晶体管内部的 C_bc 除非题目特别说明，一律忽略。
+</div>
+
+<h2>三、正反馈与负反馈：瞬时极性法</h2>
+
+<p>
+  反馈送回来的信号可能削弱净输入，也可能增强净输入。削弱的是<strong>负反馈</strong>
+  （改善性能），增强的是<strong>正反馈</strong>（振荡器故意使用，普通放大电路里是灾害）。
+  判断方法是<strong>瞬时极性法</strong>：
+</p>
+
+<div class="tip">
+  <span class="tip-label">瞬时极性法四步</span>
+  <ol>
+    <li>假设输入信号对地的瞬时极性为 <strong>⊕</strong>（只假设一个瞬间，不看直流）。</li>
+    <li>沿信号传输路径逐级标极性：共射反相（⊕ 进 ⊖ 出）、共集同相、共基同相；
+        运放反相输入端反相、同相输入端同相。</li>
+    <li>沿反馈路径把极性送回输入回路，得到反馈信号的瞬时极性。</li>
+    <li>比较：反馈信号使<strong>净输入减小</strong> → 负反馈；使<strong>净输入增大</strong> → 正反馈。</li>
+  </ol>
+</div>
+
+<p>
+  以共射电路为例：发射极电阻 R_e 未并联旁路电容。设基极瞬时极性为 ⊕，
+  集电极反相为 ⊖，发射极跟随基极变化为 ⊕。发射极电压 u_f 升高后，
+  U_BE = u_i − u_f 反而减小，净输入被削弱，所以是<strong>负反馈</strong>；
+  反馈与输入分别加在基极和发射极（不同节点），所以是<strong>串联</strong>；
+  反馈取自发射极电流在 R_e 上的压降，所以是<strong>电流</strong>反馈。
+  合起来是<strong>电流串联负反馈</strong>。
+</p>
+
+<div class="tip">
+  <span class="tip-label">并联反馈怎么比</span>
+  串联比电压：u_id = u_i − u_f；并联比电流：i_id = i_i − i_f。
+  反馈电流抵消输入电流、使净输入减小，就是负反馈。
+</div>
+
+<h2>四、交流反馈与直流反馈</h2>
+
+<p>
+  同一个反馈元件，在直流通路和交流通路里可能作用完全不同。
+  判断方法是画<strong>直流通路</strong>（电容开路、电感短路）和<strong>交流通路</strong>
+  （电容短路、直流电源置地），分别看反馈通路是否还存在：
+</p>
+
+<table>
+  <tr><th>反馈通路存在于</th><th>名称</th><th>主要作用</th></tr>
+  <tr><td>直流通路</td><td>直流反馈</td><td>稳定静态工作点 Q，抑制温漂</td></tr>
+  <tr><td>交流通路</td><td>交流反馈</td><td>改善动态性能：增益、带宽、失真、输入输出电阻</td></tr>
+  <tr><td>两者都有</td><td>交直流反馈</td><td>同时稳定 Q 点和动态性能</td></tr>
+</table>
+
+<p>
+  典型例子是发射极电阻：R_e 无旁路时，直流和交流都经过它，是交直流反馈；
+  并联 C_e 后，直流仍走 R_e（稳定 Q 点），交流被短路（无交流反馈，增益不被压低）。
+  这就是共射电路既能稳定工作点、又能保持高增益的原因。
+</p>
+
+<div class="tip">
+  <span class="tip-label">约定</span>
+  本课及 Lesson 0016、0017 说“负反馈”时，默认指<strong>交流负反馈</strong>。
+</div>
+
+<h2>五、四种组态与判别口诀</h2>
+
+<p>
+  组态由<strong>输出端怎么取样</strong>和<strong>输入端怎么比较</strong>共同决定，两两组合正好四种。
+</p>
+
+<h3>5.1 输出端：电压反馈还是电流反馈</h3>
+
+<p>
+  用<strong>输出端短路法</strong>：令输出电压 u_o = 0（把输出端对地短路），
+  看反馈信号是否消失。
+</p>
+
+<ul>
+  <li><strong>反馈消失</strong> → 反馈取自输出电压 → <strong>电压反馈</strong>。</li>
+  <li><strong>反馈仍存在</strong> → 反馈取自输出电流 → <strong>电流反馈</strong>。</li>
+</ul>
+
+<p>
+  电压反馈稳压（R_o 减小），电流反馈稳流（R_o 增大）。
+</p>
+
+<h3>5.2 输入端：串联反馈还是并联反馈</h3>
+
+<p>
+  看反馈信号与输入信号在输入端的连接方式：
+</p>
+
+<ul>
+  <li><strong>接在不同节点</strong>（一个在基极、一个在发射极；或一个在同相端、一个在反相端）
+      → 两者以电压形式相加减 → <strong>串联反馈</strong>，输入电阻增大。</li>
+  <li><strong>接在同一节点</strong> → 两者以电流形式相加减 → <strong>并联反馈</strong>，输入电阻减小。</li>
+</ul>
+
+<h3>5.3 电压串联负反馈</h3>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="电压串联负反馈电路：反馈电压由输出电压经Rf与R1分压得到，与输入电压串联加在反相输入端">
+    <text x="250" y="35" text-anchor="middle" class="lbl">u_id = u_i − u_f</text>
+
+    <polygon points="200,50 200,150 300,100" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="212" y="86" class="lbl">+</text>
+    <text x="212" y="138" class="lbl">−</text>
+
+    <circle cx="70" cy="135" r="18" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M61,135 q4.5,-8 9,0 q4.5,8 9,0" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+    <line class="wire" x1="70" y1="117" x2="70" y2="75"/>
+    <line class="wire" x1="70" y1="153" x2="70" y2="195"/>
+    <line class="wire" x1="48" y1="195" x2="92" y2="195"/>
+    <line class="wire" x1="57" y1="202" x2="83" y2="202"/>
+    <text x="44" y="132" text-anchor="end" class="lbl">u_i</text>
+    <line class="wire" x1="70" y1="75" x2="200" y2="75"/>
+
+    <line class="wire" x1="300" y1="100" x2="470" y2="100"/>
+    <circle cx="470" cy="100" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="450" y="88" text-anchor="middle" class="lbl">u_o</text>
+
+    <circle class="dot" cx="420" cy="100" r="4"/>
+    <polyline class="wire" points="420,100 420,180 370,180"/>
+    <rect class="area" x="300" y="166" width="70" height="28" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="335" y="160" text-anchor="middle" class="lbl">R_f</text>
+    <polyline class="wire" points="300,180 150,180 150,125"/>
+    <circle class="dot" cx="150" cy="125" r="4"/>
+    <line class="wire" x1="150" y1="125" x2="200" y2="125"/>
+    <line class="wire" x1="150" y1="125" x2="120" y2="125"/>
+    <line class="wire" x1="120" y1="125" x2="120" y2="142"/>
+    <rect class="area" x="105" y="142" width="30" height="36" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="100" y="172" text-anchor="end" class="lbl">R_1</text>
+    <line class="wire" x1="120" y1="178" x2="120" y2="195"/>
+    <line class="wire" x1="98" y1="195" x2="142" y2="195"/>
+    <line class="wire" x1="107" y1="202" x2="133" y2="202"/>
+    <text x="160" y="145" class="lbl">u_f</text>
+  </svg>
+</div>
+
+<p>
+  反馈电压 u_f 由 u_o 经 R_f、R_1 分压得到，与 u_i 分别接在两个输入端，以电压形式串联相减。
+  这就是<strong>电压串联负反馈</strong>：稳定输出电压、提高输入电阻、减小输出电阻。
+</p>
+
+<h3>5.4 电流并联负反馈</h3>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="电流并联负反馈电路：输出电流在取样电阻R上产生电压，经Rf送回反相输入端，与输入电流在同一节点并联">
+    <polygon points="190,55 190,145 280,100" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="202" y="72" class="lbl">+</text>
+    <text x="202" y="138" class="lbl">−</text>
+
+    <line class="wire" x1="190" y1="75" x2="40" y2="75"/>
+    <line class="wire" x1="40" y1="75" x2="40" y2="195"/>
+    <line class="wire" x1="40" y1="195" x2="110" y2="195"/>
+    <line class="wire" x1="75" y1="195" x2="75" y2="202"/>
+    <line class="wire" x1="55" y1="202" x2="95" y2="202"/>
+    <line class="wire" x1="63" y1="209" x2="87" y2="209"/>
+
+    <line class="wire" x1="90" y1="195" x2="90" y2="125"/>
+    <polygon points="84,140 96,140 90,126" fill="#1a1a1a"/>
+    <text x="78" y="160" text-anchor="end" class="lbl">i_i</text>
+
+    <line class="wire" x1="90" y1="125" x2="190" y2="125"/>
+
+    <line class="wire" x1="280" y1="100" x2="370" y2="100"/>
+    <text x="325" y="88" text-anchor="middle" class="lbl">u_o</text>
+    <line class="wire" x1="370" y1="100" x2="370" y2="105"/>
+    <rect class="area" x="355" y="105" width="30" height="40" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="395" y="128" class="lbl">R_L</text>
+    <circle class="dot" cx="370" cy="150" r="4"/>
+    <rect class="area" x="355" y="155" width="30" height="40" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="395" y="178" class="lbl">R</text>
+    <line class="wire" x1="370" y1="195" x2="370" y2="205"/>
+    <line class="wire" x1="348" y1="205" x2="392" y2="205"/>
+    <line class="wire" x1="357" y1="212" x2="383" y2="212"/>
+
+    <polyline class="wire" points="370,150 320,150 320,185 290,185"/>
+    <rect class="area" x="230" y="171" width="60" height="28" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="260" y="165" text-anchor="middle" class="lbl">R_f</text>
+    <polyline class="wire" points="230,185 150,185 150,125"/>
+    <circle class="dot" cx="150" cy="125" r="4"/>
+    <text x="182" y="202" class="lbl">i_f</text>
+  </svg>
+</div>
+
+<p>
+  i_o 同时流过 R_L 与取样电阻 R，在 R 上产生正比于 i_o 的电压，再经 R_f 变成反馈电流 i_f，
+  送回反相输入端与 i_i 在同一节点相减。输出短路后 i_o 仍流过 R，反馈不消失，故为电流反馈；
+  输入同一节点，故为并联。它稳定输出电流、降低输入电阻、提高输出电阻。
+</p>
+
+<h3>5.5 四种组态对照</h3>
+
+<table>
+  <tr>
+    <th>组态</th><th>输出取样</th><th>输入端</th><th>稳定量</th><th>R_if</th><th>R_of</th>
+  </tr>
+  <tr><td><strong>电压串联</strong></td><td>u_o</td><td>不同节点，电压相减</td><td>输出电压</td><td>增大</td><td>减小</td></tr>
+  <tr><td><strong>电压并联</strong></td><td>u_o</td><td>同一节点，电流相减</td><td>输出电压</td><td>减小</td><td>减小</td></tr>
+  <tr><td><strong>电流串联</strong></td><td>i_o</td><td>不同节点，电压相减</td><td>输出电流</td><td>增大</td><td>增大</td></tr>
+  <tr><td><strong>电流并联</strong></td><td>i_o</td><td>同一节点，电流相减</td><td>输出电流</td><td>减小</td><td>增大</td></tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">组态判别口诀</span>
+  <strong>输出短路看法</strong>：短路后反馈没了是电压，还在是电流。<br>
+  <strong>输入端看法</strong>：反馈与输入接同一点是并联，接不同点是串联。<br>
+  <strong>稳什么</strong>：电压负反馈稳压，电流负反馈稳流；串联提高输入电阻，并联降低输入电阻。
+</div>
+
+<h3>5.6 考研例题：两级放大器的组态判断</h3>
+
+<p>
+  <strong>题</strong>：两级共射电路，R_f 从第二级输出接回第一级发射极，输入加在第一级基极。
+</p>
+
+<p>
+  <strong>解</strong>：输出短路后反馈消失 → 电压反馈；输入在基极、反馈在发射极 → 串联反馈。
+  设 T1 基极 ⊕，经两级共射后输出 ⊕，反馈回发射极也是 ⊕，使 U_BE1 减小 → 负反馈。
+  结论：<strong>电压串联负反馈</strong>，稳定输出电压、提高输入电阻、减小输出电阻。
+</p>
+
+<h2>六、深度负反馈与 1+AF ≫ 1</h2>
+
+<p>
+  当 <code>1 + AF ≫ 1</code>（工程上要求大于 10，实际常大于 100）时，分母里的 1 可忽略：
+  闭环增益几乎只由反馈网络决定，净输入几乎为零——这正是运放“虚短、虚断”的源头。
+  代价是增益只剩 1/F，所以深度负反馈一定伴随增益的大幅下降。
+</p>
+
+<div class="math">
+  1 + AF ≈ AF　　A_f ≈ A / (AF) = 1 / F　　X_id = X_i − X_f ≈ 0
+</div>
+
+<p>
+  <strong>例题</strong>：A = 10⁵，F = 0.01，求环路增益、反馈深度和闭环增益；若 A 降到 5×10⁴，A_f 变为多少？
+</p>
+
+<ol>
+  <li>AF = 10⁵ × 0.01 = 1000，1 + AF = 1001 ≫ 1，属于深度负反馈。</li>
+  <li>A_f = 10⁵ / 1001 ≈ <strong>99.9</strong>，与 1/F = 100 只差 0.1%。</li>
+  <li>A 降一半后：A_f = 5×10⁴ / 501 ≈ <strong>99.8</strong>，几乎不动。</li>
+</ol>
+
+<div class="tip">
+  <span class="tip-label">F 的量纲</span>
+  电压串联 F = u_f/u_o（无量纲）；电压并联 F = i_f/u_o（S）；
+  电流串联 F = u_f/i_o（Ω）；电流并联 F = i_f/i_o（无量纲）。
+  所以 A_f ≈ 1/F 得到的可能是电压增益、互阻增益、互导增益或电流增益。
+</div>
+
+<h2>速查表</h2>
+
+<table>
+  <tr><th>要判断的事</th><th>方法</th><th>结论</th></tr>
+  <tr><td>有无反馈</td><td>找输出节点到输入节点的跨接通路</td><td>有通路 = 有反馈</td></tr>
+  <tr><td>正 / 负反馈</td><td>瞬时极性法，看净输入</td><td>净输入减小 = 负；增大 = 正</td></tr>
+  <tr><td>交流 / 直流反馈</td><td>分别画交流、直流通路</td><td>通路在哪个里面，就是哪类反馈</td></tr>
+  <tr><td>电压 / 电流反馈</td><td>输出端短路法</td><td>反馈消失 = 电压；仍存在 = 电流</td></tr>
+  <tr><td>串联 / 并联反馈</td><td>看反馈与输入的连接节点</td><td>同节点 = 并联；不同节点 = 串联</td></tr>
+  <tr><td>深度负反馈</td><td>算 1 + AF</td><td>1 + AF ≫ 1 → A_f ≈ 1/F</td></tr>
+</table>
+
+<h2>Quiz — 考研风格题</h2>
+
+<p>
+  下面 3 道题分别考组态判断、瞬时极性法和深度负反馈计算。先自己判断，再点选项。
+</p>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>反馈是减法结构</strong>：X_id = X_i − X_f，A_f = A/(1+AF)。</li>
+  <li><strong>有无反馈看通路，正负看净输入</strong>：瞬时极性法四步，串联比电压、并联比电流。</li>
+  <li><strong>四种组态两把尺</strong>：输出短路法判电压/电流，输入端同节点判串联/并联。</li>
+  <li><strong>深度负反馈是近似</strong>：只有 1+AF ≫ 1 时才有 A_f ≈ 1/F、X_id ≈ 0。</li>
+</ol>
+
+<p>
+  下一课（<strong>Lesson 0016</strong>）回答：既然负反馈让增益下降，工程师为什么还要故意加它？
+  答案是“用增益换性能”——稳定性、带宽、失真、噪声，五项改善统统等于 1+AF 倍。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第六章 §6.1~6.3。
+  组态判别与深度负反馈近似见 §6.3；瞬时极性法例题可对照康华光教材第六章。
+</div>
+
+<div class="ask-agent">
+  分不清串联/并联和电压/电流？瞬时极性法标到一半就乱了？<br>
+  <strong>直接问我</strong>——把电路描述给我，一起一步一步标极性。
+</div>
+
+<div class="footer-nav">
+  <span class="lesson-counter">模电 · Lesson 0015 / 0020</span>
+  <span>
+    <a href="./0014-frequency-response.html">← L0014</a> ·
+    <a href="./0016-negative-feedback-effects.html">L0016 →</a> ·
+    <a href="../MISSION.md">Mission</a> · <a href="../RESOURCES.md">Resources</a>
+  </span>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "某放大电路输出端对地短路后，反馈信号消失；反馈信号与输入信号接在同一节点。该电路的反馈组态是？",
+    options: [
+      "电压串联负反馈",
+      "电压并联负反馈",
+      "电流串联负反馈",
+      "电流并联负反馈"
+    ],
+    correct: 1,
+    explain: "输出短路后反馈消失 → 电压反馈；反馈与输入接同一节点 → 并联反馈。合起来是电压并联负反馈，稳定输出电压，输入、输出电阻都减小。"
+  },
+  {
+    q: "共射放大电路发射极接电阻 R_e 且未并联旁路电容，输入加在基极，输出取自集电极。该反馈的组态是？",
+    options: [
+      "电压串联负反馈",
+      "电流串联负反馈",
+      "电压并联负反馈",
+      "电流并联负反馈"
+    ],
+    correct: 1,
+    explain: "反馈取自 R_e 上的电压（正比于发射极电流），输出短路后仍在 → 电流反馈；输入在基极、反馈在发射极 → 串联反馈。基极 ⊕、集电极 ⊖、发射极 ⊕，U_BE 减小 → 负反馈。故为电流串联负反馈；无旁路电容时交直流反馈并存。"
+  },
+  {
+    q: "某负反馈放大电路 A = 10⁵，F = 0.01。反馈深度 1+AF 与闭环增益 A_f 分别约为？",
+    options: [
+      "1+AF = 1001，A_f ≈ 99.9",
+      "1+AF = 101，A_f ≈ 990",
+      "1+AF = 1000，A_f ≈ 100",
+      "1+AF = 1001，A_f ≈ 1000"
+    ],
+    correct: 0,
+    explain: "AF = 10⁵ × 0.01 = 1000，1+AF = 1001；A_f = 10⁵/1001 ≈ 99.9。因 1+AF ≫ 1，也可用 A_f ≈ 1/F = 100 近似。注意 AF 是环路增益，1+AF 是反馈深度。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！四种组态和 1+AF 都拿下了，可以进 Lesson 0016。' :
+        right >= 2 ? '👍 不错，重点回看组态判别口诀和瞬时极性法。' :
+        '📚 建议重画一遍反馈框图，再把四种组态的短路法练三次。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

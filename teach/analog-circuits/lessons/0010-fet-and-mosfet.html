@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0010 — 场效应管：JFET 与 MOSFET</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0010 — 场效应管：JFET 与 MOSFET</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0010 / 0020 · 约 35 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  需要 <a href="./0004-bjt-structure-and-principle.html">Lesson 0004（BJT 结构与原理）</a> 和
+  <a href="./0005-bjt-characteristics-and-regions.html">Lesson 0005（BJT 特性曲线与工作区）</a> 的
+  「输入控制输出」思路。这一课把控制量从<strong>基极电流</strong>换成<strong>栅源电压</strong>，
+  其余的分析套路（特性曲线 → 工作区 → Q 点）完全平行。
+</div>
+
+<p>
+  到此为止，我们所有的放大器件都是 BJT：靠基极电流控制集电极电流。但还有另一大类器件——
+  <strong>场效应管</strong>（Field Effect Transistor，FET）。它靠<strong>电场</strong>控制沟道里的多数载流子，
+  栅极几乎不取电流，输入电阻可以高到 10<sup>9</sup> Ω 以上。集成运放的输入级、手机里的射频开关、
+  电源里的功率开关，用的几乎都是它。
+</p>
+
+<h2>一、从 BJT 到 FET：电压控制</h2>
+
+<p>
+  两类器件的本质区别只有一句话：
+</p>
+
+<table>
+  <tr><th></th><th>BJT（双极型）</th><th>FET（单极型）</th></tr>
+  <tr><td>控制量</td><td>基极电流 i<sub>B</sub></td><td>栅源电压 u<sub>GS</sub></td></tr>
+  <tr><td>受控量</td><td>集电极电流 i<sub>C</sub></td><td>漏极电流 i<sub>D</sub></td></tr>
+  <tr><td>输入电阻</td><td>低，r<sub>be</sub> 约 kΩ 级</td><td>极高，10<sup>7</sup>~10<sup>15</sup> Ω</td></tr>
+  <tr><td>载流子</td><td>电子和空穴都参与</td><td>只有一种多数载流子</td></tr>
+  <tr><td>关系</td><td>i<sub>C</sub> = βi<sub>B</sub>（线性）</td><td>i<sub>D</sub> = f(u<sub>GS</sub>)（平方律）</td></tr>
+</table>
+
+<p>
+  「电压控制」带来两个直接后果：第一，<strong>输入电阻极高</strong>，前级几乎不被负载；
+  第二，<strong>栅极不取稳态电流</strong>，所以偏置电阻可以取得很大，这在集成电路里极省面积。
+  代价是<strong>跨导 g<sub>m</sub> 通常比 BJT 的 β/r<sub>be</sub> 小</strong>，同样条件下的电压增益往往低一些。
+</p>
+
+<h2>二、JFET 的结构与夹断</h2>
+
+<p>
+  <strong>结型场效应管</strong>（Junction FET，JFET）是最基础的一种。以 N 沟道为例：
+  在一小块 N 型半导体两侧各扩散一个 P<sup>+</sup> 区，两个 P<sup>+</sup> 区在管内连在一起引出<strong>栅极 G</strong>；
+  N 型半导体的两端分别引出<strong>漏极 D</strong>和<strong>源极 S</strong>。
+</p>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="N 沟道 JFET 的结构与电路符号：两侧 P 型栅区夹住 N 型沟道">
+    <rect x="110" y="40" width="36" height="132" fill="#eef4fb" stroke="#1a1a1a" stroke-width="2.5"/>
+    <rect x="78" y="58" width="32" height="44" fill="#dbeafe" stroke="#1a1a1a" stroke-width="2.5"/>
+    <rect x="146" y="112" width="32" height="44" fill="#dbeafe" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="94" y="86" text-anchor="middle" class="lbl">P⁺</text>
+    <text x="162" y="140" text-anchor="middle" class="lbl">P⁺</text>
+    <text x="128" y="112" text-anchor="middle" transform="rotate(-90 128 112)">N 沟道</text>
+
+    <line class="wire" x1="128" y1="40" x2="128" y2="24"/>
+    <text x="138" y="28" class="lbl">D</text>
+    <line class="wire" x1="128" y1="172" x2="128" y2="192"/>
+    <text x="138" y="192" class="lbl">S</text>
+    <line class="wire" x1="78" y1="80" x2="56" y2="80"/>
+    <line class="wire" x1="56" y1="80" x2="56" y2="160"/>
+    <text x="44" y="170" class="lbl">G</text>
+    <text x="118" y="214" text-anchor="middle" class="lbl">结构（N 沟道）</text>
+
+    <line class="wire" x1="350" y1="54" x2="350" y2="166"/>
+    <line class="wire" x1="350" y1="54" x2="410" y2="54"/>
+    <text x="418" y="60" class="lbl">D</text>
+    <line class="wire" x1="350" y1="166" x2="410" y2="166"/>
+    <text x="418" y="172" class="lbl">S</text>
+    <line class="wire" x1="350" y1="110" x2="314" y2="110"/>
+    <polygon points="350,110 338,104 338,116" fill="#1a1a1a"/>
+    <text x="306" y="104" text-anchor="end" class="lbl">G</text>
+    <text x="380" y="214" text-anchor="middle" class="lbl">符号（N 沟道）</text>
+
+    <text x="196" y="88" class="lbl">栅极反偏</text>
+    <text x="196" y="112" class="lbl">耗尽层变宽</text>
+    <text x="196" y="136" class="lbl">沟道变窄</text>
+  </svg>
+</div>
+
+<p>
+  工作时漏源之间加正电压 U<sub>DS</sub>，栅源之间加<strong>负电压</strong> U<sub>GS</sub>，
+  使两个 P<sup>+</sup>N 结都反向偏置。反偏电压越负，耗尽层越宽，留给电流通过的 N 沟道越窄，
+  沟道电阻越大，I<sub>D</sub> 越小。这就是「<strong>用电压控制电流</strong>」的物理机制。
+</p>
+
+<ul>
+  <li><strong>U<sub>GS</sub> = 0</strong>：耗尽层最窄，沟道最宽，I<sub>D</sub> 达到最大，记为 <strong>I<sub>DSS</sub></strong>。</li>
+  <li><strong>U<sub>GS</sub> 变负</strong>：沟道逐渐变窄，I<sub>D</sub> 减小。</li>
+  <li><strong>U<sub>GS</sub> = U<sub>P</sub></strong>：两侧耗尽层在沟道中间相遇，沟道被<strong>夹断</strong>，I<sub>D</sub> ≈ 0。
+      U<sub>P</sub> 叫<strong>夹断电压</strong>，也写作 U<sub>GS(off)</sub>，N 沟道时为负值（如 −4 V）。</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">极性不能错</span>
+  N 沟道 JFET：U<sub>DS</sub> &gt; 0，U<sub>GS</sub> ≤ 0；P 沟道全部反过来。
+  若 U<sub>GS</sub> 加正，栅极 PN 结正偏导通，栅极会吸入电流，失去「高输入电阻」的意义，甚至损坏管子。
+  所以 JFET <strong>只有耗尽型，没有增强型</strong>——它不能靠正栅压「增强」出沟道。
+</div>
+
+<h2>三、转移特性：平方律</h2>
+
+<p>
+  把 I<sub>D</sub> 随 U<sub>GS</sub> 的变化画出来，就是<strong>转移特性</strong>。
+  在恒流区内，它近似为一条抛物线：
+</p>
+
+<div class="math">
+  I_D = I_DSS (1 − U_GS / U_P)²　　（U_P &lt; U_GS ≤ 0，N 沟道）
+</div>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="N 沟道 JFET 转移特性曲线：U_GS 从夹断电压到 0，I_D 按平方律上升到 I_DSS">
+    <text x="260" y="20" text-anchor="middle" class="lbl">转移特性（N 沟道 JFET）</text>
+    <line class="wire thin" x1="90" y1="190" x2="485" y2="190"/>
+    <polygon points="485,184 485,196 500,190" fill="#1a1a1a"/>
+    <line class="wire thin" x1="90" y1="190" x2="90" y2="40"/>
+    <polygon points="84,40 96,40 90,26" fill="#1a1a1a"/>
+    <text x="76" y="36" class="lbl">I_D</text>
+    <text x="470" y="210" class="lbl">U_GS</text>
+
+    <polyline points="110,190 145,188 180,182 215,171 250,156 285,137 320,114 355,87 390,55"
+              fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+
+    <line class="wire thin" x1="250" y1="190" x2="250" y2="156" stroke="var(--accent)" stroke-dasharray="5 4"/>
+    <line class="wire thin" x1="90" y1="156" x2="250" y2="156" stroke="var(--accent)" stroke-dasharray="5 4"/>
+    <circle class="dot" cx="250" cy="156" r="4.5"/>
+    <text x="258" y="150" class="lbl">Q</text>
+
+    <line class="wire thin" x1="110" y1="190" x2="110" y2="194"/>
+    <text x="110" y="208" text-anchor="middle" class="lbl">U_P</text>
+    <line class="wire thin" x1="250" y1="190" x2="250" y2="194"/>
+    <text x="250" y="208" text-anchor="middle" class="lbl">−2 V</text>
+    <text x="390" y="208" text-anchor="middle" class="lbl">0</text>
+    <line class="wire thin" x1="86" y1="55" x2="90" y2="55"/>
+    <text x="80" y="60" text-anchor="end" class="lbl">I_DSS</text>
+    <text x="80" y="160" text-anchor="end" class="lbl">I_DQ</text>
+  </svg>
+</div>
+
+<p>
+  曲线的三个关键点必须记住：
+</p>
+<ul>
+  <li><strong>U<sub>GS</sub> = 0</strong> → I<sub>D</sub> = I<sub>DSS</sub>（最大）；</li>
+  <li><strong>U<sub>GS</sub> = U<sub>P</sub></strong> → I<sub>D</sub> = 0（夹断）；</li>
+  <li><strong>U<sub>GS</sub> = U<sub>P</sub>/2</strong> → I<sub>D</sub> = I<sub>DSS</sub>/4（代入平方律即可验证）。</li>
+</ul>
+
+<p>
+  注意公式里的 U<sub>P</sub> 是<strong>带符号的负值</strong>。若题目给「夹断电压 4 V」而没说正负，
+  N 沟道要自己补上负号，写成 U<sub>P</sub> = −4 V，否则整个计算都会反号。
+</p>
+
+<h2>四、MOSFET：增强型与耗尽型</h2>
+
+<p>
+  <strong>MOS 场效应管</strong>（Metal-Oxide-Semiconductor FET）把 JFET 的 P<sup>+</sup>N 结栅极换成了
+  「金属（多晶硅）—SiO<sub>2</sub> 绝缘层 — 半导体」结构。栅极与沟道之间是<strong>绝缘的</strong>，
+  所以输入电阻比 JFET 还高几个数量级（可达 10<sup>12</sup> Ω 以上）。
+</p>
+
+<h3>1. 增强型 NMOS</h3>
+<p>
+  衬底是 P 型，漏、源是两个 N<sup>+</sup> 区，但两者之间<strong>没有现成的沟道</strong>。
+  当 U<sub>GS</sub> 增大到超过<strong>开启电压 U<sub>GS(th)</sub></strong>（也叫阈值电压 U<sub>th</sub>，约 2~5 V）时，
+  栅极电场把衬底表面的电子吸引过来，形成反型层，把漏源连通，才出现 I<sub>D</sub>。
+</p>
+
+<div class="math">
+  I_D = I_DO (U_GS / U_GS(th) − 1)²　（U_GS &gt; U_GS(th)）
+</div>
+
+<p>
+  增强型的特点：<strong>U<sub>GS</sub> = 0 时截止</strong>，必须加正栅压才导通；
+  没有 I<sub>DSS</sub>，也没有夹断电压，只有开启电压。它是数字电路和功率开关的主力。
+</p>
+
+<h3>2. 耗尽型 NMOS</h3>
+<p>
+  制造时在 SiO<sub>2</sub> 下<strong>预置了一条 N 型沟道</strong>，所以 U<sub>GS</sub> = 0 时就已经导通，
+  此时电流就是 I<sub>DSS</sub>。U<sub>GS</sub> 可正可负：加正压沟道变宽（增强），加负压沟道变窄（耗尽），
+  负到 U<sub>GS(off)</sub> 时夹断。转移特性与 JFET 形状相同，也用平方律描述。
+</p>
+
+<table>
+  <tr><th>类型</th><th>U<sub>GS</sub> = 0 时</th><th>关键参数</th><th>典型用途</th></tr>
+  <tr><td>JFET（N 沟道）</td><td>导通（I<sub>DSS</sub>）</td><td>夹断电压 U<sub>P</sub> &lt; 0</td><td>低噪声输入级、模拟开关</td></tr>
+  <tr><td>耗尽型 MOS</td><td>导通（I<sub>DSS</sub>）</td><td>U<sub>GS(off)</sub></td><td>恒流源、音频放大</td></tr>
+  <tr><td>增强型 MOS</td><td>截止</td><td>开启电压 U<sub>GS(th)</sub> &gt; 0</td><td>数字电路、功率开关、CMOS</td></tr>
+</table>
+
+<h3>3. 衬底怎么接、栅极怎么保护</h3>
+<p>
+  MOS 管有四端：G、D、S 和衬底 B。衬底与漏、源之间各有一个 PN 结，必须保证<strong>不导通</strong>，
+  所以分立管通常把<strong>衬底与源极在内部短接</strong>；集成电路里所有 NMOS 共用一个 P 型衬底，
+  衬底接<strong>最低电位</strong>（PMOS 的 N 阱接最高电位）。
+</p>
+
+<div class="tip">
+  <span class="tip-label">静电保护（必考常识）</span>
+  栅极的 SiO<sub>2</sub> 只有几十纳米厚，输入电阻又极高，身上一点静电电荷就无处泄放，
+  几十伏就能把氧化层击穿，而且是<strong>永久损坏</strong>。所以：取用时分立管三脚短接、烙铁可靠接地、
+  电路里给栅极加对地电阻或保护稳压管；<strong>测试时绝不能把栅极悬空</strong>。
+</div>
+
+<h2>五、输出特性、跨导与对比</h2>
+
+<p>
+  固定一个 U<sub>GS</sub>，画 I<sub>D</sub> 随 U<sub>DS</sub> 的变化，得到一条输出特性曲线；
+  换几个 U<sub>GS</sub> 就得到一族曲线。它们把平面分成三个区：
+</p>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="N 沟道场效应管输出特性曲线族：可变电阻区、恒流区与击穿区">
+    <text x="250" y="20" text-anchor="middle" class="lbl">输出特性曲线族（N 沟道）</text>
+    <line class="wire thin" x1="70" y1="190" x2="500" y2="190"/>
+    <polygon points="500,184 500,196 515,190" fill="#1a1a1a"/>
+    <line class="wire thin" x1="70" y1="190" x2="70" y2="40"/>
+    <polygon points="64,40 76,40 70,26" fill="#1a1a1a"/>
+    <text x="56" y="36" class="lbl">I_D</text>
+    <text x="466" y="210" class="lbl">U_DS</text>
+
+    <path d="M70,190 Q215,182 250,65 L430,62" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M70,190 Q180,184 205,117 L430,114" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M70,190 Q140,184 160,155 L430,153" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M70,190 Q102,186 115,177 L430,176" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+
+    <path d="M70,190 L115,177 L160,155 L205,117 L250,65" fill="none"
+          stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 4"/>
+
+    <line class="wire thin" x1="492" y1="60" x2="492" y2="190" stroke="var(--accent)" stroke-dasharray="5 4"/>
+
+    <text x="428" y="58" class="lbl">0 V</text>
+    <text x="428" y="110" class="lbl">−1 V</text>
+    <text x="428" y="149" class="lbl">−2 V</text>
+    <text x="428" y="172" class="lbl">−3 V</text>
+    <text x="100" y="126" text-anchor="middle" transform="rotate(-90 100 126)" class="lbl">可变电阻区</text>
+    <text x="330" y="45" class="lbl">恒流区（放大区）</text>
+    <text x="504" y="140" text-anchor="middle" transform="rotate(-90 504 140)" class="lbl">击穿区</text>
+
+    <line class="wire thin" x1="66" y1="65" x2="70" y2="65"/>
+    <text x="60" y="70" text-anchor="end" class="lbl">I_DSS</text>
+  </svg>
+</div>
+
+<table>
+  <tr><th>工作区</th><th>条件（N 沟道）</th><th>特征</th><th>用途</th></tr>
+  <tr>
+    <td><strong>可变电阻区</strong></td>
+    <td>U<sub>DS</sub> &lt; U<sub>GS</sub> − U<sub>th</sub>（增强型）<br>或 U<sub>DS</sub> &lt; U<sub>GS</sub> − U<sub>P</sub>（JFET）</td>
+    <td>I<sub>D</sub> 随 U<sub>DS</sub> 近似线性，等效为一个受 U<sub>GS</sub> 控制的小电阻 R<sub>DS(on)</sub></td>
+    <td>模拟开关、压控电阻</td>
+  </tr>
+  <tr>
+    <td><strong>恒流区</strong>（放大区）</td>
+    <td>U<sub>DS</sub> &gt; 上式临界值，且 U<sub>GS</sub> 已使沟道导通</td>
+    <td>I<sub>D</sub> 几乎只由 U<sub>GS</sub> 决定，交流等效为受控电流源</td>
+    <td>放大、恒流源</td>
+  </tr>
+  <tr>
+    <td><strong>截止区</strong></td>
+    <td>U<sub>GS</sub> &lt; U<sub>th</sub>（增强型）或 U<sub>GS</sub> &lt; U<sub>P</sub>（JFET）</td>
+    <td>I<sub>D</sub> ≈ 0</td>
+    <td>开关断开</td>
+  </tr>
+  <tr>
+    <td><strong>击穿区</strong></td>
+    <td>U<sub>DS</sub> 超过漏源击穿电压</td>
+    <td>I<sub>D</sub> 急剧上升，可能损坏</td>
+    <td>应避免</td>
+  </tr>
+</table>
+
+<h3>1. 跨导 g<sub>m</sub></h3>
+
+<p>
+  FET 的放大能力用<strong>跨导</strong>衡量，定义是固定 U<sub>DS</sub> 时，漏极电流变化量与栅源电压变化量之比：
+</p>
+
+<div class="math">
+  g_m = ΔI_D / ΔU_GS |_{U_DS 恒定}　（单位 mS，即 mA/V）
+</div>
+
+<p>
+  对 JFET 和耗尽型 MOS，把平方律求导可得三个等价写法：
+</p>
+
+<div class="math">
+  g_m = (2 I_DSS / |U_P|)(1 − U_GS/U_P) = 2√(I_D · I_DSS) / |U_P| = 2I_D / |U_GS − U_P|
+</div>
+
+<p>
+  在 U<sub>GS</sub> = 0 处跨导最大，g<sub>m0</sub> = 2I<sub>DSS</sub>/|U<sub>P</sub>|。
+  有些教材把分母 |U<sub>GS</sub> − U<sub>P</sub>| 近似成 |U<sub>P</sub>|，写成
+  <code>g_m ≈ 2I_D/|U_P|</code>；做题时若题目给了 U<sub>GS</sub>，用精确式更稳妥。
+  增强型 MOS 则用 <code>g_m = 2I_D/(U_GS − U_GS(th))</code>。
+</p>
+
+<h3>2. 考研例题</h3>
+<p>
+  <strong>例 1</strong>：N 沟道 JFET，I<sub>DSS</sub> = 4 mA，U<sub>P</sub> = −4 V，U<sub>GS</sub> = −2 V。
+  求 I<sub>D</sub> 与 g<sub>m</sub>。
+</p>
+<ol>
+  <li>I<sub>D</sub> = 4×(1 − (−2)/(−4))² = 4×(1 − 0.5)² = <strong>1 mA</strong>。</li>
+  <li>g<sub>m</sub> = 2√(1×4)/4 = <strong>1 mS</strong>；用另一式验证：2×4/4×(1−0.5) = 1 mS ✅</li>
+</ol>
+<p>
+  <strong>例 2</strong>：增强型 NMOS，U<sub>GS(th)</sub> = 2 V，U<sub>GS</sub> = 3 V，I<sub>D</sub> = 1 mA。
+  求 g<sub>m</sub>：g<sub>m</sub> = 2×1/(3−2) = <strong>2 mS</strong>。
+</p>
+
+<h3>3. 易错点</h3>
+<ol>
+  <li><strong>U<sub>P</sub> 是负值。</strong> 公式里必须代 −4 V 而不是 4 V，否则平方项符号全错。</li>
+  <li><strong>I<sub>DSS</sub> 不是「最大漏极电流」。</strong> 它只是 U<sub>GS</sub> = 0 时的饱和电流；增强型 MOS 根本没有 I<sub>DSS</sub>。</li>
+  <li><strong>恒流区不是理想电流源。</strong> 曲线仍有微小上翘，对应输出电阻 r<sub>ds</sub>，只是通常远大于外接电阻，可以忽略。</li>
+  <li><strong>栅极电流≈0 ≠ 栅极可以悬空。</strong> MOS 栅极悬空会积累静电，几分钟就能击穿氧化层。</li>
+  <li><strong>g<sub>m</sub> 的单位是 mS。</strong> g<sub>m</sub>(mS) × R(kΩ) 直接得无量纲增益，不要再多乘 10<sup>−3</sup>。</li>
+  <li><strong>JFET 没有增强型。</strong> 说「JFET 加正栅压增强沟道」是错的，正栅压只会让栅结正偏。</li>
+</ol>
+
+<h2>六、Quiz — 考研风格题</h2>
+
+<div class="quiz" id="quiz-container"></div>
+
+<p>
+  下一课（<strong>Lesson 0011</strong>）把这只能「压控流」的器件接上电阻和电容，变成真正的<strong>共源放大电路</strong>。
+  这一课的平方律和 g<sub>m</sub> 会在那里反复出现——尤其是联立方程求 Q 点的两步法。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第一章 §1.6（场效应管）与第五章 §5.1。
+  MOSFET 的衬底接法与静电防护细节可查康华光《电子技术基础 模拟部分》第一章。
+</div>
+
+<div class="ask-agent">
+  搞不清增强型和耗尽型的区别？g<sub>m</sub> 的三个公式不知道用哪个？<br>
+  <strong>直接问我</strong>——把题目参数发我，我帮你判断该代哪一条。
+</div>
+
+<div class="footer-nav">
+  <a href="./0009-common-collector-common-base.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0010 / 0020</span>
+  <a href="./0011-fet-amplifier.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "N 沟道 JFET：I_DSS = 4 mA，U_P = −4 V，U_GS = −2 V。漏极电流 I_D 为？",
+    options: [
+      "1 mA",
+      "2 mA",
+      "3 mA",
+      "0.5 mA"
+    ],
+    correct: 0,
+    explain: "I_D = I_DSS(1 − U_GS/U_P)² = 4×(1 − (−2)/(−4))² = 4×(1 − 0.5)² = 4×0.25 = 1 mA。注意 U_GS 与 U_P 都是负值，比值为 +0.5，不能把符号丢掉。"
+  },
+  {
+    q: "承上题，工作点处的跨导 g_m 为？",
+    options: [
+      "1 mS",
+      "2 mS",
+      "4 mS",
+      "0.5 mS"
+    ],
+    correct: 0,
+    explain: "g_m = 2√(I_D·I_DSS)/|U_P| = 2√(1×4)/4 = 4/4 = 1 mS。也可用 g_m = (2I_DSS/|U_P|)(1 − U_GS/U_P) = (8/4)×0.5 = 1 mS 验证。"
+  },
+  {
+    q: "增强型 NMOS：U_GS(th) = 2 V，U_GS = 3 V，U_DS = 0.5 V。管子工作在哪个区？",
+    options: [
+      "可变电阻区",
+      "恒流区（放大区）",
+      "截止区",
+      "击穿区"
+    ],
+    correct: 0,
+    explain: "先看是否导通：U_GS = 3 V > U_GS(th) = 2 V，已导通。再看漏源电压：临界值 U_GS − U_th = 1 V，而 U_DS = 0.5 V < 1 V，沟道尚未在漏端夹断，所以工作在可变电阻区（相当于一个受栅压控制的小电阻）。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！平方律、夹断电压和三个工作区都掌握了。' :
+        right >= 2 ? '👍 不错！再检查一下 U_P 的负号和 g_m 的单位。' :
+        '📚 回看第三节和第五节，重点练「先判区、再代公式」的顺序。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

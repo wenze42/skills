@@ -2,12 +2,125 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>Lesson 0001 — 模电全景图 & 半导体导论</title>
-<link rel="stylesheet" href="../assets/teach.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0001 — 模电全景图 &amp; 半导体导论</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
 </head>
 <body>
 
-<h1>Lesson 0001 — 模电全景图 & 半导体导论</h1>
+<h1>Lesson 0001 — 模电全景图 &amp; 半导体导论</h1>
 <p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · 考研导向 · 零基础 · 约 20 分钟</p>
 
 <h2>欢迎来到模拟电子电路</h2>
@@ -152,20 +265,28 @@
 </p>
 
 <div class="circuit">
-  <pre>
-  硅晶体（简化二维视图）：
-
-      Si — Si — Si — Si
-     /    \   /    \    \
-   Si —— Si —— Si —— Si —
-     \    /   \    /    /
-      Si — Si — Si — Si —
-     /    \   /    \
-   Si —— Si —— Si —— Si
-
-  每个 Si 原子四对共价键，共享 8 个价电子。
-  绝对零度下，所有电子都被锁住 → 不导电。
-  </pre>
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="硅晶体共价键结构：中心硅原子与四个相邻硅原子成键">
+    <line class="wire" x1="140" y1="58" x2="260" y2="110"/>
+    <line class="wire" x1="380" y1="58" x2="260" y2="110"/>
+    <line class="wire" x1="140" y1="162" x2="260" y2="110"/>
+    <line class="wire" x1="380" y1="162" x2="260" y2="110"/>
+    <line class="wire thin" x1="140" y1="58" x2="88" y2="32"/>
+    <line class="wire thin" x1="380" y1="58" x2="432" y2="32"/>
+    <line class="wire thin" x1="140" y1="162" x2="88" y2="188"/>
+    <line class="wire thin" x1="380" y1="162" x2="432" y2="188"/>
+    <circle class="area" cx="260" cy="110" r="24" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="140" cy="58" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="380" cy="58" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="140" cy="162" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="380" cy="162" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="260" y="116" text-anchor="middle">Si</text>
+    <text x="140" y="64" text-anchor="middle">Si</text>
+    <text x="380" y="64" text-anchor="middle">Si</text>
+    <text x="140" y="168" text-anchor="middle">Si</text>
+    <text x="380" y="168" text-anchor="middle">Si</text>
+    <text x="198" y="72" class="lbl" transform="rotate(23 198 72)">共价键</text>
+    <text x="260" y="212" text-anchor="middle" class="lbl">每个 Si 与 4 个邻居共用 4 对价电子（共 8 个）→ 绝对零度时全被锁住，不导电</text>
+  </svg>
 </div>
 
 <h3>本征半导体：天然的「半导」</h3>
@@ -178,6 +299,30 @@
   <li><strong>自由电子</strong>：带负电的载流子，挣脱了共价键</li>
   <li><strong>空穴</strong>：带正电的"空位"——不是真实粒子，但可以把它想象成带正电的电子</li>
 </ul>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="本征半导体：热激发打断共价键，成对产生自由电子与空穴">
+    <line class="wire" x1="92" y1="110" x2="158" y2="110"/>
+    <line class="wire" x1="202" y1="110" x2="222" y2="110"/>
+    <line class="wire" x1="248" y1="110" x2="268" y2="110"/>
+    <line class="wire" x1="312" y1="110" x2="378" y2="110"/>
+    <circle class="area" cx="70" cy="110" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="180" cy="110" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="290" cy="110" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="400" cy="110" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="70" y="116" text-anchor="middle">Si</text>
+    <text x="180" y="116" text-anchor="middle">Si</text>
+    <text x="290" y="116" text-anchor="middle">Si</text>
+    <text x="400" y="116" text-anchor="middle">Si</text>
+    <circle cx="235" cy="110" r="9" fill="#fff" stroke="#2b6cb0" stroke-width="2.5" stroke-dasharray="4 3"/>
+    <path class="wire ideal" d="M235,98 L235,60"/>
+    <polygon points="229,60 241,60 235,48" fill="var(--accent)"/>
+    <circle class="dot" cx="235" cy="40" r="7"/>
+    <text x="252" y="46" class="lbl">自由电子 e⁻</text>
+    <text x="235" y="150" text-anchor="middle" class="lbl">空穴（缺一个电子）</text>
+    <text x="260" y="200" text-anchor="middle" class="lbl">热激发 → 电子-空穴对成对产生：n_i = p_i，数量极少</text>
+  </svg>
+</div>
 
 <p>
   在电场下，自由电子向正极移动，空穴向负极移动——<strong>都形成电流</strong>。
@@ -209,15 +354,26 @@
 </ol>
 
 <div class="circuit">
-  <pre>
-  N 型半导体：
-
-      Si — Si — <strong>P</strong> — Si
-           /    \   /
-         Si —— <strong>P</strong> —— Si
-              ↑
-         多余一个自由电子！
-  </pre>
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="N 型半导体：五价磷原子多出一个自由电子">
+    <line class="wire" x1="130" y1="58" x2="250" y2="112"/>
+    <line class="wire" x1="370" y1="58" x2="250" y2="112"/>
+    <line class="wire" x1="130" y1="166" x2="250" y2="112"/>
+    <line class="wire" x1="370" y1="166" x2="250" y2="112"/>
+    <circle class="area" cx="250" cy="112" r="24" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="130" cy="58" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="370" cy="58" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="130" cy="166" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="370" cy="166" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="250" y="118" text-anchor="middle">P</text>
+    <text x="130" y="64" text-anchor="middle">Si</text>
+    <text x="370" y="64" text-anchor="middle">Si</text>
+    <text x="130" y="172" text-anchor="middle">Si</text>
+    <text x="370" y="172" text-anchor="middle">Si</text>
+    <circle cx="250" cy="44" r="16" fill="none" stroke="#2b6cb0" stroke-width="2" stroke-dasharray="5 4"/>
+    <circle class="dot" cx="250" cy="44" r="6"/>
+    <text x="276" y="50" class="lbl">e⁻ 多余电子</text>
+    <text x="260" y="208" text-anchor="middle" class="lbl">P 原子 5 个价电子：4 个成键，1 个自由 → 多数载流子 = 电子</text>
+  </svg>
 </div>
 
 <p>
@@ -262,6 +418,39 @@
     <td>10¹⁵ ~ 10²⁰ cm⁻³</td>
   </tr>
 </table>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="N 型与 P 型对比：N 型多电子，P 型多空穴">
+    <text x="130" y="34" text-anchor="middle">N 型</text>
+    <text x="390" y="34" text-anchor="middle">P 型</text>
+    <rect class="area" x="20" y="46" width="220" height="118" rx="8" stroke="#1a1a1a" stroke-width="2"/>
+    <rect class="area" x="280" y="46" width="220" height="118" rx="8" stroke="#1a1a1a" stroke-width="2"/>
+    <circle class="dot" cx="60" cy="76" r="7"/>
+    <circle class="dot" cx="110" cy="76" r="7"/>
+    <circle class="dot" cx="160" cy="76" r="7"/>
+    <circle class="dot" cx="210" cy="76" r="7"/>
+    <circle class="dot" cx="60" cy="108" r="7"/>
+    <circle class="dot" cx="110" cy="108" r="7"/>
+    <circle class="dot" cx="160" cy="108" r="7"/>
+    <circle class="dot" cx="210" cy="108" r="7"/>
+    <circle cx="60" cy="140" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="210" cy="140" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="340" cy="76" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="390" cy="76" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="440" cy="76" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="490" cy="76" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="340" cy="108" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="390" cy="108" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="440" cy="108" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="490" cy="108" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="dot" cx="340" cy="140" r="7"/>
+    <circle class="dot" cx="440" cy="140" r="7"/>
+    <text x="130" y="188" text-anchor="middle" class="lbl">● 自由电子 = 多数载流子</text>
+    <text x="130" y="208" text-anchor="middle" class="lbl">○ 空穴 = 少数载流子</text>
+    <text x="390" y="188" text-anchor="middle" class="lbl">○ 空穴 = 多数载流子</text>
+    <text x="390" y="208" text-anchor="middle" class="lbl">● 自由电子 = 少数载流子</text>
+  </svg>
+</div>
 
 <div class="tip">
   <span class="tip-label">好记的口诀</span>

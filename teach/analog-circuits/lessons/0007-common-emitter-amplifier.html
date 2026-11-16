@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0007 — 共射放大电路：微变等效电路法</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0007 — 共射放大电路：微变等效电路法</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0007 / 0020 · 约 45 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  必须掌握 <a href="./0006-dc-analysis-and-q-point.html">Lesson 0006（直流通路与 Q 点）</a>：
+  <code>I_BQ、I_CQ、U_CEQ</code> 要能三分钟算完。还要熟悉
+  <a href="./0005-bjt-characteristics-and-regions.html">Lesson 0005</a> 的输出特性与放大区条件。
+  这一课的核心是：<strong>把非线性的三极管在 Q 点附近"线性化"</strong>，然后用纯电阻电路的方法算增益。
+</div>
+
+<p>
+  上一课只有 Q 点，现在加入交流信号 <code>u_i</code>，要回答三件事：
+  <strong>放大多少倍（A_u）？向信号源要多少电流（R_i）？带得动多重负载（R_o）？</strong>
+</p>
+<p>
+  三极管是非线性器件，直接列方程没法解。工程上在 Q 点附近做切线：用电阻 + 受控源等效三极管，
+  得到<strong>微变等效电路</strong>。信号足够小时误差可接受，这就是"小信号"的含义。
+</p>
+
+<h2>一、共射电路与交流通路</h2>
+
+<p>
+  信号从基极进、集电极出，发射极是公共端，故称"共射"。<code>C₁、C₂</code> 是<strong>耦合电容</strong>：
+  隔直通交，既不把直流送到信号源和负载，也不让负载影响 Q 点。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 340" role="img" aria-label="固定偏置共射放大电路：输入经C1耦合到基极，集电极经C2耦合到输出并接负载RL">
+    <text x="285" y="26" text-anchor="middle">+V_CC</text>
+    <line class="wire" x1="150" y1="40" x2="420" y2="40"/>
+
+    <line class="wire" x1="185" y1="40" x2="185" y2="58"/>
+    <rect class="area" x="168" y="58" width="34" height="52" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="214" y="90" class="lbl">R_b</text>
+    <line class="wire" x1="185" y1="110" x2="185" y2="170"/>
+
+    <line class="wire" x1="390" y1="40" x2="390" y2="58"/>
+    <rect class="area" x="373" y="58" width="34" height="52" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="418" y="90" class="lbl">R_c</text>
+    <line class="wire" x1="390" y1="110" x2="390" y2="134"/>
+    <circle class="dot" cx="390" cy="134" r="4"/>
+
+    <line class="wire" x1="292" y1="134" x2="390" y2="134"/>
+    <line class="wire" x1="252" y1="158" x2="292" y2="134"/>
+    <line class="wire" x1="252" y1="150" x2="252" y2="190" stroke-width="4"/>
+
+    <line class="wire" x1="132" y1="170" x2="252" y2="170"/>
+    <circle class="dot" cx="185" cy="170" r="4"/>
+    <line class="wire" x1="252" y1="182" x2="292" y2="206"/>
+    <polygon points="292,206 276,202 282,191" fill="#1a1a1a"/>
+    <line class="wire" x1="292" y1="206" x2="292" y2="250"/>
+    <line class="wire" x1="266" y1="250" x2="318" y2="250"/>
+    <line class="wire" x1="275" y1="260" x2="309" y2="260"/>
+    <line class="wire" x1="284" y1="270" x2="300" y2="270"/>
+    <text x="312" y="190" class="lbl">T</text>
+
+    <line class="wire" x1="50" y1="170" x2="110" y2="170"/>
+    <line class="wire" x1="110" y1="146" x2="110" y2="194"/>
+    <line class="wire" x1="122" y1="146" x2="122" y2="194"/>
+    <line class="wire" x1="122" y1="170" x2="132" y2="170"/>
+    <text x="116" y="134" text-anchor="middle" class="lbl">C₁</text>
+    <text x="24" y="160" class="lbl">u_i</text>
+    <circle cx="50" cy="170" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+
+    <line class="wire" x1="390" y1="134" x2="436" y2="134"/>
+    <line class="wire" x1="436" y1="110" x2="436" y2="158"/>
+    <line class="wire" x1="448" y1="110" x2="448" y2="158"/>
+    <line class="wire" x1="448" y1="134" x2="500" y2="134"/>
+    <text x="442" y="100" text-anchor="middle" class="lbl">C₂</text>
+    <circle cx="500" cy="134" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="500" y="118" text-anchor="middle" class="lbl">u_o</text>
+
+    <circle class="dot" cx="470" cy="134" r="4"/>
+    <line class="wire" x1="470" y1="134" x2="470" y2="160"/>
+    <rect class="area" x="452" y="160" width="36" height="60" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="444" y="196" text-anchor="end" class="lbl">R_L</text>
+    <line class="wire" x1="470" y1="220" x2="470" y2="250"/>
+    <line class="wire" x1="444" y1="250" x2="496" y2="250"/>
+    <line class="wire" x1="453" y1="260" x2="487" y2="260"/>
+    <line class="wire" x1="462" y1="270" x2="478" y2="270"/>
+
+    <text x="260" y="312" text-anchor="middle" class="lbl">C₁、C₂ 隔直通交；R_b 提供偏置，R_c 把电流变化转成电压变化</text>
+  </svg>
+</div>
+
+<h3>交流通路怎么画</h3>
+
+<div class="tip">
+  <span class="tip-label">三条规则（与直流通路正好相反）</span>
+  <ol>
+    <li><strong>耦合电容、旁路电容一律短路</strong>。中频时容量足够大，<code>X_C ≈ 0</code>。</li>
+    <li><strong>直流电源 V_CC 置零 → 交流接地</strong>。理想电压源内阻为零，对交流来说 <code>+V_CC</code> 端与地等电位。</li>
+    <li><strong>电感保留</strong>（对交流呈现感抗）。</li>
+  </ol>
+</div>
+
+<p>
+  改造后：<code>C₁、C₂</code> 变成导线，<code>V_CC</code> 那条横线变成地。
+  于是 <code>R_b</code>、<code>R_c</code>、<code>R_L</code> 都有一端接地——
+  <strong><code>R_c</code> 与 <code>R_L</code> 并联</strong>，这是本课最重要的结构认识。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 320" role="img" aria-label="共射电路的交流通路：耦合电容短路，VCC交流接地，Rc与RL并联">
+    <text x="300" y="22" text-anchor="middle" class="lbl">V_CC 置零 → 交流接地</text>
+    <line class="wire" x1="140" y1="44" x2="420" y2="44"/>
+    <line class="wire thin" x1="140" y1="44" x2="140" y2="30"/>
+    <line class="wire thin" x1="118" y1="30" x2="162" y2="30"/>
+    <line class="wire thin" x1="126" y1="22" x2="154" y2="22"/>
+    <line class="wire thin" x1="133" y1="14" x2="147" y2="14"/>
+
+    <line class="wire" x1="185" y1="44" x2="185" y2="64"/>
+    <rect class="area" x="168" y="64" width="34" height="52" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="214" y="96" class="lbl">R_b</text>
+    <line class="wire" x1="185" y1="116" x2="185" y2="176"/>
+
+    <line class="wire" x1="390" y1="44" x2="390" y2="64"/>
+    <rect class="area" x="373" y="64" width="34" height="52" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="418" y="96" class="lbl">R_c</text>
+    <line class="wire" x1="390" y1="116" x2="390" y2="140"/>
+    <circle class="dot" cx="390" cy="140" r="4"/>
+
+    <line class="wire" x1="292" y1="140" x2="390" y2="140"/>
+    <line class="wire" x1="252" y1="164" x2="292" y2="140"/>
+    <line class="wire" x1="252" y1="156" x2="252" y2="196" stroke-width="4"/>
+
+    <line class="wire" x1="50" y1="176" x2="252" y2="176"/>
+    <circle class="dot" cx="185" cy="176" r="4"/>
+    <line class="wire" x1="252" y1="188" x2="292" y2="212"/>
+    <polygon points="292,212 276,208 282,197" fill="#1a1a1a"/>
+    <line class="wire" x1="292" y1="212" x2="292" y2="262"/>
+    <line class="wire" x1="266" y1="262" x2="318" y2="262"/>
+    <line class="wire" x1="275" y1="272" x2="309" y2="272"/>
+    <line class="wire" x1="284" y1="282" x2="298" y2="282"/>
+    <text x="312" y="196" class="lbl">T</text>
+
+    <text x="24" y="166" class="lbl">u_i</text>
+    <circle cx="50" cy="176" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="120" y="166" class="lbl">C₁ 短路</text>
+
+    <line class="wire" x1="390" y1="140" x2="500" y2="140"/>
+    <circle class="dot" cx="470" cy="140" r="4"/>
+    <line class="wire" x1="470" y1="140" x2="470" y2="164"/>
+    <rect class="area" x="452" y="164" width="36" height="60" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="444" y="200" text-anchor="end" class="lbl">R_L</text>
+    <line class="wire" x1="470" y1="224" x2="470" y2="262"/>
+    <line class="wire" x1="444" y1="262" x2="496" y2="262"/>
+    <line class="wire" x1="453" y1="272" x2="487" y2="272"/>
+    <line class="wire" x1="462" y1="282" x2="478" y2="282"/>
+    <circle cx="500" cy="140" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="506" y="126" class="lbl">u_o</text>
+    <text x="410" y="126" text-anchor="end" class="lbl">C₂ 短路</text>
+    <text x="260" y="308" text-anchor="middle" class="lbl">交流通路里，R_c 与 R_L 并联在集电极与地之间</text>
+  </svg>
+</div>
+
+<p>
+  注意：直流时 <code>R_c</code> 与 <code>R_L</code> 并不并联，中间隔着 <code>C₂</code>，负载不消耗直流；
+  只有交流通路里 <code>C₂</code> 短路，两者才并联。所以 <code>I_CQ</code> 与 <code>R_L</code> 无关，<code>A_u</code> 却与它密切相关。
+</p>
+
+<h2>二、三极管的微变等效模型</h2>
+
+<p>
+  思路一句话：<strong>在 Q 点附近用切线代替曲线</strong>。输入特性在 Q 点的斜率记为 <code>1/r_be</code>，
+  基极-发射极之间等效为一个电阻；输出特性在放大区近似水平，<code>i_C = βi_b</code> 与 <code>u_CE</code> 无关，
+  集电极-发射极之间等效为一个<strong>受控电流源</strong> <code>βi_b</code>。
+</p>
+
+<div class="math">r_be = r_bb′ + (1 + β) · 26 mV / I_EQ　（常温，r_bb′ ≈ 200 Ω）</div>
+
+<ul>
+  <li><code>r_bb′</code>：基区体电阻，低频小功率管取 <strong>200 Ω</strong>（题目不给就取 200，按题目为准）。</li>
+  <li><code>26 mV</code>：常温热电压，考研固定用 26 mV。</li>
+  <li><code>I_EQ</code>：<code>I_EQ = (1+β)I_BQ ≈ I_CQ</code>，单位必须用 <strong>mA</strong> 才得到 Ω。</li>
+  <li>有的教材写 <code>r_be = 300 + (1+β)26/I_CQ(mA)</code>，以题目给定为准。</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">关键区别</span>
+  <code>r_be</code> 是<strong>动态电阻</strong>（<code>u_be/i_b</code>），不是直流电阻 <code>U_BEQ/I_BQ</code>。
+  前者几百到几千欧，后者几百千欧。<strong>用错这个，整道题全废。</strong>
+</div>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 300" role="img" aria-label="共射电路的微变等效电路：r_be 接在基极与发射极之间，受控电流源 βib 从集电极流向发射极">
+    <line class="wire" x1="60" y1="250" x2="480" y2="250"/>
+    <line class="wire thin" x1="270" y1="250" x2="270" y2="264"/>
+    <line class="wire thin" x1="248" y1="264" x2="292" y2="264"/>
+    <line class="wire thin" x1="256" y1="274" x2="284" y2="274"/>
+    <line class="wire thin" x1="263" y1="284" x2="277" y2="284"/>
+
+    <circle cx="55" cy="210" r="24" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="55" y="200" text-anchor="middle" class="lbl">+</text>
+    <text x="55" y="228" text-anchor="middle" class="lbl">−</text>
+    <text x="20" y="176" class="lbl">u_i</text>
+    <line class="wire" x1="55" y1="186" x2="55" y2="170"/>
+    <line class="wire" x1="55" y1="170" x2="120" y2="170"/>
+    <line class="wire" x1="55" y1="234" x2="55" y2="250"/>
+
+    <circle class="dot" cx="120" cy="170" r="4"/>
+    <text x="108" y="158" class="lbl">B</text>
+    <line class="wire" x1="120" y1="170" x2="120" y2="186"/>
+    <rect class="area" x="104" y="186" width="32" height="48" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="96" y="214" text-anchor="end" class="lbl">R_b</text>
+    <line class="wire" x1="120" y1="234" x2="120" y2="250"/>
+
+    <line class="wire" x1="120" y1="170" x2="220" y2="170"/>
+    <polygon points="196,170 184,164 184,176" fill="#1a1a1a"/>
+    <text x="166" y="158" text-anchor="middle" class="lbl">i_b</text>
+    <line class="wire" x1="220" y1="170" x2="220" y2="186"/>
+    <rect class="area" x="204" y="186" width="32" height="48" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="246" y="210" class="lbl">r_be</text>
+    <line class="wire" x1="220" y1="234" x2="220" y2="250"/>
+
+    <circle class="dot" cx="330" cy="170" r="4"/>
+    <line class="wire" x1="330" y1="170" x2="330" y2="182"/>
+    <circle cx="330" cy="210" r="28" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <polygon points="330,230 324,214 336,214" fill="#1a1a1a"/>
+    <line class="wire" x1="330" y1="238" x2="330" y2="250"/>
+    <text x="366" y="206" class="lbl">βi_b</text>
+
+    <line class="wire" x1="330" y1="170" x2="500" y2="170"/>
+    <circle class="dot" cx="400" cy="170" r="4"/>
+    <line class="wire" x1="400" y1="170" x2="400" y2="186"/>
+    <rect class="area" x="384" y="186" width="32" height="48" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="424" y="214" class="lbl">R_c</text>
+    <line class="wire" x1="400" y1="234" x2="400" y2="250"/>
+
+    <circle class="dot" cx="465" cy="170" r="4"/>
+    <line class="wire" x1="465" y1="170" x2="465" y2="186"/>
+    <rect class="area" x="449" y="186" width="32" height="48" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="489" y="214" class="lbl">R_L</text>
+    <line class="wire" x1="465" y1="234" x2="465" y2="250"/>
+
+    <circle cx="500" cy="170" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="502" y="156" text-anchor="end" class="lbl">u_o</text>
+    <text x="404" y="158" class="lbl">C</text>
+    <text x="250" y="292" text-anchor="middle" class="lbl">受控源 βi_b 从 C 流向 E，方向不能画反；R_c 与 R_L 并联</text>
+  </svg>
+</div>
+
+<p>
+  这个模型里没有 <code>V_CC</code>、没有电容，只有三个电阻和一个受控源——它就是一张普通的线性电路图。
+  接下来的工作全是电路分析：串并联、分压、欧姆定律。
+</p>
+
+<div class="tip">
+  <span class="tip-label">适用条件（三个"必须是"）</span>
+  必须是<strong>中频</strong>（忽略结电容，见 Lesson 0014）、<strong>小信号</strong>（不超出 Q 点附近线性区）、
+  且工作在<strong>放大区</strong>。缺一条，模型就不成立。
+</div>
+
+<h2>三、三条公式：A_u、R_i、R_o</h2>
+
+<p>
+  输出端 <code>R_c</code> 与 <code>R_L</code> 并联，受控源电流全部流过它们：<code>u_o = −βi_b·(R_c∥R_L)</code>；
+  输入端 <code>u_i = i_b·r_be</code>。相除即得：
+</p>
+
+<div class="math">A_u = u_o / u_i = − β · R_L′ / r_be　，　R_L′ = R_c ∥ R_L</div>
+
+<p>
+  这就是共射放大电路最核心的一条公式。<strong>负号</strong>表示输出与输入反相 180°：
+  <code>u_i</code> 升高 → <code>i_b</code> 增大 → <code>i_c</code> 增大 → <code>R_c</code> 上压降增大 → <code>u_CE</code> 下降。
+  所以输入正峰时输出为负峰，同刻反号。
+</p>
+
+<p>另外两个参数描述"这个放大器好不好接"：</p>
+
+<div class="math">R_i = R_b ∥ r_be　，　R_o ≈ R_c</div>
+
+<ul>
+  <li><strong>输入电阻 <code>R_i</code></strong>：从输入端看进去，<code>R_b</code> 与 <code>r_be</code> 并联。
+      因 <code>R_b</code> 有几百 kΩ，故 <code>R_i ≈ r_be</code>（1 kΩ 量级）——这就是共射"<strong>输入电阻低</strong>"的由来。</li>
+  <li><strong>输出电阻 <code>R_o</code></strong>：输入源置零后受控源开路，从输出端往回看只剩 <code>R_c</code>。
+      注意<strong>不含 <code>R_L</code></strong>，它是外接负载，不属于放大器本身。</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">负号到底要不要写</span>
+  求<strong>电压放大倍数</strong>时必须写负号（携带相位）；求<strong>幅值放大倍数</strong>时写 <code>|A_u|</code>。
+  题目没说明幅值，标准答案通常保留负号并注明"反相"。
+</div>
+
+<h2>四、完整数值例题</h2>
+
+<p>
+  题目：共射电路 <code>V_CC = 12 V，R_b = 300 kΩ，R_c = 4 kΩ，R_L = 4 kΩ，β = 50</code>，
+  硅管 <code>U_BEQ = 0.7 V，r_bb′ = 200 Ω</code>。求 Q 点、<code>r_be</code>、<code>A_u</code>、<code>R_i</code>、<code>R_o</code>。
+</p>
+
+<h3>第 1 步：直流工作点（Lesson 0006）</h3>
+<div class="math">I_BQ = (12 − 0.7) / 300k ≈ 37.7 μA</div>
+<div class="math">I_CQ = 50 × 37.7 μA ≈ 1.88 mA</div>
+<div class="math">U_CEQ = 12 − 1.88 mA × 4 kΩ ≈ 4.5 V　（&gt; 0.3 V，放大区 ✅）</div>
+<div class="math">I_EQ = (1 + β) I_BQ = 51 × 37.7 μA ≈ 1.92 mA</div>
+
+<h3>第 2 步：动态电阻</h3>
+<div class="math">r_be = 200 + 51 × 26 mV / 1.92 mA = 200 + 690 ≈ 890 Ω</div>
+
+<h3>第 3 步：交流负载</h3>
+<div class="math">R_L′ = R_c ∥ R_L = 4k ∥ 4k = 2 kΩ</div>
+
+<h3>第 4 步：三条结果</h3>
+<div class="math">A_u = − 50 × 2k / 890 ≈ − 112</div>
+<div class="math">R_i = R_b ∥ r_be = 300k ∥ 890 ≈ 887 Ω　（≈ r_be）</div>
+<div class="math">R_o ≈ R_c = 4 kΩ</div>
+
+<table>
+  <tr><th>量</th><th>数值</th><th>说明</th></tr>
+  <tr><td>I_CQ</td><td>1.88 mA</td><td>由 R_b、β 决定</td></tr>
+  <tr><td>U_CEQ</td><td>4.5 V</td><td>约 V_CC/2，位置合适</td></tr>
+  <tr><td>r_be</td><td>≈ 890 Ω</td><td>用 I_EQ（≈ I_CQ）计算</td></tr>
+  <tr><td>A_u</td><td>≈ −112</td><td>负号 = 反相</td></tr>
+  <tr><td>R_i</td><td>≈ 887 Ω</td><td>≈ r_be</td></tr>
+  <tr><td>R_o</td><td>≈ 4 kΩ</td><td>就是 R_c，不含 R_L</td></tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">如果题目还给了信号源内阻 R_s</span>
+  常问<strong>源电压放大倍数</strong>：<code>A_us = A_u · R_i/(R_i + R_s)</code>。
+  如 <code>R_s = 1 kΩ</code>，则 <code>A_us = −112 × 0.887/1.887 ≈ −53</code>——
+  信号在输入端被分掉一半，这正是"输入电阻要尽量大"的原因。
+</div>
+
+<h2>五、常见错误与速查表</h2>
+
+<h3>五个扣分点</h3>
+<ol>
+  <li><strong>忘掉 <code>R_L</code></strong>：必须用 <code>R_L′ = R_c ∥ R_L</code>。
+      本课例题若漏掉 <code>R_L</code>，会得 <code>−225</code>，整整大一倍。</li>
+  <li><strong>丢掉负号</strong>：只写 <code>112</code> 会被判概念错误。</li>
+  <li><strong><code>r_be</code> 公式用错</strong>：必须 <code>r_bb′ + (1+β)·26mV/I_EQ</code>，
+      漏掉 <code>(1+β)</code> 或误用 <code>I_BQ</code>，结果差几十倍。</li>
+  <li><strong>单位踩坑</strong>：<code>26 mV / I_EQ(mA)</code> 得 Ω；若 <code>I_EQ</code> 用 μA 代入，结果大 1000 倍。</li>
+  <li><strong><code>R_o</code> 带上 <code>R_L</code></strong>：测量时负载断开，所以只有 <code>R_c</code>。</li>
+</ol>
+
+<h3>速查表</h3>
+
+<table>
+  <tr>
+    <th>步骤</th><th>公式</th><th>要点</th>
+  </tr>
+  <tr>
+    <td>① 静态工作点</td>
+    <td>I_BQ=(V_CC−U_BEQ)/R_b；I_CQ=βI_BQ；U_CEQ=V_CC−I_CQ R_c</td>
+    <td>先直流，且与 R_L 无关</td>
+  </tr>
+  <tr>
+    <td>② 动态电阻</td>
+    <td>r_be = r_bb′ + (1+β)·26mV/I_EQ</td>
+    <td>r_bb′ ≈ 200 Ω，I_EQ ≈ I_CQ</td>
+  </tr>
+  <tr>
+    <td>③ 交流负载</td>
+    <td>R_L′ = R_c ∥ R_L</td>
+    <td>交流通路中两者并联</td>
+  </tr>
+  <tr>
+    <td>④ 电压增益</td>
+    <td>A_u = −β R_L′ / r_be</td>
+    <td>负号 = 反相 180°</td>
+  </tr>
+  <tr>
+    <td>⑤ 输入电阻</td>
+    <td>R_i = R_b ∥ r_be ≈ r_be</td>
+    <td>共射输入电阻低</td>
+  </tr>
+  <tr>
+    <td>⑥ 输出电阻</td>
+    <td>R_o ≈ R_c</td>
+    <td>不含 R_L</td>
+  </tr>
+  <tr>
+    <td>⑦ 源电压增益</td>
+    <td>A_us = A_u · R_i/(R_i + R_s)</td>
+    <td>R_s 为信号源内阻</td>
+  </tr>
+</table>
+
+<h2>六、Quiz — 考研风格题</h2>
+
+<p>三道题分别考增益计算、相位关系和 <code>r_be</code>，都是考场原题难度。</p>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>交流通路</strong>：电容短路、<code>V_CC</code> 交流接地，于是 <code>R_c</code> 与 <code>R_L</code> 并联。</li>
+  <li><strong>微变等效</strong>：<code>r_be</code> 串在基极，<code>βi_b</code> 受控源接在 C、E 之间，非线性变线性。</li>
+  <li><strong>三条公式</strong>：<code>A_u = −βR_L′/r_be</code>、<code>R_i = R_b∥r_be</code>、<code>R_o ≈ R_c</code>。</li>
+  <li><strong>顺序不能乱</strong>：Q 点 → <code>r_be</code> → <code>R_L′</code> → <code>A_u</code>。</li>
+</ol>
+
+<p>
+  这个电路有个致命弱点：<code>I_CQ = βI_BQ</code>，β 随温度和批次变化，Q 点跟着漂。
+  下一课（<strong>Lesson 0008</strong>）用<strong>分压偏置 + 发射极电阻</strong>把 Q 点稳住，
+  代价是增益下降——"降多少"仍要用本课的微变等效电路算。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第二章 §2.4「小信号模型分析法」。
+</div>
+
+<div class="ask-agent">
+  <code>r_be</code> 算成 890 kΩ？<code>A_u</code> 比答案大一倍？<code>R_o</code> 要不要带 <code>R_L</code>？<br>
+  <strong>直接问我</strong>——把中间步骤贴出来，我帮你定位是哪一步掉的。
+</div>
+
+<div class="footer-nav">
+  <a href="./0006-dc-analysis-and-q-point.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0007 / 0020</span>
+  <a href="./0008-emitter-bias-and-q-stability.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "共射电路 V_CC = 12 V，R_b = 200 kΩ，R_c = 3 kΩ，R_L = 6 kΩ，β = 40，U_BEQ = 0.7 V，r_bb′ = 200 Ω。电压放大倍数 A_u 约为？",
+    options: [
+      "A_u ≈ −121",
+      "A_u ≈ +121",
+      "A_u ≈ −182",
+      "A_u ≈ −80"
+    ],
+    correct: 0,
+    explain: "I_BQ = 56.5 μA → I_CQ = 2.26 mA → I_EQ ≈ 2.32 mA；r_be = 200 + 41×26/2.32 ≈ 660 Ω；R_L′ = 2 kΩ；A_u = −40×2000/660 ≈ −121。C 是漏并 R_L（得 −182），B 是丢负号。"
+  },
+  {
+    q: "共射放大电路中，输出电压 u_o 与输入电压 u_i 的相位关系是？",
+    options: [
+      "同相",
+      "反相 180°",
+      "u_o 超前 u_i 90°",
+      "u_o 滞后 u_i 90°"
+    ],
+    correct: 1,
+    explain: "u_i 升高 → i_b↑ → i_c↑ → R_c 压降↑ → u_CE↓。所以输出与输入反相 180°，这正是负号的物理含义。"
+  },
+  {
+    q: "某共射电路 I_CQ = 2 mA，β = 50，r_bb′ = 200 Ω，则 r_be 约为？",
+    options: [
+      "≈ 863 Ω",
+      "≈ 200 Ω",
+      "≈ 663 Ω",
+      "≈ 26 Ω"
+    ],
+    correct: 0,
+    explain: "I_EQ ≈ 2 mA；r_be = 200 + 51×26/2 = 200 + 663 ≈ 863 Ω。C 漏了 r_bb′，B 只算 r_bb′，D 是热电压。单位必须用 mA。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！Q 点 → r_be → A_u 这条链路已经打通，可以进分压偏置了。' :
+        right >= 2 ? '👍 基本掌握。重点回看 R_L′ 并联和负号这两处，扣分基本都在那儿。' :
+        '📚 先把"交流通路 → 微变等效 → 三条公式"的顺序默写一遍，再重做 quiz。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

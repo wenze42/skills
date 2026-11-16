@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0009 — 共集电极与共基极放大电路</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0009 — 共集电极与共基极放大电路</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0009 / 0020 · 约 35 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  必须掌握 <a href="./0007-common-emitter-amplifier.html">Lesson 0007（共射放大电路）</a> 的微变等效电路与
+  <code>A_u = −βR_L′/r_be</code>，以及 <a href="./0008-emitter-bias-and-q-stability.html">Lesson 0008（分压式偏置）</a>
+  的 Q 点算法。这一课不引入新器件、不引入新公式体系——只把输出端从集电极换到射极、或者把基极接地，
+  同一个晶体管就变出了三种完全不同的「性格」。
+</div>
+
+<p>
+  前面两课我们一直默认：输入进基极、输出从集电极取、发射极接地。这只是三种接法中的一种。
+  晶体管只有三个电极，任选一个作<strong>公共端</strong>（交流地），剩下两个一个作输入、一个作输出，
+  一共只有三种组合。这三种组合的增益、输入/输出电阻、频率特性差别巨大，是选择题和多级放大器级间搭配的高频考点。
+</p>
+
+<h2>一、三种组态是怎么分的</h2>
+
+<p>
+  判断组态只看两件事：<strong>信号从哪个电极进、从哪个电极出</strong>。剩下的第三个电极就是公共端，
+  组态以它命名。
+</p>
+
+<table>
+  <tr><th>组态</th><th>输入</th><th>输出</th><th>公共端</th><th>一句话性格</th></tr>
+  <tr><td><strong>共射 CE</strong></td><td>基极 b</td><td>集电极 c</td><td>射极 e</td><td>反相、电压增益大</td></tr>
+  <tr><td><strong>共集 CC</strong></td><td>基极 b</td><td>射极 e</td><td>集电极 c</td><td>同相、电压增益≈1、Ri 大 Ro 小</td></tr>
+  <tr><td><strong>共基 CB</strong></td><td>射极 e</td><td>集电极 c</td><td>基极 b</td><td>同相、电压增益大、Ri 极小、频带宽</td></tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">判断口诀</span>
+  「输入输出之外的那个电极，就是公共端」。共集电路的集电极接 V<sub>CC</sub>，交流等效为地，
+  所以叫共集；共基电路的基极通过旁路电容接地，所以叫共基。
+</div>
+
+<h2>二、共集电极电路：射极跟随器</h2>
+
+<p>
+  把负载从集电极挪到发射极，就是<strong>共集电极电路</strong>。它的输出电压「跟着」输入电压走，
+  所以又叫<strong>射极跟随器</strong>（Emitter Follower）。
+</p>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="共集电极放大电路：基极输入，射极经电容输出，集电极接电源">
+    <text x="112" y="18" class="lbl">+Vcc</text>
+    <line class="wire" x1="180" y1="28" x2="400" y2="28"/>
+    <line class="wire" x1="180" y1="28" x2="180" y2="38"/>
+    <rect class="area" x="170" y="38" width="20" height="38" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="200" y="62" class="lbl">R_b</text>
+    <line class="wire" x1="180" y1="76" x2="180" y2="108"/>
+    <circle class="dot" cx="180" cy="108" r="4"/>
+
+    <text x="28" y="102" class="lbl">u_i</text>
+    <line class="wire" x1="60" y1="108" x2="98" y2="108"/>
+    <line class="wire" x1="98" y1="90" x2="98" y2="126"/>
+    <line class="wire" x1="110" y1="90" x2="110" y2="126"/>
+    <text x="104" y="82" text-anchor="middle" class="lbl">C1</text>
+    <line class="wire" x1="110" y1="108" x2="180" y2="108"/>
+    <line class="wire" x1="180" y1="108" x2="272" y2="108"/>
+
+    <line class="wire" x1="272" y1="86" x2="272" y2="130"/>
+    <line class="wire" x1="272" y1="94" x2="308" y2="76"/>
+    <line class="wire" x1="308" y1="76" x2="308" y2="28"/>
+    <circle class="dot" cx="308" cy="28" r="4"/>
+    <line class="wire" x1="272" y1="122" x2="308" y2="140"/>
+    <polygon points="284,124 298,132 289,140" fill="#1a1a1a"/>
+    <line class="wire" x1="308" y1="140" x2="308" y2="158"/>
+    <text x="330" y="72" class="lbl">T</text>
+
+    <rect class="area" x="298" y="158" width="20" height="34" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="326" y="180" class="lbl">R_e</text>
+    <line class="wire" x1="308" y1="192" x2="308" y2="202"/>
+    <line class="wire" x1="286" y1="202" x2="330" y2="202"/>
+    <line class="wire" x1="293" y1="209" x2="323" y2="209"/>
+    <line class="wire" x1="300" y1="215" x2="316" y2="215"/>
+
+    <circle class="dot" cx="308" cy="140" r="4"/>
+    <line class="wire" x1="308" y1="140" x2="360" y2="140"/>
+    <line class="wire" x1="360" y1="124" x2="360" y2="156"/>
+    <line class="wire" x1="372" y1="124" x2="372" y2="156"/>
+    <text x="366" y="116" text-anchor="middle" class="lbl">C2</text>
+    <line class="wire" x1="372" y1="140" x2="465" y2="140"/>
+    <circle cx="470" cy="140" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="440" y="128" class="lbl">u_o</text>
+
+    <text x="28" y="168" class="lbl">共集电极：输出取自射极</text>
+    <text x="28" y="190" class="lbl">u_o 与 u_i 同相，幅度略小</text>
+  </svg>
+</div>
+
+<h3>1. 直流：先算 Q 点</h3>
+
+<p>
+  直流通路里 C1、C2 开路，基极回路的方程是：
+</p>
+
+<div class="math">
+  I_B = (V_CC − U_BE) / [R_b + (1+β)R_e]　　I_E = (1+β)I_B　　U_CE = V_CC − I_E R_e
+</div>
+
+<p>
+  分母里的 <code>(1+β)R_e</code> 来自折算：射极电流是基极电流的 (1+β) 倍。
+  这条规则算输入电阻时还要再用一次。
+</p>
+
+<h3>2. 交流：电压增益略小于 1</h3>
+
+<p>
+  画微变等效电路时，集电极接 V<sub>CC</sub>（交流地），所以集电极直接接地；
+  发射极通过 R<sub>e</sub>∥R<sub>L</sub> 接地。输入电压 u<sub>i</sub> 加在 b、e 之间，
+  输出电压 u<sub>o</sub> 取自 e 对地。列 KVL 可得：
+</p>
+
+<div class="math">
+  A_u = (1+β)(R_e∥R_L) / [r_be + (1+β)(R_e∥R_L)] &lt; 1，且为正（同相）
+</div>
+
+<p>
+  分母比分子多了一个 <code>r_be</code>，所以增益<strong>永远小于 1</strong>，但通常能达到 0.95~0.99。
+  电压不放大，但<strong>电流放大了 (1+β) 倍</strong>，功率仍有增益——这正是缓冲级的价值：
+  把高阻源的信号「搬」到低阻负载上。
+</p>
+
+<h3>3. 输入电阻大、输出电阻小</h3>
+
+<div class="math">
+  R_i = R_b ∥ [r_be + (1+β)(R_e∥R_L)]　　R_o = R_e ∥ [(r_be + R_b∥R_s) / (1+β)]
+</div>
+
+<ul>
+  <li><strong>R<sub>i</sub> 大</strong>：发射极电阻折算到基极被放大 (1+β) 倍，所以输入电阻可达几十 kΩ 甚至上百 kΩ，对前级几乎不取电流。</li>
+  <li><strong>R<sub>o</sub> 小</strong>：从输出端往回看，基极回路的电阻被<strong>缩小</strong> (1+β) 倍，输出电阻只有几十 Ω，带负载能力强。</li>
+  <li>两者是同一件事的两面：射极跟随器本质上是<strong>电压串联负反馈</strong>，负反馈「抬高 R<sub>i</sub>、压低 R<sub>o</sub>」。</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">典型用途</span>
+  ① 多级放大器的<strong>输入级</strong>（提高整机 R<sub>i</sub>）；② <strong>输出级</strong>（降低 R<sub>o</sub>、驱动低阻负载）；
+  ③ 级间<strong>缓冲</strong>（避免后级低 R<sub>i</sub> 拖垮前级增益）。
+</div>
+
+<h2>三、共基极电路</h2>
+
+<p>
+  把基极通过旁路电容接地，信号从射极进、从集电极出，就是<strong>共基极电路</strong>。
+  它的输入电阻极小、频率特性最好，是高频宽带的「专用组态」。
+</p>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="共基极放大电路：基极接地，射极输入，集电极经电阻接电源并输出">
+    <text x="376" y="18" class="lbl">+Vcc</text>
+    <line class="wire" x1="330" y1="26" x2="470" y2="26"/>
+    <line class="wire" x1="330" y1="26" x2="330" y2="44"/>
+    <rect class="area" x="320" y="44" width="20" height="32" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="348" y="64" class="lbl">R_c</text>
+    <line class="wire" x1="330" y1="76" x2="330" y2="90"/>
+
+    <line class="wire" x1="330" y1="90" x2="288" y2="150"/>
+    <line class="wire" x1="244" y1="150" x2="304" y2="150"/>
+    <line class="wire" x1="260" y1="150" x2="214" y2="120"/>
+    <polygon points="220,124 236,132 228,141" fill="#1a1a1a"/>
+    <text x="306" y="168" class="lbl">T</text>
+
+    <line class="wire" x1="274" y1="150" x2="274" y2="172"/>
+    <line class="wire" x1="252" y1="172" x2="296" y2="172"/>
+    <line class="wire" x1="259" y1="179" x2="289" y2="179"/>
+    <line class="wire" x1="266" y1="186" x2="282" y2="186"/>
+
+    <text x="26" y="114" class="lbl">u_i</text>
+    <line class="wire" x1="58" y1="120" x2="142" y2="120"/>
+    <line class="wire" x1="142" y1="104" x2="142" y2="136"/>
+    <line class="wire" x1="154" y1="104" x2="154" y2="136"/>
+    <text x="148" y="96" text-anchor="middle" class="lbl">C1</text>
+    <line class="wire" x1="154" y1="120" x2="214" y2="120"/>
+
+    <circle class="dot" cx="330" cy="90" r="4"/>
+    <line class="wire" x1="330" y1="90" x2="392" y2="90"/>
+    <line class="wire" x1="392" y1="74" x2="392" y2="106"/>
+    <line class="wire" x1="404" y1="74" x2="404" y2="106"/>
+    <text x="398" y="66" text-anchor="middle" class="lbl">C2</text>
+    <line class="wire" x1="404" y1="90" x2="483" y2="90"/>
+    <circle cx="488" cy="90" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="458" y="78" class="lbl">u_o</text>
+
+    <text x="24" y="196" class="lbl">基极共地：射极进、集电极出</text>
+  </svg>
+</div>
+
+<h3>1. 电压增益与相位</h3>
+
+<div class="math">
+  A_u = +β(R_c∥R_L) / r_be　（同相）
+</div>
+
+<p>
+  为什么是正号？设 u<sub>i</sub> 升高 → 发射极电位升高 → U<sub>BE</sub> 减小 → I<sub>E</sub>、I<sub>C</sub> 减小 →
+  R<sub>c</sub> 上的压降减小 → 集电极电位 u<sub>o</sub> 升高。输入升、输出也升，所以<strong>同相</strong>。
+  注意增益的<strong>大小</strong>与共射完全相同（都是 βR<sub>L</sub>′/r<sub>be</sub>），只是相位相反。
+</p>
+
+<h3>2. 输入电阻极小、输出电阻大</h3>
+
+<div class="math">
+  R_i = r_be / (1+β) ≈ 几 Ω ~ 几十 Ω　　R_o ≈ R_c
+</div>
+
+<p>
+  从射极看进去，基极回路的 r<sub>be</sub> 被<strong>缩小</strong> (1+β) 倍，所以输入电阻只有十几欧。
+  这是共基电路最致命的缺点：如果信号源内阻较大，源电压会在内阻上被大幅分压，
+  实际有效增益远小于 βR<sub>L</sub>′/r<sub>be</sub>。所以共基电路<strong>必须配低阻信号源</strong>，
+  工程上常把共集（低输出电阻）放在它前面，组成「共集—共基」级联。
+</p>
+
+<h3>3. 为什么高频特性好</h3>
+
+<p>
+  共射的 C<sub>b′c</sub> 跨接输入输出，被密勒效应放大 (1+|A<sub>u</sub>|) 倍，带宽被压低；
+  共基的基极交流接地，C<sub>b′c</sub> 一端接地，<strong>无密勒倍增</strong>，
+  所以上限频率最高，常用于高频、宽带和 cascode（共射—共基）结构。
+</p>
+
+<h2>四、三种组态对比与速查表</h2>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="共射、共集、共基三种组态的输入输出与相位对比示意">
+    <rect x="12" y="28" width="152" height="182" rx="8" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+    <rect x="184" y="28" width="152" height="182" rx="8" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+    <rect x="356" y="28" width="152" height="182" rx="8" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+
+    <text x="88" y="50" text-anchor="middle">共射 CE</text>
+    <polygon points="58,92 58,132 103,112" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="24" y1="112" x2="56" y2="112"/>
+    <polygon points="56,106 56,118 66,112" fill="#1a1a1a"/>
+    <text x="20" y="102" class="lbl">入 b</text>
+    <line class="wire" x1="105" y1="112" x2="148" y2="112"/>
+    <polygon points="138,106 138,118 148,112" fill="#1a1a1a"/>
+    <text x="110" y="102" class="lbl">出 c</text>
+    <line class="wire" x1="80" y1="126" x2="80" y2="150"/>
+    <line class="wire" x1="64" y1="150" x2="96" y2="150"/>
+    <line class="wire" x1="69" y1="157" x2="91" y2="157"/>
+    <line class="wire" x1="74" y1="164" x2="86" y2="164"/>
+    <text x="100" y="155" class="lbl">e 共用</text>
+    <text x="88" y="186" text-anchor="middle" class="lbl">反相 · A_u 大</text>
+    <text x="88" y="203" text-anchor="middle" class="lbl">R_i 中 · R_o 中</text>
+
+    <text x="260" y="50" text-anchor="middle">共集 CC</text>
+    <polygon points="230,92 230,132 275,112" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="196" y1="112" x2="228" y2="112"/>
+    <polygon points="228,106 228,118 238,112" fill="#1a1a1a"/>
+    <text x="192" y="102" class="lbl">入 b</text>
+    <line class="wire" x1="277" y1="112" x2="320" y2="112"/>
+    <polygon points="310,106 310,118 320,112" fill="#1a1a1a"/>
+    <text x="282" y="102" class="lbl">出 e</text>
+    <line class="wire" x1="252" y1="126" x2="252" y2="150"/>
+    <line class="wire" x1="236" y1="150" x2="268" y2="150"/>
+    <line class="wire" x1="241" y1="157" x2="263" y2="157"/>
+    <line class="wire" x1="246" y1="164" x2="258" y2="164"/>
+    <text x="272" y="155" class="lbl">c 共用</text>
+    <text x="260" y="186" text-anchor="middle" class="lbl">同相 · A_u≈1</text>
+    <text x="260" y="203" text-anchor="middle" class="lbl">R_i 大 · R_o 小</text>
+
+    <text x="432" y="50" text-anchor="middle">共基 CB</text>
+    <polygon points="402,92 402,132 447,112" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="368" y1="112" x2="400" y2="112"/>
+    <polygon points="400,106 400,118 410,112" fill="#1a1a1a"/>
+    <text x="364" y="102" class="lbl">入 e</text>
+    <line class="wire" x1="449" y1="112" x2="492" y2="112"/>
+    <polygon points="482,106 482,118 492,112" fill="#1a1a1a"/>
+    <text x="454" y="102" class="lbl">出 c</text>
+    <line class="wire" x1="424" y1="126" x2="424" y2="150"/>
+    <line class="wire" x1="408" y1="150" x2="440" y2="150"/>
+    <line class="wire" x1="413" y1="157" x2="435" y2="157"/>
+    <line class="wire" x1="418" y1="164" x2="430" y2="164"/>
+    <text x="444" y="155" class="lbl">b 共用</text>
+    <text x="432" y="186" text-anchor="middle" class="lbl">同相 · A_u 大</text>
+    <text x="432" y="203" text-anchor="middle" class="lbl">R_i 小 · R_o 大</text>
+  </svg>
+</div>
+
+<table style="font-size: 0.86em;">
+  <tr>
+    <th>组态</th><th>A_u（大小 / 相位）</th><th>R_i</th><th>R_o</th><th>频响</th><th>典型用途</th>
+  </tr>
+  <tr>
+    <td><strong>共射</strong></td>
+    <td>βR_L′/r_be，几十~几百 / <strong>反相</strong></td>
+    <td>中，≈r_be（kΩ 级）</td>
+    <td>中，≈R_c</td>
+    <td>一般（密勒效应限制）</td>
+    <td>电压放大主力</td>
+  </tr>
+  <tr>
+    <td><strong>共集</strong></td>
+    <td>≈1（0.95~0.99）/ <strong>同相</strong></td>
+    <td>大，R_b∥[r_be+(1+β)R_L′]</td>
+    <td>小，(r_be+R_s′)/(1+β)</td>
+    <td>好</td>
+    <td>缓冲、驱动低阻负载、输入/输出级</td>
+  </tr>
+  <tr>
+    <td><strong>共基</strong></td>
+    <td>+βR_L′/r_be，与共射同量级 / <strong>同相</strong></td>
+    <td>极小，r_be/(1+β)（几~几十 Ω）</td>
+    <td>大，≈R_c</td>
+    <td>最好（无密勒效应）</td>
+    <td>高频宽带、电流缓冲、cascode</td>
+  </tr>
+</table>
+
+<h2>五、考研例题与易错点</h2>
+
+<h3>例题 1：射极跟随器的四个参数</h3>
+
+<p>
+  共集电路，V<sub>CC</sub> = 12 V，R<sub>b</sub> = 200 kΩ，R<sub>e</sub> = 2 kΩ，R<sub>L</sub> = 2 kΩ，
+  β = 100，r<sub>be</sub> = 1 kΩ，信号源内阻 R<sub>s</sub> = 1 kΩ。求 A<sub>u</sub>、R<sub>i</sub>、R<sub>o</sub>。
+</p>
+
+<p><strong>解</strong></p>
+<ol>
+  <li>交流负载：R<sub>L</sub>′ = R<sub>e</sub>∥R<sub>L</sub> = 2∥2 = <strong>1 kΩ</strong>。</li>
+  <li>折算：r<sub>be</sub> + (1+β)R<sub>L</sub>′ = 1 + 101×1 = <strong>102 kΩ</strong>。</li>
+  <li>A<sub>u</sub> = 101×1 / 102 = <strong>0.990</strong>（同相，略小于 1）。</li>
+  <li>R<sub>i</sub> = R<sub>b</sub> ∥ 102 kΩ = 200∥102 = <strong>67.5 kΩ</strong>。</li>
+  <li>R<sub>b</sub>∥R<sub>s</sub> = 200∥1 ≈ 0.995 kΩ，则
+      R<sub>o</sub> = R<sub>e</sub> ∥ [(1 + 0.995)/101] = 2 kΩ ∥ 19.8 Ω ≈ <strong>19.6 Ω</strong>。</li>
+</ol>
+
+<p>
+  输出 20 Ω、输入 67.5 kΩ，即「阻抗变换」；把 R<sub>e</sub> 当 R<sub>o</sub> 会差 100 倍。
+</p>
+
+<h3>例题 2：共基电路与共射的对照</h3>
+
+<p>
+  同一只管子（β = 100，r<sub>be</sub> = 1 kΩ），R<sub>c</sub> = 5 kΩ，R<sub>L</sub> = 5 kΩ，
+  分别接成共射和共基，求 A<sub>u</sub>、R<sub>i</sub>、R<sub>o</sub>。
+</p>
+
+<p><strong>解</strong>：R<sub>L</sub>′ = 5∥5 = 2.5 kΩ。</p>
+
+<table>
+  <tr><th>参数</th><th>共射</th><th>共基</th></tr>
+  <tr><td>A<sub>u</sub></td><td>−100×2.5/1 = <strong>−250</strong></td><td>+100×2.5/1 = <strong>+250</strong></td></tr>
+  <tr><td>R<sub>i</sub></td><td>≈r<sub>be</sub> = <strong>1 kΩ</strong></td><td>1 kΩ/101 ≈ <strong>9.9 Ω</strong></td></tr>
+  <tr><td>R<sub>o</sub></td><td>≈R<sub>c</sub> = <strong>5 kΩ</strong></td><td>≈R<sub>c</sub> = <strong>5 kΩ</strong></td></tr>
+</table>
+
+<p>
+  增益大小完全一样，只差一个负号；输入电阻差 100 倍。若信号源内阻 R<sub>s</sub> = 50 Ω，
+  共基电路的实际源电压利用率只有 9.9/(50+9.9) ≈ 16.5%，有效增益降到约 41。
+  <strong>这就是「共基必须配低阻源」的定量含义。</strong>
+</p>
+
+<h3>易错点</h3>
+<ol>
+  <li><strong>共集 A<sub>u</sub> 略小于 1。</strong> 带载更小，A<sub>u</sub>=1 只是近似。</li>
+  <li><strong>共集 R<sub>o</sub> 不是 R<sub>e</sub>。</strong> 要把基极回路电阻除以 (1+β) 再与 R<sub>e</sub> 并联，结果通常只有几十欧。</li>
+  <li><strong>共基 A<sub>u</sub> 取正号。</strong> 它与共射大小相同、相位相反，是选择题的常设坑。</li>
+  <li><strong>共基 R<sub>i</sub> 极小。</strong> 不能直接拿 A<sub>u</sub> 乘源电压，必须先算源内阻分压。</li>
+  <li><strong>「电压不放大」不等于「没有放大」。</strong> 共集的电流增益是 (1+β)，功率增益仍然可观。</li>
+  <li><strong>共基没有密勒效应</strong>，但仍有结电容和输出端负载，频响好不等于「无上限」。</li>
+</ol>
+
+<h2>六、Quiz — 考研风格题</h2>
+
+<p>下面 3 道题覆盖参数计算、相位判断和级间搭配。默认 r<sub>be</sub> 已给出，忽略 r<sub>ce</sub>。</p>
+
+<div class="quiz" id="quiz-container"></div>
+
+<p>
+  下一课（<strong>Lesson 0010</strong>）换一种器件：<strong>场效应管</strong>。
+  它用电压控制电流，输入电阻比 BJT 高几个数量级，是集成运放输入级的首选。
+  先把这一课的三组态公式记牢——0011 的共源、共漏会不断拿来和共射、共集对照。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第三章 §3.3（三种组态）与 §3.4（组态对比）。
+  康华光《电子技术基础 模拟部分》第二章对射极跟随器的输出电阻有更细的推导。
+</div>
+
+<div class="ask-agent">
+  分不清共集和共基的输入输出端？输出电阻的 (1+β) 折算总是搞反？<br>
+  <strong>直接问我</strong>——把电路图发我，我陪你一步步画微变等效电路。
+</div>
+
+<div class="footer-nav">
+  <a href="./0008-emitter-bias-and-q-stability.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0009 / 0020</span>
+  <a href="./0010-fet-and-mosfet.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "共集电极电路（射极跟随器）：β = 100，r_be = 1 kΩ，R_b = 100 kΩ，R_e = 3 kΩ，信号源内阻 R_s = 1 kΩ，负载开路。输出电阻 R_o 约为？",
+    options: [
+      "约 20 Ω",
+      "约 1 kΩ",
+      "约 3 kΩ",
+      "约 100 Ω"
+    ],
+    correct: 0,
+    explain: "R_o = R_e ∥ [(r_be + R_b∥R_s)/(1+β)]。R_b∥R_s = 100∥1 ≈ 0.99 kΩ，加上 r_be 得 1.99 kΩ，除以 101 得 19.7 Ω；再与 3 kΩ 并联仍约为 19.6 Ω。注意不是 R_e，也不是 r_be/(1+β) 单独一项。"
+  },
+  {
+    q: "共基极电路的电压增益写成 A_u = +β(R_c∥R_L)/r_be，正号表示输出与输入同相。下列解释正确的是？",
+    options: [
+      "输入在射极：u_i 升高使 U_BE 减小、I_C 减小，R_c 压降减小，u_o 升高",
+      "输入在基极：u_i 升高使 I_B 增大、I_C 增大，u_o 升高",
+      "集电极电流与射极电流反向，所以输出与输入同相",
+      "共基电路的 R_i 很小，所以相位自动反转为正"
+    ],
+    correct: 0,
+    explain: "共基电路基极交流接地，u_i 加在射极。u_i 升高 → U_BE = 0 − u_i 减小 → I_E、I_C 减小 → R_c 上压降减小 → 集电极电位升高。输入升、输出也升，因此同相，A_u 取正号。"
+  },
+  {
+    q: "某多级放大器要求：第一级输入电阻尽量大，最后一级输出电阻尽量小以驱动低阻负载。两级分别应选哪种组态？",
+    options: [
+      "输入级共基，输出级共射",
+      "输入级共集，输出级共集",
+      "输入级共射，输出级共基",
+      "输入级共基，输出级共基"
+    ],
+    correct: 1,
+    explain: "共集电路 R_i 大（适合做输入级，几乎不向前级取电流），R_o 小（适合做输出级，带负载能力强），且电压增益≈1、同相，不改变信号极性。共基 R_i 极小，做输入级会严重分压；共射 R_o 中等，做输出级驱动能力不足。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！三种组态的输入输出、相位和阻抗特点都分清了。' :
+        right >= 2 ? '👍 不错！建议再默写一遍三组态的 R_i、R_o 公式。' :
+        '📚 回看第二节和第三节，重点区分「公共端是谁」和 (1+β) 折算的方向。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>
