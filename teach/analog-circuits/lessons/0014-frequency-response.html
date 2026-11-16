@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0014 — 频率响应</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0014 — 频率响应</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0014 / 0020 · 约 35 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  需要 <a href="./0007-common-emitter-amplifier.html">Lesson 0007（共射放大电路）</a> 的
+  A<sub>u</sub>、R<sub>i</sub>、R<sub>o</sub> 与微变等效电路，以及
+  <a href="./0012-multistage-amplifier.html">Lesson 0012（多级放大）</a> 的级联增益。
+  本课只回答一个问题：为什么“放大倍数”不是常数，而是频率的函数。
+</div>
+
+<h2>一、增益为什么会随频率变化</h2>
+
+<p>
+  前面几课算增益时，我们都默认电容要么“短路”（耦合/旁路电容），要么“开路”（结电容）。
+  这只在中频段成立。一旦频率偏离中频，电容的容抗 X<sub>C</sub> = 1/(2πfC) 就会起作用，
+  增益随之下降。<strong>低频段的罪魁是耦合与旁路电容，高频段的罪魁是结电容与分布电容。</strong>
+</p>
+
+<table>
+  <tr>
+    <th>频段</th><th>起作用的电容</th><th>容抗的变化</th><th>对增益的影响</th>
+  </tr>
+  <tr>
+    <td><strong>低频段</strong></td>
+    <td>耦合电容 C<sub>1</sub>、C<sub>2</sub>、C<sub>3</sub>；旁路电容 C<sub>e</sub></td>
+    <td>f 降低 → 容抗变大，不能再看成短路</td>
+    <td>信号在电容上分压损失，增益下降</td>
+  </tr>
+  <tr>
+    <td><strong>中频段</strong></td>
+    <td>上述电容全部视为短路，结电容全部视为开路</td>
+    <td>——</td>
+    <td>增益最大且平坦，记为 A<sub>um</sub></td>
+  </tr>
+  <tr>
+    <td><strong>高频段</strong></td>
+    <td>发射结电容 C<sub>π</sub>、集电结电容 C<sub>μ</sub>、负载与分布电容</td>
+    <td>f 升高 → 容抗变小，不能再看成开路</td>
+    <td>基极电流被分流，增益下降</td>
+  </tr>
+</table>
+
+<ul>
+  <li><strong>低频</strong>：C<sub>e</sub> 容抗变大使 R<sub>e</sub> 的旁路不完全，交流负反馈增强，增益进一步下降；</li>
+  <li><strong>高频</strong>：C<sub>π</sub> 与 r<sub>be</sub> 并联分流；C<sub>μ</sub> 跨接在输入输出之间，
+      因密勒效应等效到输入端要乘以 (1 + |A<sub>u</sub>|)，危害更大；</li>
+  <li>所以一个单级共射的幅频特性是“中间平、两头掉”的钟形。</li>
+</ul>
+
+<h2>二、幅频特性与波特图</h2>
+
+<p>
+  把 |A<sub>u</sub>| 随 f 的变化画出来就是<strong>幅频特性</strong>。工程上横轴用对数刻度、
+  纵轴用分贝表示，得到<strong>波特图</strong>：
+</p>
+
+<div class="math">
+  A_u(dB) = 20 lg |A_u|　　　20 lg 0.707 ≈ −3 dB
+</div>
+
+<p>
+  定义两个关键频率：增益下降到中频值的 <strong>0.707 倍</strong>（即下降 3 dB）时，
+  低频侧对应<strong>下限频率 f<sub>L</sub></strong>，高频侧对应<strong>上限频率 f<sub>H</sub></strong>。
+  两者之间就是<strong>通频带</strong>。
+</p>
+
+<div class="math">
+  BW = f_H − f_L ≈ f_H　（通常 f_H ≫ f_L）
+</div>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 310" role="img" aria-label="单级共射放大电路幅频特性波特图：中频平坦，低频以 20dB 每十倍频上升，高频以 20dB 每十倍频下降，标出 fL、fH 与通频带">
+    <title>单级共射放大电路的幅频特性（波特图）</title>
+    <line class="wire" x1="50" y1="260" x2="50" y2="60"/>
+    <polygon points="44,66 56,66 50,52" fill="#1a1a1a"/>
+    <line class="wire" x1="50" y1="260" x2="496" y2="260"/>
+    <polygon points="490,254 490,266 504,260" fill="#1a1a1a"/>
+    <text x="56" y="48" class="lbl">20lg|A_u| / dB</text>
+    <text x="420" y="298" text-anchor="middle" class="lbl">f（对数刻度）</text>
+
+    <line class="wire thin" x1="44" y1="90" x2="50" y2="90"/>
+    <line class="wire thin" x1="44" y1="140" x2="50" y2="140"/>
+    <line class="wire thin" x1="44" y1="190" x2="50" y2="190"/>
+    <text x="40" y="95" text-anchor="end" class="lbl">40</text>
+    <text x="40" y="145" text-anchor="end" class="lbl">20</text>
+    <text x="40" y="195" text-anchor="end" class="lbl">0</text>
+
+    <line class="wire thin" x1="80" y1="140" x2="152" y2="89"/>
+    <line class="wire thin" x1="50" y1="90" x2="470" y2="90"/>
+    <line class="wire thin" x1="390" y1="90" x2="462" y2="142"/>
+
+    <path class="wire" d="M78,152 C108,148 136,124 150,98 C164,91 180,90 215,90 L355,90 C372,90 382,93 390,99 L462,139"/>
+
+    <line class="wire thin" x1="150" y1="260" x2="150" y2="267"/>
+    <line class="wire thin" x1="390" y1="260" x2="390" y2="267"/>
+    <text x="150" y="284" text-anchor="middle" class="lbl">f_L</text>
+    <text x="390" y="284" text-anchor="middle" class="lbl">f_H</text>
+
+    <line class="wire" x1="156" y1="238" x2="384" y2="238"/>
+    <polygon points="156,232 156,244 146,238" fill="#1a1a1a"/>
+    <polygon points="384,232 384,244 394,238" fill="#1a1a1a"/>
+    <text x="270" y="230" text-anchor="middle" class="lbl">BW</text>
+
+    <text x="58" y="124" class="lbl">20 dB/十倍频</text>
+    <text x="470" y="176" text-anchor="end" class="lbl">−20 dB/十倍频</text>
+    <text x="200" y="82" class="lbl">中频段 A_um</text>
+  </svg>
+</div>
+
+<p>
+  两个斜率必须背下来：单级共射在低频侧以<strong>+20 dB/十倍频</strong>上升，
+  在高频侧以<strong>−20 dB/十倍频</strong>下降。
+  也就是说，频率每升高十倍，增益就掉到十分之一（20 dB）。
+</p>
+
+<div class="tip">
+  <span class="tip-label">−3 dB 点的三种说法</span>
+  增益降到 0.707 倍 ＝ 下降 3 dB ＝ 功率降到一半。
+  考试里问“上限频率”就是问增益下降 3 dB 的那个频率，三个说法完全等价。
+</div>
+
+<h2>三、f_L 与 f_H 的估算</h2>
+
+<p>
+  每个电容都对应一个转折频率，公式都是同一副骨架：<strong>f = 1/(2πRC)</strong>，
+  其中 R 是<strong>该电容所在回路的等效电阻</strong>（从电容两端看出去的电阻）。
+</p>
+
+<div class="math">
+  f_L ≈ 1 / (2π R C)　　　f_H ≈ 1 / (2π R C_π)
+</div>
+
+<ul>
+  <li><strong>下限频率</strong>：由耦合电容和旁路电容中<strong>转折频率最高的那个</strong>决定
+      （它最先起作用）。耦合电容回路的 R 近似为 R<sub>s</sub> + R<sub>i</sub>；
+      旁路电容回路的 R 约为 R<sub>e</sub> ∥ [(R<sub>s</sub>+R<sub>b</sub>+r<sub>be</sub>)/(1+β)]，
+      通常最小，所以 C<sub>e</sub> 往往决定 f<sub>L</sub>；</li>
+  <li><strong>上限频率</strong>：由 C<sub>π</sub>（经密勒等效后还包括 C<sub>μ</sub>）与基极回路的等效电阻决定。
+      最粗略的估算直接取 R ≈ r<sub>be</sub>；</li>
+  <li><strong>特征频率 f<sub>T</sub></strong>：β 下降到 1 时对应的频率，是晶体管的高频指标。
+      选高频管时看 f<sub>T</sub>，一般要求 f<sub>T</sub> ≫ f<sub>H</sub>。</li>
+</ul>
+
+<h3>高频等效电路（简化）</h3>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 240" role="img" aria-label="单级共射高频简化等效电路：Cπ 与 rbe 并联分流，受控源驱动输出电阻">
+    <title>单级共射放大电路的高频简化等效电路</title>
+    <text x="260" y="34" text-anchor="middle" class="lbl">C_π 与输入并联，频率越高容抗越小</text>
+    <text x="260" y="56" text-anchor="middle" class="lbl">→ 基极电流被分流 → 增益下降</text>
+
+    <line class="wire" x1="40" y1="200" x2="480" y2="200"/>
+    <circle cx="55" cy="160" r="18" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M47,160 q4,-9 8,0 q4,9 8,0" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+    <line class="wire" x1="55" y1="142" x2="55" y2="105"/>
+    <line class="wire" x1="55" y1="178" x2="55" y2="200"/>
+    <text x="36" y="132" class="lbl">u_s</text>
+
+    <rect class="area" x="75" y="87" width="60" height="36" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="105" y="79" text-anchor="middle" class="lbl">R_s</text>
+    <line class="wire" x1="55" y1="105" x2="75" y2="105"/>
+    <line class="wire" x1="135" y1="105" x2="175" y2="105"/>
+    <circle class="dot" cx="175" cy="105" r="4"/>
+    <circle class="dot" cx="240" cy="105" r="4"/>
+
+    <line class="wire" x1="175" y1="105" x2="175" y2="120"/>
+    <rect class="area" x="163" y="120" width="24" height="50" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="175" y1="170" x2="175" y2="200"/>
+    <text x="152" y="150" text-anchor="end" class="lbl">r_be</text>
+
+    <line class="wire" x1="175" y1="105" x2="240" y2="105"/>
+    <line class="wire" x1="240" y1="105" x2="240" y2="130"/>
+    <line class="wire thin" x1="228" y1="130" x2="252" y2="130"/>
+    <line class="wire thin" x1="228" y1="138" x2="252" y2="138"/>
+    <line class="wire" x1="240" y1="138" x2="240" y2="200"/>
+    <text x="258" y="140" class="lbl">C_π</text>
+
+    <line class="wire" x1="330" y1="105" x2="330" y2="135"/>
+    <circle cx="330" cy="155" r="20" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="322" y1="164" x2="338" y2="146"/>
+    <polygon points="338,146 330,150 334,158" fill="#1a1a1a"/>
+    <line class="wire" x1="330" y1="175" x2="330" y2="200"/>
+    <text x="352" y="160" class="lbl">g_m u_be</text>
+
+    <line class="wire" x1="330" y1="105" x2="420" y2="105"/>
+    <circle class="dot" cx="420" cy="105" r="4"/>
+    <line class="wire" x1="420" y1="105" x2="420" y2="120"/>
+    <rect class="area" x="408" y="120" width="24" height="50" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="420" y1="170" x2="420" y2="200"/>
+    <text x="438" y="150" class="lbl">R_c'</text>
+    <line class="wire" x1="420" y1="105" x2="470" y2="105"/>
+    <text x="476" y="100" class="lbl">u_o</text>
+    <text x="205" y="96" class="lbl">u_be</text>
+  </svg>
+</div>
+
+<p><strong>数值感受</strong>：取 C = 1 μF、R = 1 kΩ，则</p>
+<div class="math">
+  f_L ≈ 1/(2π × 1 kΩ × 1 μF) ≈ 159 Hz
+</div>
+<p>取 C<sub>π</sub> = 100 pF、r<sub>be</sub> = 1 kΩ，则</p>
+<div class="math">
+  f_H ≈ 1/(2π × 1 kΩ × 100 pF) ≈ 1.59 MHz
+</div>
+<p>
+  于是 BW ≈ 1.59 MHz − 159 Hz ≈ 1.59 MHz——下限频率比上限小了四个数量级，
+  所以工程上常直接写 BW ≈ f<sub>H</sub>。
+</p>
+
+<h2>四、增益带宽积与多级通频带</h2>
+
+<h3>1. 增益带宽积 GBW</h3>
+
+<p>
+  对单级共射电路，中频增益与上限频率的乘积近似是一个<strong>常数</strong>：
+</p>
+
+<div class="math">
+  GBW = |A_um| · BW ≈ |A_um| · f_H ≈ 常数
+</div>
+
+<p>
+  这个常数由晶体管本身的参数（g<sub>m</sub>、C<sub>π</sub>）决定，与外部电阻基本无关。
+  它的工程含义很直接：<strong>想提高增益，就得牺牲带宽；想拓宽带宽，就得牺牲增益。</strong>
+  这条“守恒律”后面会被负反馈（0016）反复使用。
+</p>
+
+<h3>2. 多级级联：带宽只会更窄</h3>
+
+<p>
+  上一课已经给出结论：n 级相同的单极点放大器级联，上限频率按下列系数收缩：
+</p>
+
+<div class="math">
+  f_H' ≈ f_H · √(2<sup>1/n</sup> − 1)
+</div>
+
+<table>
+  <tr><th>级数 n</th><th>系数</th><th>若单级 f_H = 1 MHz</th><th>若单级 f_H = 200 kHz</th></tr>
+  <tr><td>1</td><td>1.000</td><td>1.00 MHz</td><td>200 kHz</td></tr>
+  <tr><td>2</td><td>0.643</td><td>640 kHz</td><td>128 kHz</td></tr>
+  <tr><td>3</td><td>0.510</td><td>510 kHz</td><td>102 kHz</td></tr>
+  <tr><td>4</td><td>0.435</td><td>435 kHz</td><td>87 kHz</td></tr>
+</table>
+
+<p>
+  下限频率则朝相反方向移动：f<sub>L</sub>' ≈ f<sub>L</sub> / √(2<sup>1/n</sup> − 1)，
+  也就是<strong>升高</strong>。两头一起挤，通频带自然变窄。
+</p>
+
+<h3>例题：单级与两级的带宽对比</h3>
+
+<p>
+  某单级共射电路：A<sub>um</sub> = −100，f<sub>L</sub> = 160 Hz，f<sub>H</sub> = 1.6 MHz。
+  求单级的 BW 和 GBW；若用两级完全相同的电路级联，求总增益、上限频率和带宽。
+</p>
+
+<p><strong>第 1 步：单级带宽</strong></p>
+<div class="math">
+  BW ≈ f_H − f_L = 1.6 MHz − 0.00016 MHz ≈ 1.6 MHz
+</div>
+
+<p><strong>第 2 步：单级增益带宽积</strong></p>
+<div class="math">
+  GBW = |A_um| · BW = 100 × 1.6 MHz = 160 MHz
+</div>
+
+<p><strong>第 3 步：两级级联</strong></p>
+<div class="math">
+  A_u = (−100) × (−100) = 10⁴（同相）<br>
+  f_H' ≈ 0.643 × 1.6 MHz ≈ 1.03 MHz<br>
+  BW' ≈ 1.03 MHz，比单级窄了约 36%
+</div>
+
+<p><strong>第 4 步：结论</strong></p>
+<p>
+  增益从 100 涨到 10⁴（100 倍），带宽却只从 1.6 MHz 缩到 1.03 MHz。
+  看似“赚了”，但注意每一级都在消耗自己的 GBW：
+  级联后的总 GBW 不再是常数，不能靠无限加级来同时获得高增益和宽带宽。
+  真正能“拿增益换带宽”的可控手段是负反馈。
+</p>
+
+<h3>速查：频率响应核心公式</h3>
+
+<table>
+  <tr><th>量</th><th>公式 / 结论</th><th>备注</th></tr>
+  <tr><td>下限频率</td><td>f<sub>L</sub> ≈ 1/(2πRC)</td><td>R 为电容所在回路等效电阻</td></tr>
+  <tr><td>上限频率</td><td>f<sub>H</sub> ≈ 1/(2πRC<sub>π</sub>)</td><td>粗略取 R ≈ r<sub>be</sub></td></tr>
+  <tr><td>通频带</td><td>BW = f<sub>H</sub> − f<sub>L</sub> ≈ f<sub>H</sub></td><td>f<sub>H</sub> ≫ f<sub>L</sub></td></tr>
+  <tr><td>−3 dB 点</td><td>|A<sub>u</sub>| = 0.707|A<sub>um</sub>|</td><td>即 20lg 下降 3 dB</td></tr>
+  <tr><td>斜率</td><td>低频 +20 dB/十倍频，高频 −20 dB/十倍频</td><td>单级、单极点</td></tr>
+  <tr><td>增益带宽积</td><td>GBW = |A<sub>um</sub>|·BW ≈ 常数</td><td>单级近似成立</td></tr>
+  <tr><td>n 级上限频率</td><td>f<sub>H</sub>' = f<sub>H</sub>√(2<sup>1/n</sup>−1)</td><td>两级系数 0.64</td></tr>
+</table>
+
+<h2>五、Quiz — 考研风格题</h2>
+
+<div class="quiz" id="quiz-container"></div>
+
+<div class="footer-nav">
+  <a href="./0013-differential-amplifier.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0014 / 0020</span>
+  <a href="./0015-feedback-basics.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "单级阻容耦合共射放大电路，在低频段电压增益随频率降低而下降，主要原因是？",
+    options: [
+      "耦合电容和旁路电容的容抗变大，信号在电容上产生明显分压损失",
+      "晶体管的结电容 C_π 容抗变小，把基极电流分流了",
+      "晶体管的 β 随频率降低而减小",
+      "负载电阻随频率降低而变小"
+    ],
+    correct: 0,
+    explain: "低频段的关键是耦合电容（C1、C2）与旁路电容 Ce：f 降低 → 1/(2πfC) 变大 → 不能再视为短路，信号在电容上分压损失，Ce 旁路不彻底还会增强交流负反馈。结电容 C_π 的容抗在低频时反而很大，可以视为开路，它是高频段增益下降的原因，方向不能搞反。"
+  },
+  {
+    q: "某单级共射放大电路中频增益为 40 dB，高频侧以 −20 dB/十倍频下降。当频率等于 10 倍上限频率（f = 10 f_H）时，增益约为？",
+    options: [
+      "20 dB",
+      "37 dB",
+      "0 dB",
+      "30 dB"
+    ],
+    correct: 0,
+    explain: "单级一阶系统在 f > f_H 后按 −20 dB/十倍频下降：频率从 f_H 增到 10 f_H 正好是一个十倍频，增益下降 20 dB。中频 40 dB → 40 − 20 = 20 dB。注意 f = f_H 处只下降 3 dB（37 dB），那是上限频率的定义点，不要和十倍频外推混淆。"
+  },
+  {
+    q: "单级放大电路的上限频率 f_H = 200 kHz，两级相同的电路级联后，上限频率和通频带的变化是？",
+    options: [
+      "f_H' ≈ 128 kHz，通频带变窄",
+      "f_H' ≈ 400 kHz，通频带变宽",
+      "f_H' = 200 kHz，通频带不变",
+      "f_H' ≈ 102 kHz，通频带变窄"
+    ],
+    correct: 0,
+    explain: "两级时系数 √(2^(1/2) − 1) = √(1.414 − 1) = √0.414 ≈ 0.643，f_H' ≈ 0.64 × 200 kHz = 128 kHz。102 kHz 是三级（系数 0.51）的结果，400 kHz 是把级联当成并联的错误。级联后下限频率还会升高，两头一起挤，通频带必然变窄。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！三个频段、波特图斜率和级联带宽都清楚了。' :
+        right >= 2 ? '👍 不错！重点回看低频/高频各自的“罪魁电容”。' :
+        '📚 建议重画一遍幅频特性，标清 f_L、f_H 和 −3 dB 点。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

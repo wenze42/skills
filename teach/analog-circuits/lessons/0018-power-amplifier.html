@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0018 — 功率放大电路</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0018 — 功率放大电路</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0018 / 0020 · 约 40 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  需要 <a href="./0003-diode-and-circuits.html">Lesson 0003（二极管与恒压降模型）</a>、
+  <a href="./0005-bjt-characteristics-and-regions.html">Lesson 0005（BJT 输出特性与截止/饱和）</a>、
+  <a href="./0013-differential-amplifier.html">Lesson 0013（互补对称的思想）</a>。
+  这一课是整门课里唯一处理<strong>大信号</strong>的地方。
+</div>
+
+<h2>一、功放的任务：从"放大电压"到"输出功率"</h2>
+
+<p>
+  前面十六课，我们一直在做小信号放大：输入 10 mV，输出 1 V，电流只有毫安级，
+  讨论的是增益、频响、失真系数。但扬声器要的是<strong>瓦特</strong>，不是伏特。
+</p>
+
+<p>
+  功率放大电路（Power Amplifier）的任务是：<strong>在负载上输出足够大的功率</strong>，
+  即同时给出足够大的电压摆幅和电流摆幅。8 Ω 扬声器要 10 W，意味着
+  U_o ≈ 9 V、I_o ≈ 1.1 A，这已经和前面"微安级基极电流"完全不是一个量级了。
+</p>
+
+<table>
+  <tr><th>对比项</th><th>小信号放大电路</th><th>功率放大电路</th></tr>
+  <tr><td>信号幅度</td><td>微小，可用小信号模型线性化</td><td>大，接近电源电压，必须用图解法</td></tr>
+  <tr><td>分析方法</td><td>微变等效电路、h 参数</td><td>大信号图解、负载线</td></tr>
+  <tr><td>核心指标</td><td>增益、带宽、输入输出电阻</td><td><strong>输出功率、效率、管耗</strong></td></tr>
+  <tr><td>主要矛盾</td><td>失真与带宽</td><td>效率与散热（管子会不会烧）</td></tr>
+  <tr><td>工作状态</td><td>甲类（始终导通）</td><td>乙类、甲乙类为主</td></tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">效率的定义</span>
+  <code>η = P_o / P_V</code>，其中 P_o 是负载上得到的有功功率（交流功率），
+  P_V 是<strong>直流电源提供的功率</strong>。两者的差额全部变成管子和电阻上的热量。
+  效率低的直接后果是：管子烫、散热器大、电池撑不住。
+</div>
+
+<h2>二、四种工作状态：导通角决定一切</h2>
+
+<p>
+  "工作状态"说的是<strong>一个信号周期内管子导通多长时间</strong>，
+  用<strong>导通角</strong>表示（一个完整周期 = 360°）。静态工作点 Q 的位置直接决定导通角。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 210" role="img">
+    <title>甲类、乙类、甲乙类三种工作状态的静态工作点位置对比</title>
+    <text x="30" y="30" class="lbl">甲类（Q 居中）</text>
+    <line class="wire thin" x1="30" y1="160" x2="160" y2="160"/>
+    <line class="wire thin" x1="40" y1="160" x2="40" y2="55"/>
+    <path class="wire" d="M40,158 L70,155 L82,134 L150,60"/>
+    <circle class="dot" cx="112" cy="96" r="4"/>
+    <line class="wire thin ideal" x1="112" y1="96" x2="112" y2="160"/>
+    <line class="wire thin ideal" x1="40" y1="96" x2="112" y2="96"/>
+    <text x="30" y="188" class="lbl">导通角 360°　η ≤ 50%</text>
+
+    <text x="200" y="30" class="lbl">乙类（Q 在截止点）</text>
+    <line class="wire thin" x1="200" y1="160" x2="330" y2="160"/>
+    <line class="wire thin" x1="210" y1="160" x2="210" y2="55"/>
+    <path class="wire" d="M210,158 L245,155 L257,134 L325,60"/>
+    <circle class="dot" cx="212" cy="158" r="4"/>
+    <text x="200" y="188" class="lbl">导通角 180°　η ≤ 78.5%</text>
+
+    <text x="370" y="30" class="lbl">甲乙类（Q 微导通）</text>
+    <line class="wire thin" x1="370" y1="160" x2="500" y2="160"/>
+    <line class="wire thin" x1="380" y1="160" x2="380" y2="55"/>
+    <path class="wire" d="M380,158 L415,155 L427,134 L495,60"/>
+    <circle class="dot" cx="420" cy="151" r="4"/>
+    <text x="370" y="188" class="lbl">导通角 180°~360°　η 约 60%</text>
+    <text x="30" y="206" class="lbl">（丙类导通角小于 180°，只用于射频谐振功放，本课不展开）</text>
+  </svg>
+</div>
+
+<table>
+  <tr><th>工作状态</th><th>Q 点位置</th><th>导通角</th><th>最高理论效率</th><th>特点</th></tr>
+  <tr><td><strong>甲类</strong></td><td>放大区中部</td><td>360°</td><td>50%</td><td>无交越失真，但静态也费电，效率极低</td></tr>
+  <tr><td><strong>乙类</strong></td><td>刚好在截止点</td><td>180°</td><td>78.5%</td><td>效率高，但存在交越失真</td></tr>
+  <tr><td><strong>甲乙类</strong></td><td>截止点略上方</td><td>180°~360°</td><td>介于两者，约 60%~70%</td><td>兼顾效率与失真，<strong>实际电路主流</strong></td></tr>
+  <tr><td><strong>丙类</strong></td><td>远低于截止点</td><td>小于 180°</td><td>可达 80% 以上</td><td>失真极大，只能配谐振负载用于射频</td></tr>
+</table>
+
+<h2>三、乙类 OCL 互补对称电路</h2>
+
+<p>
+  乙类效率高，但单个管子只能放大半个周期。解决办法是<strong>互补</strong>：
+  一个 NPN 管负责正半周，一个 PNP 管负责负半周，两者交替导通，拼出完整正弦波。
+  OCL（Output Capacitor Less）指双电源供电、输出端<strong>不需要隔直电容</strong>。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 400" role="img">
+    <title>乙类双电源互补对称 OCL 电路：NPN 管放大正半周，PNP 管放大负半周</title>
+    <line class="wire" x1="130" y1="40" x2="320" y2="40"/>
+    <text x="150" y="32" class="lbl">+V_CC</text>
+
+    <circle cx="200" cy="118" r="28" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="176" y1="100" x2="176" y2="136"/>
+    <line class="wire" x1="150" y1="118" x2="176" y2="118"/>
+    <line class="wire" x1="176" y1="106" x2="212" y2="82"/>
+    <line class="wire" x1="212" y1="82" x2="212" y2="40"/>
+    <line class="wire" x1="176" y1="130" x2="212" y2="154"/>
+    <polygon points="204,150 214,146 210,158" fill="#1a1a1a"/>
+    <line class="wire" x1="212" y1="154" x2="212" y2="190"/>
+    <text x="238" y="100" class="lbl">T1　NPN</text>
+
+    <circle cx="200" cy="258" r="28" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="176" y1="240" x2="176" y2="276"/>
+    <line class="wire" x1="150" y1="258" x2="176" y2="258"/>
+    <line class="wire" x1="176" y1="246" x2="212" y2="222"/>
+    <polygon points="198,224 210,220 206,232" fill="#1a1a1a"/>
+    <line class="wire" x1="212" y1="222" x2="212" y2="190"/>
+    <line class="wire" x1="176" y1="270" x2="212" y2="294"/>
+    <line class="wire" x1="212" y1="294" x2="212" y2="336"/>
+    <text x="238" y="286" class="lbl">T2　PNP</text>
+
+    <line class="wire" x1="130" y1="336" x2="320" y2="336"/>
+    <text x="150" y="332" class="lbl">−V_CC</text>
+
+    <circle cx="60" cy="190" r="22" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M49,190 q6,-11 11,0 q6,11 11,0" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+    <text x="60" y="232" text-anchor="middle" class="lbl">u_i</text>
+    <line class="wire" x1="60" y1="168" x2="60" y2="118"/>
+    <line class="wire" x1="60" y1="118" x2="150" y2="118"/>
+    <line class="wire" x1="60" y1="212" x2="60" y2="258"/>
+    <line class="wire" x1="60" y1="258" x2="150" y2="258"/>
+
+    <circle class="dot" cx="212" cy="190" r="4"/>
+    <line class="wire" x1="212" y1="190" x2="384" y2="190"/>
+    <rect class="area" x="384" y="196" width="32" height="64" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="424" y="232" class="lbl">R_L</text>
+    <line class="wire" x1="400" y1="260" x2="400" y2="286"/>
+    <line class="wire" x1="378" y1="286" x2="422" y2="286"/>
+    <line class="wire" x1="387" y1="295" x2="413" y2="295"/>
+    <line class="wire" x1="395" y1="304" x2="405" y2="304"/>
+    <text x="440" y="300" class="lbl">GND</text>
+    <text x="300" y="182" class="lbl">u_o</text>
+  </svg>
+</div>
+
+<h3>工作过程</h3>
+<ol>
+  <li><strong>正半周</strong>（u_i 为正）：T1（NPN）正偏导通，T2 截止。
+      电流路径 <code>+V_CC → T1 → R_L → GND</code>，输出正半周。</li>
+  <li><strong>负半周</strong>（u_i 为负）：T2（PNP）正偏导通，T1 截止。
+      电流路径 <code>GND → R_L → T2 → −V_CC</code>，输出负半周。</li>
+  <li><strong>两管各导通 180°</strong>，在负载上合成完整正弦波。
+      因为是两管轮流供电，电源电流是"半波整流"形状，不是恒定直流。</li>
+</ol>
+
+<h3>交越失真：乙类的原罪</h3>
+
+<p>
+  BJT 有约 0.7 V 的导通门槛。当输入信号在零附近（|u_i| 小于约 0.5~0.7 V）时，
+  <strong>两个管子都截止</strong>，输出为零——波形在过零点被"掐"出了一个台阶。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 270" role="img">
+    <title>乙类功放的输入正弦与输出波形对比，过零点附近出现交越失真台阶</title>
+    <line class="wire thin" x1="40" y1="140" x2="480" y2="140"/>
+    <line class="wire thin" x1="40" y1="140" x2="40" y2="40"/>
+    <text x="24" y="46" class="lbl" text-anchor="end">u</text>
+
+    <path class="wire thin" d="M55,140 C95,140 105,80 150,70 C195,80 205,140 245,140 C285,140 295,200 340,210 C385,200 395,140 435,140" stroke="var(--text-light)"/>
+    <path class="wire" d="M55,140 C95,140 105,80 150,70 C195,80 215,140 225,140 L265,140 C275,140 295,200 340,210 C385,200 405,140 415,140 L435,140" stroke="var(--accent)"/>
+
+    <line class="wire thin ideal" x1="245" y1="140" x2="245" y2="182"/>
+    <text x="252" y="198" class="lbl">死区：|u_i| 小于 U_D，两管都截止</text>
+    <text x="60" y="66" class="lbl">u_i（细线）</text>
+    <text x="300" y="96" class="lbl">u_o（粗线，台阶）</text>
+  </svg>
+</div>
+
+<h3>甲乙类偏置：消除交越失真</h3>
+
+<p>
+  只要让两个管子<strong>静态时就有微小电流</strong>（微导通），过零点就不会有死区，
+  导通角略微超过 180°，这就成了甲乙类。实现方法是在两管基极之间加一个
+  <strong>恒压偏置</strong>，产生约 1.2~1.4 V 的电压（两个 U_BE 之和）：
+</p>
+
+<ul>
+  <li><strong>二极管偏置</strong>：两个二极管串联（或一个二极管 + 电阻）接在两基极之间，
+      利用二极管的正向压降提供约 1.4 V 的固定偏压；</li>
+  <li><strong>恒压源偏置</strong>：用 U_BE 扩大电路（三极管 + 两只电阻）产生可调的恒压，
+      工程上更常用，因为可以精确调节偏置量。</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">注意</span>
+  加了偏置后工作状态严格来说是"甲乙类"，不是"乙类"。
+  考研题里说"乙类互补对称电路"时，一般都按乙类（无偏置）计算效率和功率；
+  题目一旦提到"消除交越失真"，就是在考甲乙类的偏置方法。
+</div>
+
+<h2>四、输出功率、效率与管耗</h2>
+
+<p>
+  设输出电压幅值为 U_om、负载为 R_L，忽略管子饱和压降和偏置损耗。
+  先记四个式子，再理解它们从哪来。
+</p>
+
+<div class="math">
+  输出功率：P_o = U_om² / (2R_L)　（有效值 U_om/√2 的平方除以 R_L）<br>
+  最大输出：U_om = V_CC → P_om = V_CC² / (2R_L)<br>
+  电源功率：P_V = 2V_CC · U_om / (π R_L)<br>
+  效率：η = P_o / P_V = (π/4) · (U_om / V_CC)
+</div>
+
+<p>
+  电源功率为什么带 π？因为每个管子只导通半个周期，电源电流是半波整流的形状，
+  其<strong>平均值</strong>是峰值除以 π。两个电源各供半个周期，合计
+  <code>2V_CC · I_o(av)</code>，其中 <code>I_o(av) = U_om/(πR_L)</code>。
+</p>
+
+<p>
+  当 <code>U_om = V_CC</code>（输出摆满）时效率取最大值：
+</p>
+
+<div class="math">
+  η_max = π/4 = 78.5%（乙类理论极限）
+</div>
+
+<h3>单管管耗：为什么是 0.2 P_om</h3>
+
+<p>
+  总管耗 = 电源功率 − 输出功率，两只管子平分，所以单管管耗：
+</p>
+
+<div class="math">
+  P_T = (P_V − P_o)/2 = V_CC·U_om/(πR_L) − U_om²/(4R_L)
+</div>
+
+<p>
+  对 U_om 求导并令其为零，得到最大管耗出现在
+  <code>U_om = 2V_CC/π ≈ 0.636 V_CC</code>，此时：
+</p>
+
+<div class="math">
+  P_Tmax = V_CC² / (π² R_L) ≈ 0.2 P_om
+</div>
+
+<div class="tip">
+  <span class="tip-label">这里有个反直觉的点</span>
+  最大管耗<strong>不出现在满输出时</strong>，而是出现在输出约为最大值的 64% 时。
+  因为满输出时效率最高，大部分功率都给了负载；
+  输出小时电源功率却仍有相当一部分消耗在管子上。
+  所以选管时不能只按"满输出减负载功率"来算，必须用 0.2P_om。
+</div>
+
+<h2>五、选管原则（三看）</h2>
+
+<table>
+  <tr><th>参数</th><th>要求</th><th>为什么</th></tr>
+  <tr>
+    <td>集电极最大允许功耗 P_CM</td>
+    <td>P_CM ≥ 0.2 P_om</td>
+    <td>单管在最坏情况下要耗散 0.2P_om，且还要留散热余量</td>
+  </tr>
+  <tr>
+    <td>集电极-发射极击穿电压 |U_(BR)CEO|</td>
+    <td>|U_(BR)CEO| ≥ 2V_CC</td>
+    <td>一管饱和导通时，另一管承受的电压接近 2V_CC</td>
+  </tr>
+  <tr>
+    <td>集电极最大电流 I_CM</td>
+    <td>I_CM ≥ V_CC / R_L</td>
+    <td>满输出时峰值电流就是 V_CC/R_L</td>
+  </tr>
+</table>
+
+<h2>六、OTL 单电源电路</h2>
+
+<p>
+  OCL 要双电源，电池供电的设备（收音机、小音箱）做不到。改用单电源时，
+  在输出端串一个<strong>大电容 C</strong>：
+</p>
+
+<ul>
+  <li>C 隔断直流，静态时输出端电位被充到 <code>V_CC/2</code>；</li>
+  <li>负半周时 C 相当于一个"临时负电源"，向 PNP 管供电；</li>
+  <li>因此最大输出电压幅值只有 <code>V_CC/2</code>，不是 V_CC。</li>
+</ul>
+
+<div class="math">
+  OTL 最大输出：U_om = V_CC/2　→　P_om = (V_CC/2)²/(2R_L) = V_CC²/(8R_L)
+</div>
+
+<p>
+  效率公式不变（最大值仍是 78.5%），因为 η 只取决于 U_om 与供电电压之比。
+  但同样的电源电压下，OTL 的输出功率只有 OCL 的<strong>四分之一</strong>，
+  这是单电源方案必须付出的代价。
+</p>
+
+<div class="tip">
+  <span class="tip-label">输出电容要多大</span>
+  C 与 R_L 构成高通，必须让最低工作频率（如 50 Hz）也能顺利通过：
+  <code>C ≥ 1/(2π f_L R_L)</code>。8 Ω、50 Hz 时 C 约需 400 μF，实际取 1000 μF 以上。
+</div>
+
+<h2>七、考研例题（带完整步骤）</h2>
+
+<p>
+  乙类 OCL 互补对称功放，<code>V_CC = ±15 V</code>，<code>R_L = 8 Ω</code>，
+  忽略管子饱和压降。求：
+(1) 最大输出功率 P_om；(2) 此时效率与单管最大管耗；(3) 选管要求；
+(4) 若实际输出幅值 U_om = 10 V，求 P_o、P_V、η 与单管管耗。
+</p>
+
+<p><strong>解</strong></p>
+<ol>
+  <li><strong>最大输出功率</strong>：U_om = V_CC = 15 V<br>
+      P_om = V_CC²/(2R_L) = 225/(2×8) = <strong>14.1 W</strong></li>
+  <li><strong>效率</strong>：满输出时 η = η_max = <strong>78.5%</strong><br>
+      <strong>单管最大管耗</strong>：P_Tmax ≈ 0.2 P_om = 0.2 × 14.1 = <strong>2.82 W</strong></li>
+  <li><strong>选管</strong>：<br>
+      P_CM ≥ 2.82 W；|U_(BR)CEO| ≥ 2V_CC = 30 V；I_CM ≥ V_CC/R_L = 15/8 = 1.88 A</li>
+  <li><strong>U_om = 10 V 时</strong>：<br>
+      P_o = 10²/(2×8) = <strong>6.25 W</strong><br>
+      P_V = 2×15×10/(π×8) = 300/25.13 = <strong>11.9 W</strong><br>
+      η = 6.25/11.9 = <strong>52.4%</strong><br>
+      P_T = (11.9 − 6.25)/2 = <strong>2.83 W</strong>
+      （恰好接近 0.2P_om，因为 10 V ≈ 0.64×15 V，正是管耗峰值附近 ✅）</li>
+</ol>
+
+<h2>八、速查表</h2>
+
+<table>
+  <tr><th>项目</th><th>乙类 OCL（双电源）</th><th>OTL（单电源）</th></tr>
+  <tr><td>最大输出幅值 U_om</td><td>V_CC</td><td>V_CC/2</td></tr>
+  <tr><td>最大输出功率 P_om</td><td>V_CC²/(2R_L)</td><td>V_CC²/(8R_L)</td></tr>
+  <tr><td>电源功率 P_V</td><td>2V_CC·U_om/(πR_L)</td><td>V_CC·U_om/(πR_L)</td></tr>
+  <tr><td>效率</td><td>η = (π/4)(U_om/V_CC)</td><td>η = (π/4)(2U_om/V_CC)</td></tr>
+  <tr><td>最高效率</td><td>78.5%</td><td>78.5%</td></tr>
+  <tr><td>单管最大管耗</td><td>≈ 0.2 P_om</td><td>≈ 0.2 P_om</td></tr>
+  <tr><td>单管耐压要求</td><td>≥ 2V_CC</td><td>≥ V_CC</td></tr>
+  <tr><td>单管电流要求</td><td>≥ V_CC/R_L</td><td>≥ V_CC/(2R_L)</td></tr>
+</table>
+
+<h2>九、Quiz — 考研风格题</h2>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>功放的核心矛盾是效率</strong>：η = P_o/P_V，甲类最高 50%，乙类 78.5%。</li>
+  <li><strong>乙类靠互补对称拼出完整波形</strong>：正半周 NPN，负半周 PNP，各导通 180°。</li>
+  <li><strong>交越失真来自 0.7 V 门槛</strong>，用甲乙类恒压偏置（二极管/恒压源）消除。</li>
+  <li><strong>三个数要背死</strong>：P_om = V_CC²/(2R_L)、η_max = 78.5%、P_Tmax ≈ 0.2P_om。</li>
+  <li><strong>选管三看</strong>：P_CM ≥ 0.2P_om、|U_(BR)CEO| ≥ 2V_CC、I_CM ≥ V_CC/R_L。</li>
+</ol>
+
+<p>
+  下一课（<strong>Lesson 0019</strong>）进入整个模电的"集大成者"——<strong>集成运算放大器</strong>。
+  它把差分输入级、高增益中间级、互补输出级全部集成在一颗芯片里，
+  而它的分析方式只需要三条理想化假设。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第七章（功率放大电路）。
+  OCL/OTL 的功率与管耗推导见 §7.2~7.3，选管原则见章末小结。
+</div>
+
+<div class="ask-agent">
+  "最大管耗为什么不在满输出时出现"还是想不通？想看 P_T 求导的完整过程？<br>
+  <strong>直接问我</strong>——这个反直觉结论值得掰开讲一遍。
+</div>
+
+<div class="footer-nav">
+  <a href="./0017-deep-negative-feedback-and-stability.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0018 / 0020</span>
+  <a href="./0019-opamp-basics.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "乙类 OCL 互补对称功放，V_CC = ±12 V，R_L = 8 Ω，忽略饱和压降。最大输出功率 P_om 为？",
+    options: [
+      "P_om = 9 W",
+      "P_om = 18 W",
+      "P_om = 4.5 W",
+      "P_om = 36 W"
+    ],
+    correct: 0,
+    explain: "P_om = V_CC²/(2R_L) = 144/(2×8) = 144/16 = 9 W。注意分母是 2R_L，因为功率要用有效值 U_om/√2 计算：(U_om/√2)²/R_L = U_om²/(2R_L)。若算成 V_CC²/R_L = 18 W 就错了，那是峰值功率不是平均功率。"
+  },
+  {
+    q: "乙类互补对称功放产生交越失真的原因是？如何消除？",
+    options: [
+      "管子饱和压降太大，应提高电源电压",
+      "BJT 存在约 0.7 V 的导通门槛，过零点两管都截止；应改为甲乙类，加恒压偏置",
+      "负载电阻太小，应增大 R_L",
+      "电源内阻太大，应加滤波电容"
+    ],
+    correct: 1,
+    explain: "乙类电路的静态工作点恰在截止点，输入信号在零附近（绝对值小于约 0.7 V）时两管都不导通，输出为零，波形在过零点出现台阶即为交越失真。解决办法是给两管基极之间加约 1.4 V 的恒压偏置（两只二极管串联或 U_BE 扩大电路），使静态时两管微导通，工作状态变为甲乙类，死区消失。"
+  },
+  {
+    q: "上述乙类 OCL 功放（V_CC = ±15 V，R_L = 8 Ω），选管时对集电极-发射极击穿电压和最大电流的要求是？",
+    options: [
+      "|U_(BR)CEO| ≥ 15 V，I_CM ≥ 0.94 A",
+      "|U_(BR)CEO| ≥ 30 V，I_CM ≥ 1.88 A",
+      "|U_(BR)CEO| ≥ 15 V，I_CM ≥ 1.88 A",
+      "|U_(BR)CEO| ≥ 30 V，I_CM ≥ 0.94 A"
+    ],
+    correct: 1,
+    explain: "耐压取 2V_CC：当一个管子饱和导通时，输出端接近 +V_CC，另一个截止的管子集电极接 −V_CC，其承受的电压接近 2V_CC = 30 V。电流取 V_CC/R_L：满输出时负载峰值电流为 15/8 = 1.88 A。两者都要按最坏情况并留裕量。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！功放的功率、效率、管耗已经算得清清楚楚。' :
+        right >= 2 ? '👍 大体没问题，把三个核心公式再默写一遍。' :
+        '📚 建议重看第四、五节，尤其 P_Tmax 与选管三看。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0005 — 三极管的特性曲线与三种工作状态</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0005 — 特性曲线与三种工作状态</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0005 / 0020 · 约 40 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  <a href="./0004-bjt-structure-and-principle.html">Lesson 0004</a> 的结构、载流子传输与
+  I<sub>E</sub> = I<sub>B</sub> + I<sub>C</sub>、β = I<sub>C</sub>/I<sub>B</sub> 必须熟练。
+  这一课把三极管当成一个"黑盒"，只用两族曲线描述它的外部行为——这是后面所有直流、交流分析的字典。
+</div>
+
+<h2>一、输入特性曲线：发射结的"借尸还魂"</h2>
+
+<p>
+  输入特性描述的是：<strong>固定 U<sub>CE</sub>，基极电流 I<sub>B</sub> 随基射电压 U<sub>BE</sub> 怎么变</strong>。
+  因为基极—发射极之间就是一个正向偏置的 PN 结，所以这条曲线的形状你在 0003 课的二极管伏安特性里已经见过：
+  0.5 V 以前几乎是零，0.5 V 之后开始抬头，0.7 V 之后斜率陡得吓人。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 285" role="img" aria-label="NPN 三极管输入特性曲线：U_CE 为 0 与大于 1V 两条曲线">
+    <title>输入特性：I_B 随 U_BE 变化，U_CE 增大时曲线略微右移</title>
+    <line class="wire thin" x1="70" y1="230" x2="470" y2="230"/>
+    <polygon points="470,224 470,236 484,230" fill="#1a1a1a"/>
+    <line class="wire thin" x1="70" y1="230" x2="70" y2="46"/>
+    <polygon points="64,46 76,46 70,32" fill="#1a1a1a"/>
+    <text x="478" y="256" text-anchor="end" class="lbl">U_BE / V</text>
+    <text x="56" y="54" text-anchor="end" class="lbl">I_B</text>
+    <text x="62" y="250" class="lbl">0</text>
+
+    <line class="wire thin" x1="378" y1="230" x2="378" y2="236"/>
+    <text x="378" y="252" text-anchor="middle" class="lbl">0.7</text>
+
+    <line class="wire thin" x1="90" y1="62" x2="126" y2="62" stroke="var(--accent)"/>
+    <text x="134" y="68" class="lbl">U_CE ≥ 1 V</text>
+    <line class="wire thin" x1="90" y1="88" x2="126" y2="88" stroke="var(--accent)" stroke-dasharray="6 4"/>
+    <text x="134" y="94" class="lbl">U_CE = 0</text>
+
+    <path class="wire" d="M70,230 L250,229 C285,228 315,224 335,214 C355,202 362,150 366,60" stroke="var(--accent)"/>
+    <path class="wire ideal" d="M70,230 L262,229 C297,228 327,224 347,214 C367,202 374,150 378,60" stroke="var(--accent)"/>
+
+    <text x="270" y="276" text-anchor="middle" class="lbl">硅管：0.5 V 开始导通，0.7 V 后急剧上升</text>
+  </svg>
+</div>
+
+<p>
+  两条曲线的差别很小：<strong>U<sub>CE</sub> 从 0 增大时，曲线略微右移</strong>。
+  原因是 U<sub>CE</sub> 变大后集电结耗尽层变宽、基区有效宽度变窄，复合减少，
+  同样的 U<sub>BE</sub> 下 I<sub>B</sub> 略小一点。考研只在概念题里考这一句，不会让你算。
+</p>
+
+<div class="tip">
+  <span class="tip-label">这条曲线真正给你的东西</span>
+  放大状态下 U<sub>BE</sub> ≈ 0.7 V（硅），且几乎不随 I<sub>B</sub> 变。
+  所以第 0006 课算静态工作点时，可以直接写 I<sub>BQ</sub> = (V<sub>CC</sub> − 0.7 V) / R<sub>b</sub>，
+  把发射结当成一个 0.7 V 的恒压源——这正是 0003 课"恒压降模型"的复用。
+</div>
+
+<h2>二、输出特性曲线族：三个区一图看完</h2>
+
+<p>
+  输出特性描述的是：<strong>以 I<sub>B</sub> 为参变量，I<sub>C</sub> 随 U<sub>CE</sub> 怎么变</strong>。
+  每给定一个 I<sub>B</sub> 就有一条曲线，一族曲线画在一起，就把三极管的所有工作状态装进了一张图。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 350" role="img" aria-label="NPN 三极管输出特性曲线族，标出截止区、放大区、饱和区">
+    <title>输出特性曲线族：饱和区、放大区、截止区，以及饱和压降 U_CES</title>
+    <line class="wire thin" x1="70" y1="290" x2="472" y2="290"/>
+    <polygon points="472,284 472,296 486,290" fill="#1a1a1a"/>
+    <line class="wire thin" x1="70" y1="290" x2="70" y2="48"/>
+    <polygon points="64,48 76,48 70,34" fill="#1a1a1a"/>
+    <text x="480" y="314" text-anchor="end" class="lbl">U_CE / V</text>
+    <text x="56" y="56" text-anchor="end" class="lbl">I_C</text>
+    <text x="62" y="310" class="lbl">0</text>
+
+    <path class="wire thin" d="M70,290 C74,280 80,266 86,258 C90,253 94,251 100,250 L470,250" stroke="var(--accent)"/>
+    <path class="wire thin" d="M70,290 C74,276 80,250 86,232 C90,222 94,217 100,215 L470,215" stroke="var(--accent)"/>
+    <path class="wire thin" d="M70,290 C74,272 80,232 86,205 C90,190 94,182 100,180 L470,180" stroke="var(--accent)"/>
+    <path class="wire thin" d="M70,290 C74,268 80,214 86,178 C90,158 94,148 100,145 L470,145" stroke="var(--accent)"/>
+    <text x="466" y="242" text-anchor="end" class="lbl">I_B = 20 μA</text>
+    <text x="466" y="207" text-anchor="end" class="lbl">I_B = 40 μA</text>
+    <text x="466" y="172" text-anchor="end" class="lbl">I_B = 60 μA</text>
+    <text x="466" y="137" text-anchor="end" class="lbl">I_B = 80 μA</text>
+
+    <path class="wire thin ideal" d="M70,290 L104,290"/>
+    <line class="wire thin" x1="104" y1="290" x2="104" y2="70" stroke="var(--accent)" stroke-dasharray="5 4"/>
+    <line class="wire thin" x1="104" y1="290" x2="104" y2="300"/>
+    <text x="104" y="62" text-anchor="middle" class="lbl">饱和区</text>
+    <text x="330" y="105" text-anchor="middle" class="lbl">放大区</text>
+    <text x="430" y="278" text-anchor="end" class="lbl">截止区</text>
+    <text x="114" y="318" text-anchor="start" class="lbl">U_CES ≈ 0.3 V</text>
+  </svg>
+</div>
+
+<h3>2.1 放大区（中间那一大片平坦区）</h3>
+<p>
+  曲线近似水平，I<sub>C</sub> 几乎只由 I<sub>B</sub> 决定：<strong>I<sub>C</sub> ≈ β I<sub>B</sub></strong>，与 U<sub>CE</sub> 基本无关。
+  偏置条件：<strong>发射结正偏，集电结反偏</strong>。
+  原因是集电结反偏足够强，能把到达基区边缘的载流子全部"扫"走；U<sub>CE</sub> 再增大也收不到更多载流子，
+  所以 I<sub>C</sub> 不变。这正是放大电路必须待在这个区的原因。
+</p>
+
+<h3>2.2 饱和区（左边那一竖条）</h3>
+<p>
+  U<sub>CE</sub> 很小（低于临界值）时，集电结的正向偏置削弱了收集能力，I<sub>C</sub> 不再受 I<sub>B</sub> 控制，
+  增大 I<sub>B</sub> 也换不来更大的 I<sub>C</sub>，β 在这一区<strong>失效</strong>。
+  偏置条件：<strong>发射结正偏，集电结也正偏</strong>（基极电位高于集电极）。
+  工程上把深度饱和时 C-E 之间的压降记作<strong>饱和压降 U<sub>CES</sub> ≈ 0.3 V</strong>（硅管），
+  它相当于一个闭合的开关，这也是三极管能做开关电路的依据。
+</p>
+
+<p>
+  两个边界要分清：<strong>临界饱和</strong>发生在 U<sub>CB</sub> = 0，即 U<sub>CE</sub> = U<sub>BE</sub> ≈ 0.7 V；
+  而<strong>深度饱和</strong>才是 U<sub>CE</sub> = U<sub>CES</sub> ≈ 0.3 V。做题时若题目给了 0.3 V，就用 0.3 V 判断。
+</p>
+
+<h3>2.3 截止区（贴着横轴的那一条）</h3>
+<p>
+  I<sub>B</sub> ≤ 0，I<sub>C</sub> ≈ I<sub>CEO</sub> ≈ 0（只有 pA~nA 级的漏电流）。
+  偏置条件：<strong>发射结反偏（或零偏），集电结反偏</strong>。
+  此时 C-E 之间近似断路，U<sub>CE</sub> ≈ V<sub>CC</sub>，相当于一个断开的开关。
+</p>
+
+<h2>三、怎么判断工作状态（考频最高的一节）</h2>
+
+<p>
+  所有判断都归结为一句话：<strong>看两个结各自是正偏还是反偏</strong>。先给判据表，再给电位速判法。
+</p>
+
+<table>
+  <tr>
+    <th>发射结</th><th>集电结</th><th>工作状态</th><th>电流关系</th><th>典型 U<sub>CE</sub></th>
+  </tr>
+  <tr>
+    <td>正偏</td><td>反偏</td><td><strong>放大区</strong></td>
+    <td>I<sub>C</sub> = β I<sub>B</sub></td><td>0.3 V ~ V<sub>CC</sub></td>
+  </tr>
+  <tr>
+    <td>正偏</td><td>正偏</td><td><strong>饱和区</strong></td>
+    <td>I<sub>C</sub> &lt; β I<sub>B</sub>，由外电路决定</td><td>≈ U<sub>CES</sub> ≈ 0.3 V</td>
+  </tr>
+  <tr>
+    <td>反偏</td><td>反偏</td><td><strong>截止区</strong></td>
+    <td>I<sub>B</sub> ≈ 0，I<sub>C</sub> ≈ 0</td><td>≈ V<sub>CC</sub></td>
+  </tr>
+  <tr>
+    <td>反偏</td><td>正偏</td><td>倒置（反向放大）</td>
+    <td>β 极小，无实用价值</td><td>—</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">NPN 电位速判法（三步）</span>
+  <ol>
+    <li>算 U<sub>BE</sub>：≈ 0.7 V（硅）→ 发射结正偏；&lt; 0.5 V 或为负 → 发射结反偏 → 直接判<strong>截止</strong>。</li>
+    <li>比较 U<sub>B</sub> 与 U<sub>C</sub>：U<sub>C</sub> &gt; U<sub>B</sub> → 集电结反偏 → <strong>放大</strong>；
+        U<sub>C</sub> &lt; U<sub>B</sub> → 集电结正偏 → <strong>饱和</strong>。</li>
+    <li>交叉检验：放大区 U<sub>CE</sub> 一般大于 0.7 V；若算出 U<sub>CE</sub> 只有 0.2~0.3 V，那一定是饱和。</li>
+  </ol>
+  注意：PNP 管把上面所有不等号取反，U<sub>EB</sub> ≈ 0.7 V 为发射结正偏。
+</div>
+
+<h3>3.1 例题 1：判断工作状态</h3>
+<p>
+  某 NPN 硅管，三个电极对地电位为 U<sub>B</sub> = 3 V，U<sub>C</sub> = 3.2 V，U<sub>E</sub> = 2.3 V。判断工作状态。
+</p>
+<ol>
+  <li>U<sub>BE</sub> = 3 − 2.3 = 0.7 V → 发射结<strong>正偏</strong>，不可能是截止。</li>
+  <li>U<sub>C</sub> = 3.2 V &gt; U<sub>B</sub> = 3 V → 集电结<strong>反偏</strong>。</li>
+  <li>两结"正偏 + 反偏" → <strong>放大区</strong>。此时 U<sub>CE</sub> = 3.2 − 2.3 = 0.9 V &gt; 0.7 V，与结论自洽 ✅</li>
+</ol>
+
+<h3>3.2 例题 2：把集电极电位降下来会怎样</h3>
+<p>
+  同一只管子，若测得 U<sub>B</sub> = 3 V，U<sub>C</sub> = 2.5 V，U<sub>E</sub> = 2.3 V，又是什么状态？
+</p>
+<ol>
+  <li>U<sub>BE</sub> = 0.7 V → 发射结正偏。</li>
+  <li>U<sub>C</sub> = 2.5 V &lt; U<sub>B</sub> = 3 V → 集电结<strong>正偏</strong>。</li>
+  <li>两结都正偏 → <strong>饱和区</strong>；U<sub>CE</sub> = 2.5 − 2.3 = 0.2 V，接近 U<sub>CES</sub>，属于深度饱和。</li>
+</ol>
+<p>
+  这个对比告诉你：<strong>U<sub>CE</sub> 小到 0.3 V 附近就是饱和</strong>，不是"电压小所以不工作"。
+  饱和时管子像一个闭合的开关，I<sub>C</sub> 由外电路的 R<sub>c</sub> 和 V<sub>CC</sub> 决定，而不是由 βI<sub>B</sub> 决定。
+</p>
+
+<h2>四、极限参数与温度：管子的"红线"</h2>
+
+<h3>4.1 三个极限参数</h3>
+<ul>
+  <li>
+    <strong>P<sub>CM</sub>（最大集电极耗散功率）</strong>：管子工作时 C-E 之间消耗的功率
+    P<sub>C</sub> = I<sub>C</sub> · U<sub>CE</sub> 会变成热。要求 P<sub>C</sub> ≤ P<sub>CM</sub>，否则结温过高而烧毁。
+    在输出特性上，I<sub>C</sub> = P<sub>CM</sub> / U<sub>CE</sub> 是一条双曲线，超出即"过损耗"。
+  </li>
+  <li>
+    <strong>I<sub>CM</sub>（最大集电极电流）</strong>：超过后 β 明显下降、曲线族挤在一起，放大能力变差。
+  </li>
+  <li>
+    <strong>U<sub>(BR)CEO</sub>（基极开路时的 C-E 击穿电压）</strong>：超过会击穿。
+    注意基极开路时的击穿电压比基极接电阻时更低，这是"基极悬空很危险"的原因。
+  </li>
+</ul>
+
+<h3>4.2 温度对三极管的三条影响</h3>
+<table>
+  <tr><th>参数</th><th>随温度变化</th><th>典型数量级</th><th>后果</th></tr>
+  <tr>
+    <td>β</td><td>升高而<strong>增大</strong></td><td>每升高 1 ℃ 约增大 0.5% ~ 1%</td>
+    <td>同样 I<sub>B</sub> 下 I<sub>C</sub> 更大，Q 点上移</td>
+  </tr>
+  <tr>
+    <td>U<sub>BE</sub></td><td>升高而<strong>减小</strong></td><td>约 −2 ~ −2.5 mV/℃</td>
+    <td>固定偏置下 I<sub>B</sub> 增大，I<sub>C</sub> 增大</td>
+  </tr>
+  <tr>
+    <td>I<sub>CBO</sub></td><td>升高而<strong>增大</strong></td><td>每升 10 ℃ 约翻一倍</td>
+    <td>漏电流抬高 I<sub>C</sub>，高温下更明显</td>
+  </tr>
+</table>
+
+<p>
+  三条合起来是同一个结论：<strong>温度升高 → I<sub>C</sub> 增大 → 静态工作点上移 → 更容易进入饱和</strong>。
+  这就是 0006 课固定偏置电路"不可靠"、0008 课必须学分压式偏置的根本原因。
+</p>
+
+<h3>4.3 例题 3：极限参数计算</h3>
+<p>
+  某管 P<sub>CM</sub> = 150 mW，I<sub>CM</sub> = 30 mA，U<sub>(BR)CEO</sub> = 30 V。
+  问：(1) U<sub>CE</sub> = 15 V 时允许的最大 I<sub>C</sub>；(2) 若要求 I<sub>C</sub> = 20 mA，U<sub>CE</sub> 的上限是多少？
+</p>
+<ol>
+  <li>由 P<sub>C</sub> = I<sub>C</sub>U<sub>CE</sub> ≤ P<sub>CM</sub>：
+      I<sub>C</sub> ≤ 150 mW / 15 V = <strong>10 mA</strong>。</li>
+  <li>U<sub>CE</sub> ≤ 150 mW / 20 mA = <strong>7.5 V</strong>。同时 20 mA &lt; I<sub>CM</sub> = 30 mA，电流本身不超限。</li>
+  <li>结论：I<sub>C</sub> 与 U<sub>CE</sub> 不能"同时取大"，它们的乘积被 P<sub>CM</sub> 封顶。</li>
+</ol>
+
+<h2>五、速查表</h2>
+
+<table>
+  <tr><th>项目</th><th>结论 / 公式</th><th>备注</th></tr>
+  <tr>
+    <td>输入特性</td><td>I<sub>B</sub> 随 U<sub>BE</sub> 指数上升，0.7 V 后陡峭</td>
+    <td>本质是发射结的正向伏安特性</td>
+  </tr>
+  <tr>
+    <td>放大判据</td><td>发射结正偏 + 集电结反偏</td>
+    <td>NPN：U<sub>C</sub> &gt; U<sub>B</sub> &gt; U<sub>E</sub></td>
+  </tr>
+  <tr>
+    <td>饱和判据</td><td>两个结都正偏，U<sub>CE</sub> ≈ U<sub>CES</sub> ≈ 0.3 V</td>
+    <td>β 失效，I<sub>C</sub> 由外电路决定</td>
+  </tr>
+  <tr>
+    <td>截止判据</td><td>发射结反偏/零偏，I<sub>B</sub> ≈ 0，I<sub>C</sub> ≈ 0</td>
+    <td>U<sub>CE</sub> ≈ V<sub>CC</sub></td>
+  </tr>
+  <tr>
+    <td>放大区电流</td><td>I<sub>C</sub> ≈ β I<sub>B</sub>，与 U<sub>CE</sub> 基本无关</td>
+    <td>曲线水平段</td>
+  </tr>
+  <tr>
+    <td>耗散功率</td><td>P<sub>C</sub> = I<sub>C</sub> U<sub>CE</sub> ≤ P<sub>CM</sub></td>
+    <td>边界为双曲线</td>
+  </tr>
+  <tr>
+    <td>β 的温度系数</td><td>正（每 ℃ 约 +0.5% ~ +1%）</td>
+    <td>升温使 Q 点上移</td>
+  </tr>
+  <tr>
+    <td>U<sub>BE</sub> 的温度系数</td><td>负（约 −2 ~ −2.5 mV/℃）</td>
+    <td>与 β 变化同向推高 I<sub>C</sub></td>
+  </tr>
+</table>
+
+<h3>自测：3 道考研风格题</h3>
+
+<div class="quiz" id="quiz-container"></div>
+
+<div class="footer-nav">
+  <a href="./0004-bjt-structure-and-principle.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0005 / 0020</span>
+  <a href="./0006-dc-analysis-and-q-point.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "某 NPN 硅管测得 U_BE = 0.7 V，U_CE = 0.2 V。它工作在？",
+    options: [
+      "放大区",
+      "饱和区",
+      "截止区",
+      "无法判断，需要知道 β"
+    ],
+    correct: 1,
+    explain: "U_BE = 0.7 V 说明发射结正偏；U_CE = 0.2 V 小于 U_BE，即 U_C < U_B，集电结正偏。两结都正偏 → 饱和区，U_CE = 0.2 V 已接近 U_CES ≈ 0.3 V，属于深度饱和。此状态下 I_C 由外电路决定，不由 βI_B 决定。"
+  },
+  {
+    q: "某管在放大区时，I_B 由 20 μA 增到 40 μA，I_C 由 1 mA 增到 2 mA。继续把 I_B 增到 80 μA，I_C 却只到 2.2 mA。原因是？",
+    options: [
+      "β 随 I_B 增大而减小，属于正常现象",
+      "管子进入饱和区，集电结正偏，I_C 受外电路限制",
+      "管子进入截止区",
+      "温度升高导致 β 下降"
+    ],
+    correct: 1,
+    explain: "前一段 I_C 与 I_B 成正比，β = 50，说明在放大区。I_B 继续增大后 I_C 不再按 β 增长，说明 U_CE 已经降到 U_CES 附近，进入饱和区——此时集电结正偏，收集能力受限，I_C ≈ V_CC/R_c 由外电路决定。β 随 I_B 增大确实会略有下降，但不会从 50 掉到 27 这么剧烈，核心原因是饱和。"
+  },
+  {
+    q: "某管 P_CM = 100 mW，I_CM = 20 mA。当 U_CE = 20 V 时，允许的最大 I_C 是多少？",
+    options: [
+      "5 mA",
+      "10 mA",
+      "20 mA",
+      "100 mA"
+    ],
+    correct: 0,
+    explain: "由 P_C = I_C·U_CE ≤ P_CM 得 I_C ≤ 100 mW / 20 V = 5 mA。虽然 I_CM = 20 mA 更大，但功耗限制更严格，取两者中更小的那个。这就是「极限参数要同时满足」的含义。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！三个区的判据已经刻进脑子了，可以进直流分析了。' :
+        right >= 2 ? '👍 不错。建议把"电位速判三步法"再默写一遍。' :
+        '📚 回看第三节的判据表和两道例题，重点练 U_C 与 U_B 的比较。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0017 — 深度负反馈与稳定性</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0017 — 深度负反馈与稳定性</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0017 / 0020 · 约 40 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  需要 <a href="./0015-feedback-basics.html">Lesson 0015（四种组态）</a> 和
+  <a href="./0016-negative-feedback-effects.html">Lesson 0016（1+AF 的作用）</a>，
+  以及 <a href="./0014-frequency-response.html">Lesson 0014（频率响应）</a> 里
+  "每级最多贡献 −90° 附加相移"这条结论——本课的稳定性分析完全建立在它上面。
+</div>
+
+<h2>一、深度负反馈：当 1+AF 大到可以忽略 1</h2>
+
+<p>
+  A_f = A/(1+AF) 里，如果 AF 是 1000，那么分母 1001 里的那个 1 几乎没意义。
+  工程上只要 <code>AF ≥ 10</code>，就可以放心近似：
+</p>
+
+<div class="math">
+  条件：|1 + AF| ≫ 1（工程上取 AF ≥ 10）<br>
+  结论：A_f = A/(1+AF) ≈ A/(AF) = 1/F
+</div>
+
+<p>
+  这一步替换的意义极大，值得单独强调：
+</p>
+
+<ul>
+  <li><strong>闭环增益只由反馈网络决定</strong>，与晶体管参数、A 的大小、温度统统无关；</li>
+  <li>F 通常由两三个<strong>无源电阻</strong>分压实现，精度可以做到千分之几；</li>
+  <li>于是"用一堆离散性极大的管子，做出一个极精确的增益"——这正是运放能成为通用器件的根本原因。</li>
+</ul>
+
+<table>
+  <tr><th>组态</th><th>闭环增益的物理含义</th><th>量纲</th><th>深度负反馈下的表达式</th></tr>
+  <tr><td>电压串联</td><td>A_uf = U_o / U_i</td><td>V/V</td><td>≈ 1/F（F = U_f/U_o）</td></tr>
+  <tr><td>电压并联</td><td>A_rf = U_o / I_i（跨阻）</td><td>V/A = Ω</td><td>≈ 1/F（F = I_f/U_o，S）</td></tr>
+  <tr><td>电流串联</td><td>A_gf = I_o / U_i（跨导）</td><td>A/V = S</td><td>≈ 1/F（F = U_f/I_o，Ω）</td></tr>
+  <tr><td>电流并联</td><td>A_if = I_o / I_i</td><td>A/A</td><td>≈ 1/F（F = I_f/I_o）</td></tr>
+</table>
+
+<h2>二、用"虚短 / 虚断"口算深度负反馈电路</h2>
+
+<p>
+  深度负反馈下，净输入量被压到几乎为零。把这句物理事实翻译成数学，就得到两条口算规则：
+</p>
+
+<div class="math">
+  串联负反馈：U_id = U_i − U_f ≈ 0　→　<strong>U_i ≈ U_f</strong>（输入端"虚短"）<br>
+  并联负反馈：I_id = I_i − I_f ≈ 0　→　<strong>I_i ≈ I_f</strong>（输入端"虚断"）
+</div>
+
+<div class="tip">
+  <span class="tip-label">别和运放的虚短混为一谈</span>
+  这里的"虚短"是指<strong>整个放大电路的输入端口</strong>上，净输入电压近似为零，
+  原因是反馈把差值补掉了；不是运放内部两个输入端之间的性质。
+  0019 讲的运放虚短，是 A_od → ∞ 的直接后果。两者形式相同，来源不同，考试时按题目语境区分。
+</div>
+
+<h3>四步口算法</h3>
+
+<div class="tip">
+  <span class="tip-label">标准流程</span>
+  <ol>
+    <li><strong>判组态</strong>：输入端是串联还是并联 → 决定用 U_i ≈ U_f 还是 I_i ≈ I_f。</li>
+    <li><strong>写 F</strong>：沿反馈网络，把反馈量表示成输出量的函数，得到 F。</li>
+    <li><strong>代近似</strong>：把第 1 步的关系代入第 2 步，消掉中间变量。</li>
+    <li><strong>得 A_f</strong>：整理出 输出/输入，与 1/F 对照验证。</li>
+  </ol>
+</div>
+
+<h3>例题：电压串联负反馈</h3>
+
+<p>
+  某放大电路引入电压串联负反馈，反馈网络由 <code>R₁ = 1 kΩ</code> 与
+  <code>R₂ = 9 kΩ</code> 串联分压构成，反馈电压取自 R₁ 两端。开环增益 A = 10⁵。
+  求闭环电压增益 A_uf，并说明近似误差。
+</p>
+
+<p><strong>解</strong></p>
+<ol>
+  <li><strong>判组态</strong>：反馈电压与输入电压串联相减 → 串联负反馈 → 用 U_i ≈ U_f。</li>
+  <li><strong>写 F</strong>：U_f 是 U_o 在 R₁ 上的分压，
+      <code>U_f = R₁/(R₁+R₂) · U_o = 1/10 · U_o</code>，故 <strong>F = 0.1</strong>。</li>
+  <li><strong>验深度</strong>：AF = 10⁵ × 0.1 = 10⁴，1+AF = 10001，远比 1 大 → 深度负反馈成立。</li>
+  <li><strong>得结果</strong>：
+      A_uf ≈ 1/F = <strong>10</strong>。
+      用虚短验证：U_i = U_f = 0.1 U_o → U_o/U_i = 10 ✅</li>
+  <li><strong>误差</strong>：精确值 A_uf = 10⁵/10001 = 9.999，与 10 的相对误差约 0.01%，
+      完全可以忽略。注意增益被砍了一万倍，换取的是"增益只由两个电阻决定"。</li>
+</ol>
+
+<h2>三、环路增益 AF 到底是什么</h2>
+
+<p>
+  把反馈环在任意一点断开，注入一个测试信号，让它绕一圈回来，得到的比值就是 AF。
+  它是一个<strong>复数</strong>，同时携带幅度信息和相位信息：
+</p>
+
+<div class="math">
+  A F = |AF| · e^(jφ)，　φ = φ_A + φ_F
+</div>
+
+<ul>
+  <li><strong>中频段</strong>：φ_A = −180°（反相放大），φ_F = 0°（纯电阻反馈网络），
+      合计 φ = −180°，即 ±(2n+1)π → <strong>负反馈成立</strong>；</li>
+  <li><strong>高频段</strong>：A 里的晶体管极间电容、负载电容引入附加相移，
+      φ_A 从 −180° 继续往 −270°、−360° 走；</li>
+  <li>一旦 φ 走到 −360°（= 0°，等效于 0 或 2nπ），反馈的性质就<strong>翻转为正反馈</strong>。</li>
+</ul>
+
+<h2>四、自激振荡：负反馈的"翻脸"</h2>
+
+<p>
+  如果翻成正反馈的同时幅度条件也满足，电路就自己振荡起来——输入端什么都不接，
+  输出端却有持续的正弦波。这就是<strong>自激振荡</strong>。
+</p>
+
+<div class="math">
+  自激条件（起振）：|AF| &gt; 1　且　φ_A + φ_F = ±(2n+1)π<br>
+  自激条件（维持）：|AF| = 1　且　φ_A + φ_F = ±(2n+1)π
+</div>
+
+<div class="tip">
+  <span class="tip-label">为什么是 ±(2n+1)π 而不是 2nπ</span>
+  因为中频时 A 本身已经反相（贡献 −180°），负反馈靠的就是这 180° 的反相。
+  要把它抵消成同相（360° 等效 0°），附加相移必须再补 180°，即总相移 360° 的奇数倍。
+  记法：<strong>负反馈要自激，附加相移得凑够 180°</strong>。
+</div>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 340" role="img">
+    <title>环路增益的幅频与相频曲线：相移达到负 180 度时环路增益仍大于 0 dB，故自激</title>
+    <line class="wire thin" x1="45" y1="35" x2="45" y2="170"/>
+    <line class="wire thin" x1="45" y1="170" x2="480" y2="170"/>
+    <polygon points="39,35 51,35 45,24" fill="#1a1a1a"/>
+    <polygon points="480,164 480,176 491,170" fill="#1a1a1a"/>
+    <text x="30" y="30" class="lbl" text-anchor="end">20lg|AF|</text>
+    <text x="486" y="188" class="lbl">lg f</text>
+
+    <line class="wire thin ideal" x1="45" y1="170" x2="480" y2="170"/>
+    <text x="18" y="176" class="lbl" text-anchor="end">0</text>
+
+    <path class="wire" d="M55,62 L120,62 L300,170 L420,232" stroke="var(--accent)"/>
+
+    <line class="wire thin" x1="45" y1="215" x2="45" y2="320"/>
+    <line class="wire thin" x1="45" y1="320" x2="480" y2="320"/>
+    <polygon points="39,215 51,215 45,204" fill="#1a1a1a"/>
+    <polygon points="480,314 480,326 491,320" fill="#1a1a1a"/>
+    <text x="30" y="211" class="lbl" text-anchor="end">φ</text>
+
+    <line class="wire thin ideal" x1="45" y1="262" x2="480" y2="262"/>
+    <text x="18" y="268" class="lbl" text-anchor="end">−180°</text>
+
+    <path class="wire" d="M55,222 L120,226 L200,250 L245,262 L310,290 L420,308" stroke="var(--accent)"/>
+
+    <circle class="dot" cx="245" cy="262" r="4"/>
+    <circle class="dot" cx="300" cy="170" r="4"/>
+    <line class="wire thin ideal" x1="245" y1="262" x2="245" y2="170"/>
+    <text x="252" y="152" class="lbl">φ = −180° 时 |AF| 仍大于 0 dB</text>
+    <text x="252" y="136" class="lbl">→ 满足自激条件</text>
+    <text x="306" y="196" class="lbl">f_c（|AF| = 1）</text>
+  </svg>
+</div>
+
+<p>
+  读图方法就一句话：<strong>先看相频曲线在哪降到 −180°，再看那一刻幅频曲线是否还在 0 dB 以上。</strong>
+  在 0 dB 以上 → 自激；在 0 dB 以下 → 稳定。
+</p>
+
+<h3>自激的物理原因</h3>
+
+<ul>
+  <li>晶体管极间电容 C_bc（密勒电容）、C_be，以及负载电容，构成多个极点；</li>
+  <li>每过一个极点，附加相移再累加最多 −90°；三级以上就足以累加到 −180°；</li>
+  <li>反馈深度越大（AF 越大），幅频曲线整体上抬，越容易在相移 180° 处仍高于 0 dB；</li>
+  <li>所以<strong>反馈越深，越容易自激</strong>——这是一条重要的工程取舍。</li>
+</ul>
+
+<h2>五、稳定裕度：留多少余量才安全</h2>
+
+<div class="math">
+  相位裕度 γ = 180° − |φ(f_c)|，其中 f_c 是 |AF| = 1 的频率<br>
+  增益裕度 G_m = −20lg|AF(f_180°)|，其中 f_180° 是 φ = −180° 的频率
+</div>
+
+<table>
+  <tr><th>裕度</th><th>在哪一点测量</th><th>稳定条件</th><th>工程要求</th></tr>
+  <tr>
+    <td>相位裕度 γ</td>
+    <td>|AF| = 1 的穿越频率 f_c</td>
+    <td>γ &gt; 0°（即 |φ| &lt; 180°）</td>
+    <td>γ ≥ 45°，通常取 45°~60°</td>
+  </tr>
+  <tr>
+    <td>增益裕度 G_m</td>
+    <td>φ = −180° 的频率 f_180°</td>
+    <td>G_m &gt; 0 dB（即 |AF| &lt; 1）</td>
+    <td>G_m ≥ 10 dB</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">应试要点</span>
+  题目给出"|AF| = 1 时附加相移为 −135°"，答案就是 γ = 180° − 135° = <strong>45°</strong>，
+  结论"稳定，但裕度偏低"。给出的若是 −180° 或更大，则 γ ≤ 0，电路自激。
+</div>
+
+<h2>六、相位补偿：把不稳定的电路救回来</h2>
+
+<p>
+  思路只有一条：<strong>让 |AF| 在相移爬到 −180° 之前就降到 1</strong>。
+  最简单的做法是人为压低第一个极点，使幅频曲线更早开始以 −20 dB/dec 下降。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" viewBox="0 0 520 290" role="img">
+    <title>补偿前后环路增益幅频曲线对比：主极点左移后穿越频率降低，相位裕度增大</title>
+    <line class="wire thin" x1="45" y1="30" x2="45" y2="215"/>
+    <line class="wire thin" x1="45" y1="215" x2="480" y2="215"/>
+    <polygon points="39,30 51,30 45,19" fill="#1a1a1a"/>
+    <polygon points="480,209 480,221 491,215" fill="#1a1a1a"/>
+    <text x="30" y="26" class="lbl" text-anchor="end">20lg|AF|</text>
+    <text x="486" y="233" class="lbl">lg f</text>
+    <text x="22" y="221" class="lbl" text-anchor="end">0</text>
+
+    <path class="wire" d="M55,70 L200,70 L330,215 L430,262"/>
+    <path class="wire ideal" d="M55,70 L95,70 L245,215 L430,262"/>
+    <text x="204" y="60" class="lbl">补偿前：−40 dB/dec</text>
+    <text x="204" y="88" class="lbl">穿越点偏高，γ 不足</text>
+    <text x="60" y="120" class="lbl">补偿后：−20 dB/dec</text>
+    <circle class="dot" cx="245" cy="215" r="4"/>
+    <circle class="dot" cx="330" cy="215" r="4"/>
+    <line class="wire thin ideal" x1="245" y1="215" x2="245" y2="250"/>
+    <line class="wire thin ideal" x1="330" y1="215" x2="330" y2="250"/>
+    <text x="180" y="272" class="lbl">f_c 左移 → γ 变大</text>
+    <text x="60" y="196" class="lbl">主极点被压低</text>
+  </svg>
+</div>
+
+<h3>两种常见补偿方式</h3>
+
+<table>
+  <tr><th>方式</th><th>做法</th><th>效果与代价</th></tr>
+  <tr>
+    <td><strong>简单电容补偿</strong><br>（主极点补偿）</td>
+    <td>在产生最高极点的那一级（通常是中间级）并接一个小电容 C</td>
+    <td>主极点频率降到 1/(2πRC)，幅频提前以 −20 dB/dec 下降；
+        带宽损失最大，但最简单、最可靠</td>
+  </tr>
+  <tr>
+    <td><strong>RC 补偿</strong><br>（滞后补偿）</td>
+    <td>电容串一个电阻 R 后接入，或做成滞后-超前网络</td>
+    <td>避免主极点压得过低，带宽损失较小；设计稍复杂</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">一句话总结</span>
+  稳定性是<strong>用带宽换来的</strong>。这和 0016 的"增益带宽积守恒"是同一件事的两面：
+  你想让闭环增益大、反馈深，就得接受带宽变窄；不肯让带宽，就得接受自激风险。
+</div>
+
+<h2>七、速查表</h2>
+
+<table>
+  <tr><th>概念</th><th>表达式 / 条件</th><th>结论</th></tr>
+  <tr><td>深度负反馈条件</td><td>|1+AF| ≫ 1（AF ≥ 10）</td><td>1 可忽略</td></tr>
+  <tr><td>闭环增益</td><td>A_f ≈ 1/F</td><td>只由反馈网络决定</td></tr>
+  <tr><td>串联负反馈口算</td><td>U_i ≈ U_f</td><td>输入端"虚短"</td></tr>
+  <tr><td>并联负反馈口算</td><td>I_i ≈ I_f</td><td>输入端"虚断"</td></tr>
+  <tr><td>环路增益</td><td>AF = |AF|·e^(jφ)，φ = φ_A + φ_F</td><td>复数，含幅度与相位</td></tr>
+  <tr><td>负反馈（中频）</td><td>φ_A + φ_F = ±(2n+1)π</td><td>反相相减</td></tr>
+  <tr><td>自激起振</td><td>|AF| &gt; 1 且 φ = ±(2n+1)π</td><td>无输入也有输出</td></tr>
+  <tr><td>自激维持</td><td>|AF| = 1 且 φ = ±(2n+1)π</td><td>等幅振荡</td></tr>
+  <tr><td>相位裕度</td><td>γ = 180° − |φ(f_c)|</td><td>γ ≥ 45° 合格</td></tr>
+  <tr><td>增益裕度</td><td>G_m = −20lg|AF(f_180°)|</td><td>G_m ≥ 10 dB 合格</td></tr>
+  <tr><td>补偿的本质</td><td>压低主极点，提前 −20 dB/dec</td><td>用带宽换稳定</td></tr>
+</table>
+
+<h2>八、Quiz — 考研风格题</h2>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>深度负反馈让增益"脱胎换骨"</strong>：A_f ≈ 1/F，增益只由电阻网络决定。</li>
+  <li><strong>虚短虚断是深度负反馈的口算工具</strong>：串联用 U_i ≈ U_f，并联用 I_i ≈ I_f。</li>
+  <li><strong>负反馈可能自激</strong>：高频附加相移把 −180° 补成 −360°，负反馈变正反馈；
+      判据是"φ = −180° 时 |AF| 是否还大于 1"。</li>
+  <li><strong>稳定性可以量化</strong>：相位裕度、增益裕度；不够就做相位补偿，代价是带宽。</li>
+</ol>
+
+<p>
+  下一课（<strong>Lesson 0018</strong>）换一个完全不同的场景：前 17 课我们处理的一直是
+  "小信号"，这一课要处理<strong>大信号</strong>——功率放大电路。
+  那里关心的不再是增益和失真系数，而是效率、管耗和"管子会不会烧掉"。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第六章 §6.6（负反馈放大电路的稳定性）。
+  深度负反馈的近似分析与自激判据，可对照康华光教材第六章习题。
+</div>
+
+<div class="ask-agent">
+  对"自激是负反馈变正反馈"这句话还是转不过来？想让我从波特图一步步带你判断一个具体电路？<br>
+  <strong>直接问我</strong>——稳定性判断是纯流程题，走一遍就会。
+</div>
+
+<div class="footer-nav">
+  <a href="./0016-negative-feedback-effects.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0017 / 0020</span>
+  <a href="./0018-power-amplifier.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "某放大电路满足深度负反馈条件，其闭环增益 A_f 主要取决于？",
+    options: [
+      "开环增益 A 的大小",
+      "晶体管的正向电流放大系数 β",
+      "反馈网络的反馈系数 F，即 A_f ≈ 1/F",
+      "电源电压的大小"
+    ],
+    correct: 2,
+    explain: "深度负反馈下 |1+AF| 远大于 1，A_f = A/(1+AF) ≈ A/(AF) = 1/F。反馈网络通常由无源电阻构成，精度高、温漂小，所以闭环增益的精度由电阻决定，与 A、β、电源电压基本无关。这正是负反馈最有价值的性质。"
+  },
+  {
+    q: "负反馈放大电路产生自激振荡的条件是？",
+    options: [
+      "|AF| = 1 且 φ_A + φ_F = ±2nπ",
+      "|AF| = 1 且 φ_A + φ_F = ±(2n+1)π",
+      "|AF| 大于 1 且 φ_A + φ_F = ±2nπ",
+      "|AF| 小于 1 且 φ_A + φ_F = ±(2n+1)π"
+    ],
+    correct: 1,
+    explain: "中频时 A 本身反相，靠 −180° 实现负反馈。高频附加相移再补 180° 后总相移变成 360° 的奇数倍，负反馈翻转为正反馈，此时若环路增益 |AF| 等于 1 就维持等幅振荡；起振需要 |AF| 大于 1，稳定后自动落到 |AF| = 1。"
+  },
+  {
+    q: "测得某反馈放大电路在 |AF| = 1 时的环路附加相移为 −135°，则相位裕度与结论是？",
+    options: [
+      "γ = 45°，电路稳定，但裕度偏低",
+      "γ = 135°，电路非常稳定",
+      "γ = −45°，电路已自激",
+      "γ = 45°，但电路仍会自激"
+    ],
+    correct: 0,
+    explain: "相位裕度 γ = 180° − |φ(f_c)| = 180° − 135° = 45°。γ 大于 0 说明在 |AF| = 1 的穿越点相移还没到 −180°，电路稳定。但 45° 只是工程下限（一般希望 45°~60°），裕度偏低，温度或器件离散性一变就可能振荡，应加相位补偿。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！深度负反馈与稳定性这块已经通了。' :
+        right >= 2 ? '👍 基本掌握，回看自激判据那一节。' :
+        '📚 建议重读第四、五节，把"先看相移再看增益"的判读流程走几遍。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

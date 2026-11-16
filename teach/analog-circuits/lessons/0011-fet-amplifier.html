@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0011 — 场效应管放大电路</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0011 — 场效应管放大电路</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0011 / 0020 · 约 40 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  必须掌握 <a href="./0010-fet-and-mosfet.html">Lesson 0010（JFET 与 MOSFET）</a> 的平方律
+  <code>I_D = I_DSS(1 − U_GS/U_P)²</code>、跨导 <code>g_m</code>，以及
+  <a href="./0007-common-emitter-amplifier.html">Lesson 0007（共射放大电路）</a> 的微变等效分析法。
+  这一课就是把「共射那一套」原封不动搬到 FET 上，只把 <code>β/r_be</code> 换成 <code>g_m</code>。
+</div>
+
+<p>
+  FET 是压控器件，栅极几乎不取电流。这带来一个 BJT 没有的便利：<strong>偏置电路可以做得极省事</strong>，
+  分压电阻可以取到几百 kΩ 甚至 MΩ，输入电阻随之水涨船高。但它也带来一个新问题：
+  FET 的参数离散性比 β 还大，I<sub>DSS</sub>、U<sub>P</sub> 同一型号不同批次能差一倍，
+  所以偏置电路必须能<strong>自动稳定 Q 点</strong>。这一课的主角——分压式自偏置共源电路——就是为此而生。
+</p>
+
+<h2>一、FET 放大电路怎么偏置</h2>
+
+<p>
+  偏置的目标和 BJT 完全一样：给管子一个合适的静态工作点，让它在<strong>恒流区</strong>，
+  并且 Q 点不随器件参数和温度乱跑。常见的三种方案：
+</p>
+
+<table>
+  <tr><th>方案</th><th>电路特征</th><th>U<sub>GS</sub> 怎么来</th><th>适用性</th></tr>
+  <tr>
+    <td>固定偏置</td>
+    <td>栅极经大电阻接电源，源极接地</td>
+    <td>U<sub>GS</sub> = 固定值</td>
+    <td>只适合增强型；Q 点对参数敏感，少用</td>
+  </tr>
+  <tr>
+    <td>自偏置</td>
+    <td>源极串 R<sub>s</sub>，栅极经 R<sub>g</sub> 接地</td>
+    <td>U<sub>GS</sub> = −I<sub>D</sub>R<sub>s</sub>（负值）</td>
+    <td>只适合 JFET / 耗尽型（需要负栅压）</td>
+  </tr>
+  <tr>
+    <td><strong>分压式自偏置</strong></td>
+    <td>R<sub>g1</sub>、R<sub>g2</sub> 分压 + 源极 R<sub>s</sub></td>
+    <td>U<sub>GS</sub> = U<sub>G</sub> − I<sub>D</sub>R<sub>s</sub></td>
+    <td>JFET、耗尽型、增强型都能用；考研主力</td>
+  </tr>
+</table>
+
+<p>
+  为什么分压式能稳定 Q 点？假设温度升高使 I<sub>D</sub> 增大，则 R<sub>s</sub> 上的压降增大，
+  U<sub>GS</sub> = U<sub>G</sub> − I<sub>D</sub>R<sub>s</sub> 变得更负，反过来把 I<sub>D</sub> 压回去。
+  这是<strong>直流负反馈</strong>，与 BJT 分压偏置中 R<sub>e</sub> 的作用相同。
+</p>
+
+<h2>二、分压式自偏置共源电路</h2>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="分压式自偏置共源放大电路：栅极分压偏置，源极电阻由电容旁路，漏极电阻取输出">
+    <text x="144" y="16" class="lbl">+Vdd</text>
+    <line class="wire" x1="180" y1="24" x2="420" y2="24"/>
+    <line class="wire" x1="180" y1="24" x2="180" y2="36"/>
+    <rect class="area" x="170" y="36" width="20" height="36" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="196" y="58" class="lbl">R_g1</text>
+    <line class="wire" x1="180" y1="72" x2="180" y2="112"/>
+    <circle class="dot" cx="180" cy="104" r="4"/>
+
+    <rect class="area" x="170" y="112" width="20" height="32" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="196" y="132" class="lbl">R_g2</text>
+    <line class="wire" x1="180" y1="144" x2="180" y2="156"/>
+    <line class="wire" x1="158" y1="156" x2="202" y2="156"/>
+    <line class="wire" x1="165" y1="163" x2="195" y2="163"/>
+    <line class="wire" x1="172" y1="170" x2="188" y2="170"/>
+
+    <text x="26" y="98" class="lbl">u_i</text>
+    <line class="wire" x1="56" y1="104" x2="94" y2="104"/>
+    <line class="wire" x1="94" y1="88" x2="94" y2="120"/>
+    <line class="wire" x1="106" y1="88" x2="106" y2="120"/>
+    <text x="100" y="80" text-anchor="middle" class="lbl">C1</text>
+    <line class="wire" x1="106" y1="104" x2="254" y2="104"/>
+
+    <line class="wire" x1="254" y1="82" x2="254" y2="122"/>
+    <line class="wire" x1="272" y1="78" x2="272" y2="126"/>
+    <line class="wire" x1="272" y1="82" x2="302" y2="82"/>
+    <line class="wire" x1="302" y1="70" x2="302" y2="82"/>
+    <rect class="area" x="292" y="38" width="20" height="32" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="318" y="58" class="lbl">R_d</text>
+    <line class="wire" x1="302" y1="24" x2="302" y2="38"/>
+
+    <line class="wire" x1="272" y1="126" x2="302" y2="126"/>
+    <line class="wire" x1="302" y1="126" x2="302" y2="138"/>
+    <rect class="area" x="292" y="138" width="20" height="26" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="318" y="154" class="lbl">R_s</text>
+    <line class="wire" x1="302" y1="164" x2="302" y2="174"/>
+
+    <circle class="dot" cx="302" cy="132" r="4"/>
+    <line class="wire" x1="302" y1="132" x2="348" y2="132"/>
+    <line class="wire" x1="348" y1="132" x2="348" y2="142"/>
+    <line class="wire" x1="334" y1="142" x2="362" y2="142"/>
+    <line class="wire" x1="334" y1="154" x2="362" y2="154"/>
+    <line class="wire" x1="348" y1="154" x2="348" y2="174"/>
+    <text x="366" y="152" class="lbl">C_s</text>
+    <line class="wire" x1="302" y1="174" x2="348" y2="174"/>
+    <line class="wire" x1="325" y1="174" x2="325" y2="180"/>
+    <line class="wire" x1="303" y1="180" x2="347" y2="180"/>
+    <line class="wire" x1="310" y1="187" x2="340" y2="187"/>
+    <line class="wire" x1="317" y1="194" x2="333" y2="194"/>
+
+    <circle class="dot" cx="302" cy="82" r="4"/>
+    <line class="wire" x1="302" y1="82" x2="386" y2="82"/>
+    <line class="wire" x1="386" y1="66" x2="386" y2="98"/>
+    <line class="wire" x1="398" y1="66" x2="398" y2="98"/>
+    <text x="392" y="58" text-anchor="middle" class="lbl">C2</text>
+    <line class="wire" x1="398" y1="82" x2="479" y2="82"/>
+    <circle cx="484" cy="82" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="454" y="70" class="lbl">u_o</text>
+    <text x="240" y="72" class="lbl">T</text>
+
+    <text x="24" y="210" class="lbl">分压式自偏置共源电路：R_s 由 C_s 交流旁路</text>
+  </svg>
+</div>
+
+<p>每个元件都有明确分工，别把它们记成一堆电阻：</p>
+<ul>
+  <li><strong>R<sub>g1</sub>、R<sub>g2</sub></strong>：分压固定栅极电位 U<sub>G</sub>；同时它们并联构成输入电阻（栅极不取电流，所以可以取得很大）。</li>
+  <li><strong>R<sub>d</sub></strong>：把漏极电流的变化转换成输出电压，决定电压增益；同时提供直流通路。</li>
+  <li><strong>R<sub>s</sub></strong>：产生 U<sub>GS</sub> 的自偏置电压，并提供直流负反馈稳定 Q 点。</li>
+  <li><strong>C<sub>s</sub></strong>：把 R<sub>s</sub> 在交流上短路，避免交流负反馈把增益压低。没有它，增益要除以 (1+g<sub>m</sub>R<sub>s</sub>)。</li>
+  <li><strong>C1、C2</strong>：耦合电容，隔直通交，把静态工作点和前后级隔开。</li>
+</ul>
+
+<h2>三、直流分析：联立转移特性求 Q</h2>
+
+<p>
+  求 Q 点只有四步，顺序不能乱：
+</p>
+
+<div class="tip">
+  <span class="tip-label">四步法</span>
+  <ol>
+    <li><strong>求 U<sub>G</sub></strong>：栅极不取电流，分压公式直接成立，<code>U_G = V_DD·R_g2/(R_g1+R_g2)</code>。</li>
+    <li><strong>写 U<sub>GS</sub></strong>：<code>U_GS = U_G − I_D·R_s</code>（源极电流就是 I<sub>D</sub>）。</li>
+    <li><strong>联立平方律</strong>：把 U<sub>GS</sub> 代入 <code>I_D = I_DSS(1 − U_GS/U_P)²</code>，解一元二次方程，按物理意义取舍。</li>
+    <li><strong>求 U<sub>DS</sub> 并校验</strong>：<code>U_DS = V_DD − I_D(R_d+R_s)</code>，必须满足 <code>U_DS &gt; U_GS − U_P</code>，否则不在恒流区。</li>
+  </ol>
+</div>
+
+<p>
+  来看一道完整例题。参数：V<sub>DD</sub> = 20 V，R<sub>g1</sub> = 1.8 MΩ，R<sub>g2</sub> = 200 kΩ，
+  R<sub>d</sub> = 5 kΩ，R<sub>s</sub> = 2 kΩ，R<sub>L</sub> = 5 kΩ，
+  I<sub>DSS</sub> = 8 mA，U<sub>P</sub> = −4 V。
+</p>
+
+<ol>
+  <li>U<sub>G</sub> = 20×200/(1800+200) = <strong>2 V</strong>。</li>
+  <li>U<sub>GS</sub> = 2 − 2I<sub>D</sub>（I<sub>D</sub> 用 mA，R<sub>s</sub> 用 kΩ，结果就是 V）。</li>
+  <li>代入平方律：
+    <div class="math">
+      I_D = 8(1 + U_GS/4)² = 8[1 + (2 − 2I_D)/4]² = (6 − 2I_D)² / 2
+    </div>
+    整理得 <code>2I_D² − 13I_D + 18 = 0</code>，即 <code>(2I_D − 9)(I_D − 2) = 0</code>，
+    两个根 I<sub>D</sub> = 4.5 mA 或 2 mA。
+  </li>
+  <li><strong>取舍</strong>：若 I<sub>D</sub> = 4.5 mA，则 U<sub>GS</sub> = 2 − 9 = −7 V &lt; U<sub>P</sub> = −4 V，
+      管子已夹断，不合物理。故 <strong>I<sub>D</sub> = 2 mA，U<sub>GS</sub> = −2 V</strong>。</li>
+  <li>U<sub>DS</sub> = 20 − 2×(5+2) = <strong>6 V</strong>；校验 6 V &gt; U<sub>GS</sub> − U<sub>P</sub> = 2 V ✅ 在恒流区。</li>
+</ol>
+
+<p>
+  解出 Q 点后，跨导立刻可得：
+</p>
+
+<div class="math">
+  g_m = 2√(I_D · I_DSS) / |U_P| = 2√(2×8)/4 = <strong>2 mS</strong>
+</div>
+
+<p>
+  如果题目给的是增强型 MOS，只是把平方律换成
+  <code>I_D = I_DO(U_GS/U_GS(th) − 1)²</code>，四步法完全不变。
+</p>
+
+<h2>四、微变等效与动态参数</h2>
+
+<p>
+  恒流区内，FET 对交流小信号等效为：栅极开路（i<sub>g</sub> = 0），漏源之间一个受控电流源
+  g<sub>m</sub>u<sub>gs</sub> 并联输出电阻 r<sub>ds</sub>；r<sub>ds</sub> 通常远大于 R<sub>d</sub>∥R<sub>L</sub>，可忽略。
+</p>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="共源电路微变等效电路：栅极经 Rg 接地，漏源间为受控电流源与 Rd、RL 并联">
+    <circle cx="42" cy="104" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="42" cy="170" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="16" y="140" class="lbl">u_i</text>
+    <line class="wire" x1="46" y1="104" x2="140" y2="104"/>
+    <line class="wire" x1="46" y1="170" x2="493" y2="170"/>
+    <circle class="dot" cx="140" cy="104" r="4"/>
+    <line class="wire" x1="140" y1="104" x2="140" y2="118"/>
+    <rect class="area" x="130" y="118" width="20" height="32" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="140" y1="150" x2="140" y2="170"/>
+    <text x="120" y="140" text-anchor="end" class="lbl">R_g</text>
+    <text x="170" y="96" class="lbl">u_gs = u_i</text>
+
+    <line class="wire" x1="300" y1="54" x2="493" y2="54"/>
+    <line class="wire" x1="300" y1="54" x2="300" y2="78"/>
+    <polygon points="300,78 284,104 300,130 316,104" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="300" y1="86" x2="300" y2="116"/>
+    <polygon points="294,112 306,112 300,122" fill="#1a1a1a"/>
+    <text x="278" y="146" text-anchor="end" class="lbl">g_m u_gs</text>
+    <line class="wire" x1="300" y1="130" x2="300" y2="170"/>
+
+    <line class="wire" x1="370" y1="54" x2="370" y2="76"/>
+    <rect class="area" x="360" y="76" width="20" height="44" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="370" y1="120" x2="370" y2="170"/>
+    <text x="386" y="96" class="lbl">R_d</text>
+
+    <line class="wire" x1="435" y1="54" x2="435" y2="76"/>
+    <rect class="area" x="425" y="76" width="20" height="44" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="435" y1="120" x2="435" y2="170"/>
+    <text x="452" y="96" class="lbl">R_L</text>
+
+    <circle cx="498" cy="54" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="498" cy="170" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="462" y="112" class="lbl">u_o</text>
+
+    <line class="wire" x1="300" y1="170" x2="300" y2="176"/>
+    <line class="wire" x1="278" y1="176" x2="322" y2="176"/>
+    <line class="wire" x1="285" y1="183" x2="315" y2="183"/>
+    <line class="wire" x1="292" y1="190" x2="308" y2="190"/>
+
+    <text x="24" y="210" class="lbl">R_i = R_g1∥R_g2　　R_o ≈ R_d</text>
+  </svg>
+</div>
+
+<div class="math">
+  A_u = −g_m(R_d∥R_L)　　R_i = R_g1∥R_g2　　R_o ≈ R_d
+</div>
+
+<p>
+  把例题数字代进去：R<sub>d</sub>∥R<sub>L</sub> = 5∥5 = 2.5 kΩ，
+  <strong>A<sub>u</sub> = −2 mS × 2.5 kΩ = −5</strong>（反相）；
+  R<sub>i</sub> = 1.8 MΩ∥200 kΩ = <strong>180 kΩ</strong>；R<sub>o</sub> ≈ <strong>5 kΩ</strong>。
+</p>
+
+<p>
+  对照共射的 <code>A_u = −βR_L′/r_be</code>，结构完全一样：<strong>g<sub>m</sub> 扮演了 β/r<sub>be</sub> 的角色</strong>。
+  但两者的输入电阻差两个数量级——共射只有约 r<sub>be</sub>（kΩ 级），共源则是偏置电阻的并联（百 kΩ 以上）。
+</p>
+
+<div class="tip">
+  <span class="tip-label">如果 R_s 没有旁路电容</span>
+  增益要修正为 <code>A_u = −g_mR_L′/(1 + g_mR_s)</code>，输入电阻不变。
+  分母的 (1+g<sub>m</sub>R<sub>s</sub>) 就是交流负反馈的代价。
+</div>
+
+<h2>五、共漏电路与共射/共源对比</h2>
+
+<p>
+  把输出从漏极挪到源极、漏极直接接 V<sub>DD</sub>（交流地），就是<strong>共漏电路</strong>，
+  也叫<strong>源极输出器</strong>。它和共集（射极跟随器）一一对应：
+</p>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="共漏极放大电路（源极输出器）：漏极接电源，输出取自源极">
+    <text x="144" y="16" class="lbl">+Vdd</text>
+    <line class="wire" x1="180" y1="24" x2="380" y2="24"/>
+    <line class="wire" x1="180" y1="24" x2="180" y2="34"/>
+    <rect class="area" x="170" y="34" width="20" height="36" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="196" y="56" class="lbl">R_g1</text>
+    <line class="wire" x1="180" y1="70" x2="180" y2="104"/>
+    <circle class="dot" cx="180" cy="104" r="4"/>
+
+    <rect class="area" x="170" y="110" width="20" height="32" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="196" y="130" class="lbl">R_g2</text>
+    <line class="wire" x1="180" y1="142" x2="180" y2="154"/>
+    <line class="wire" x1="158" y1="154" x2="202" y2="154"/>
+    <line class="wire" x1="165" y1="161" x2="195" y2="161"/>
+    <line class="wire" x1="172" y1="168" x2="188" y2="168"/>
+
+    <text x="26" y="98" class="lbl">u_i</text>
+    <line class="wire" x1="56" y1="104" x2="94" y2="104"/>
+    <line class="wire" x1="94" y1="88" x2="94" y2="120"/>
+    <line class="wire" x1="106" y1="88" x2="106" y2="120"/>
+    <text x="100" y="80" text-anchor="middle" class="lbl">C1</text>
+    <line class="wire" x1="106" y1="104" x2="254" y2="104"/>
+
+    <line class="wire" x1="254" y1="82" x2="254" y2="122"/>
+    <line class="wire" x1="272" y1="78" x2="272" y2="126"/>
+    <line class="wire" x1="272" y1="82" x2="302" y2="82"/>
+    <line class="wire" x1="302" y1="82" x2="302" y2="24"/>
+    <text x="240" y="72" class="lbl">T</text>
+
+    <line class="wire" x1="272" y1="126" x2="302" y2="126"/>
+    <line class="wire" x1="302" y1="126" x2="302" y2="136"/>
+    <rect class="area" x="292" y="136" width="20" height="28" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="318" y="154" class="lbl">R_s</text>
+    <line class="wire" x1="302" y1="164" x2="302" y2="174"/>
+    <line class="wire" x1="280" y1="174" x2="324" y2="174"/>
+    <line class="wire" x1="287" y1="181" x2="317" y2="181"/>
+    <line class="wire" x1="294" y1="188" x2="310" y2="188"/>
+
+    <circle class="dot" cx="302" cy="126" r="4"/>
+    <line class="wire" x1="302" y1="126" x2="378" y2="126"/>
+    <line class="wire" x1="378" y1="110" x2="378" y2="142"/>
+    <line class="wire" x1="390" y1="110" x2="390" y2="142"/>
+    <text x="384" y="102" text-anchor="middle" class="lbl">C2</text>
+    <line class="wire" x1="390" y1="126" x2="473" y2="126"/>
+    <circle cx="478" cy="126" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="448" y="114" class="lbl">u_o</text>
+
+    <circle class="dot" cx="440" cy="126" r="4"/>
+    <line class="wire" x1="440" y1="126" x2="440" y2="150"/>
+    <rect class="area" x="430" y="150" width="20" height="30" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="456" y="168" class="lbl">R_L</text>
+    <line class="wire" x1="440" y1="180" x2="440" y2="186"/>
+    <line class="wire" x1="418" y1="186" x2="462" y2="186"/>
+    <line class="wire" x1="425" y1="193" x2="455" y2="193"/>
+    <line class="wire" x1="432" y1="200" x2="448" y2="200"/>
+
+    <text x="20" y="214" class="lbl">共漏：输出取自源极，同相，A_u 略小于 1</text>
+  </svg>
+</div>
+
+<div class="math">
+  A_u = g_m(R_s∥R_L) / [1 + g_m(R_s∥R_L)] &lt; 1（同相）　　R_i = R_g1∥R_g2　　R_o = R_s ∥ (1/g_m) ≈ 1/g_m
+</div>
+
+<p>
+  它就是一个「FET 版射极跟随器」：电压不放大、同相、输入电阻大、输出电阻小（约 1/g<sub>m</sub>，
+  几 mS 对应几百 Ω）。用途也完全相同——缓冲级、阻抗变换、驱动低阻负载。
+  若 g<sub>m</sub> = 2 mS、R<sub>s</sub>∥R<sub>L</sub> = 2 kΩ，则 A<sub>u</sub> = 4/5 = <strong>0.8</strong>。
+</p>
+
+<table style="font-size: 0.86em;">
+  <tr>
+    <th>对比项</th><th>共射（BJT）</th><th>共源（FET）</th><th>共集（BJT）</th><th>共漏（FET）</th>
+  </tr>
+  <tr>
+    <td>A<sub>u</sub></td>
+    <td>−βR_L′/r_be（大）</td>
+    <td>−g_mR_L′（中）</td>
+    <td>≈1</td>
+    <td>≈1（略小于 1）</td>
+  </tr>
+  <tr><td>相位</td><td>反相</td><td>反相</td><td>同相</td><td>同相</td></tr>
+  <tr>
+    <td>R<sub>i</sub></td>
+    <td>≈r<sub>be</sub>（kΩ 级）</td>
+    <td>R<sub>g1</sub>∥R<sub>g2</sub>（百 kΩ~MΩ）</td>
+    <td>大</td>
+    <td>大（同左）</td>
+  </tr>
+  <tr>
+    <td>R<sub>o</sub></td>
+    <td>≈R<sub>c</sub></td>
+    <td>≈R<sub>d</sub></td>
+    <td>小（几十 Ω）</td>
+    <td>小（≈1/g<sub>m</sub>）</td>
+  </tr>
+  <tr>
+    <td>典型用途</td>
+    <td>电压放大</td>
+    <td>高阻输入放大</td>
+    <td>缓冲、输出级</td>
+    <td>缓冲、阻抗变换</td>
+  </tr>
+</table>
+
+<h2>六、易错点与 Quiz</h2>
+
+<h3>易错点</h3>
+<ol>
+  <li><strong>二次方程必须取舍。</strong> 两个根里通常有一个使 U<sub>GS</sub> &lt; U<sub>P</sub>（已夹断），必须用物理条件排除，不能只看数学解。</li>
+  <li><strong>U<sub>GS</sub> = U<sub>G</sub> − I<sub>D</sub>R<sub>s</sub> 不能漏项。</strong> 源极电流等于漏极电流，R<sub>s</sub> 上的压降就是 I<sub>D</sub>R<sub>s</sub>。</li>
+  <li><strong>R<sub>i</sub> 就是 R<sub>g1</sub>∥R<sub>g2</sub>。</strong> 栅极开路，不要再并其他电阻。</li>
+  <li><strong>R<sub>s</sub> 有没有旁路，增益公式不同。</strong> 有 C<sub>s</sub> 用 −g<sub>m</sub>R<sub>L</sub>′；没有则除以 (1+g<sub>m</sub>R<sub>s</sub>)。</li>
+  <li><strong>共漏电压增益小于 1，但电流、功率增益仍大于 1。</strong></li>
+  <li><strong>g<sub>m</sub>(mS) × R(kΩ) 直接得增益</strong>，不要乘 10<sup>−3</sup>。</li>
+</ol>
+
+<div class="quiz" id="quiz-container"></div>
+
+<p>
+  下一课（<strong>Lesson 0012</strong>）把这些单级电路串起来，讨论<strong>多级放大电路</strong>：
+  级间怎么耦合、总增益怎么算、为什么前级的输出电阻会吃掉后级的增益。
+  届时 0009 的共集和这一课的共漏都会作为「缓冲级」再次出场。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第五章 §5.2~5.3（场效应管放大电路）。
+  分压式自偏置的图解法与 Q 点稳定分析可参考康华光《电子技术基础 模拟部分》第四章。
+</div>
+
+<div class="ask-agent">
+  二次方程解出两个根不知道怎么选？g<sub>m</sub> 和 R<sub>d</sub> 的单位总算错？<br>
+  <strong>直接问我</strong>——把题目参数和你的中间步骤发我，我帮你定位是哪一步偏了。
+</div>
+
+<div class="footer-nav">
+  <a href="./0010-fet-and-mosfet.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0011 / 0020</span>
+  <a href="./0012-multistage-amplifier.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "分压式自偏置共源电路：V_DD = 20 V，R_g1 = 1.8 MΩ，R_g2 = 200 kΩ，R_s = 2 kΩ，I_DSS = 8 mA，U_P = −4 V。静态漏极电流 I_D 为？",
+    options: [
+      "2 mA",
+      "4.5 mA",
+      "1 mA",
+      "8 mA"
+    ],
+    correct: 0,
+    explain: "U_G = 20×200/(1800+200) = 2 V，U_GS = 2 − 2I_D。代入 I_D = 8(1 + U_GS/4)² 得 2I_D² − 13I_D + 18 = 0，根为 2 mA 和 4.5 mA。4.5 mA 对应 U_GS = −7 V，已小于 U_P = −4 V（夹断），舍去，故 I_D = 2 mA，U_GS = −2 V。"
+  },
+  {
+    q: "承上题，已知 g_m = 2 mS，R_d = 5 kΩ，R_L = 5 kΩ（R_s 已被 C_s 旁路）。电压增益 A_u 为？",
+    options: [
+      "−5",
+      "−10",
+      "−2.5",
+      "+5"
+    ],
+    correct: 0,
+    explain: "R_L′ = R_d∥R_L = 5∥5 = 2.5 kΩ。A_u = −g_m R_L′ = −2 mS × 2.5 kΩ = −5。共源是反相放大器，符号为负；若漏极直接输出（R_L 开路），则为 −10。"
+  },
+  {
+    q: "关于共漏极电路（源极输出器），下列说法正确的是？",
+    options: [
+      "A_u 略小于 1 且同相，R_i 大、R_o 小，可作缓冲级",
+      "A_u 很大且反相，R_i 小、R_o 大",
+      "A_u = 1 且反相，R_o ≈ R_d",
+      "A_u 略小于 1 且同相，但 R_i 很小、R_o 很大"
+    ],
+    correct: 0,
+    explain: "共漏电路输出取自源极，u_o 跟随 u_i，A_u = g_m(R_s∥R_L)/[1+g_m(R_s∥R_L)] < 1 且同相；输入电阻由分压偏置决定，很大；输出电阻约为 1/g_m，只有几百欧。它与共集（射极跟随器）一一对应。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！FET 放大电路从偏置、求 Q 到动态参数已经全流程跑通。' :
+        right >= 2 ? '👍 不错！建议再手算一遍二次方程的两个根和取舍理由。' :
+        '📚 回看第三、四节，按「U_G → U_GS → 平方律 → 校验」的顺序重做一遍。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

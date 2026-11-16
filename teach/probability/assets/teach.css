@@ -1,0 +1,260 @@
+/* teach.css — 所有 lessons / reference 文档共享的样式
+ * 设计原则：Tufte 风，可读、克制、打印友好
+ */
+
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 17px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+/* 标题层级 */
+h1 {
+  font-size: 2rem;
+  line-height: 1.25;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 1.4rem;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+h3 {
+  font-size: 1.15rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-light);
+}
+
+/* 段落与引用 */
+p { margin-bottom: 1rem; }
+
+blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.25rem 1rem;
+  margin: 1rem 0;
+  color: var(--text-light);
+  font-style: italic;
+  background: var(--accent-light);
+}
+
+/* 列表 */
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+
+/* 链接 */
+a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+a:hover { border-bottom-color: var(--accent); }
+
+/* 代码 */
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em;
+  background: var(--code-bg);
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+}
+
+pre {
+  background: var(--code-bg);
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+pre code { background: none; padding: 0; }
+
+/* 公式块 —— 等宽字体居中 */
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic;
+  text-align: center;
+  padding: 1rem;
+  margin: 1rem 0;
+  background: var(--math-bg);
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+/* 表格 */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.95em;
+}
+
+th, td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+th {
+  background: var(--code-bg);
+  font-weight: 600;
+}
+
+/* Quiz 交互组件 */
+.quiz {
+  background: var(--quiz-bg);
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+}
+
+.quiz-q {
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quiz-option {
+  font-family: inherit;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.quiz-option:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.quiz-option.correct {
+  border-color: var(--quiz-correct);
+  background: #d1fae5;
+  color: var(--quiz-correct);
+}
+
+.quiz-option.wrong {
+  border-color: var(--quiz-wrong);
+  background: #fee2e2;
+  color: var(--quiz-wrong);
+}
+
+.quiz-feedback {
+  margin-top: 0.75rem;
+  font-size: 0.9em;
+  color: var(--text-light);
+  min-height: 1.2em;
+}
+
+/* 页脚导航 */
+.footer-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.9em;
+}
+
+.footer-nav .lesson-counter {
+  color: var(--text-light);
+}
+
+/* 提示框 */
+.tip {
+  background: var(--accent-light);
+  border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 0.95em;
+}
+
+.tip-label {
+  font-weight: 600;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+/* Citation */
+.citation {
+  font-size: 0.8em;
+  color: var(--text-light);
+  vertical-align: super;
+}
+
+/* Source box at end */
+.primary-source {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: var(--code-bg);
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+
+.primary-source strong {
+  color: var(--accent);
+}
+
+/* Ask agent reminder */
+.ask-agent {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  text-align: center;
+  color: var(--text-light);
+  font-size: 0.9em;
+}
+
+/* 打印样式 */
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}

@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0001 — 模电全景图 &amp; 半导体导论</title>
+<style>
+/* 单文件自包含样式（原 assets/teach.css 内联版） */
+:root {
+  --text: #1a1a1a;
+  --text-light: #4a4a4a;
+  --accent: #2b6cb0;
+  --accent-light: #ebf4ff;
+  --border: #e2e8f0;
+  --bg: #ffffff;
+  --code-bg: #f7fafc;
+  --math-bg: #fafbfc;
+  --quiz-bg: #fffbeb;
+  --quiz-correct: #059669;
+  --quiz-wrong: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC",
+               "Noto Serif CJK SC", Georgia, serif;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-light); }
+h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-light); }
+p { margin-bottom: 1rem; }
+blockquote {
+  border-left: 3px solid var(--accent); padding: 0.25rem 1rem; margin: 1rem 0;
+  color: var(--text-light); font-style: italic; background: var(--accent-light);
+}
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+a:hover { border-bottom-color: var(--accent); }
+code {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.9em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+.math {
+  font-family: "Latin Modern Math", "STIX Two Math", Cambria Math, serif;
+  font-style: italic; text-align: center; padding: 1rem; margin: 1rem 0;
+  background: var(--math-bg); border-radius: 4px; border: 1px solid var(--border);
+}
+.circuit {
+  text-align: center; padding: 1.5rem; background: #fafbfc; border-radius: 6px;
+  border: 1px dashed var(--border); margin: 1rem 0;
+  font-family: "DejaVu Sans Mono", monospace; font-size: 0.85em; line-height: 1.4;
+  overflow-x: auto;
+}
+.schematic { display: block; width: 100%; max-width: 520px; height: auto; margin: 0.5rem auto; }
+.schematic text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 17px; fill: var(--text);
+}
+.schematic .lbl { font-size: 15px; fill: var(--text-light); }
+.schematic .wire {
+  fill: none; stroke: var(--text); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.schematic .thin { stroke-width: 1.5; }
+.schematic .ideal { stroke: var(--accent); stroke-dasharray: 6 4; }
+.schematic .dot { fill: var(--text); }
+.schematic .area { fill: #fff; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+.quiz { background: var(--quiz-bg); border: 1px solid #fcd34d; border-radius: 6px; padding: 1.25rem; margin: 1.5rem 0; }
+.quiz-q { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-option {
+  font-family: inherit; padding: 0.6rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: var(--quiz-correct); background: #d1fae5; color: var(--quiz-correct); }
+.quiz-option.wrong { border-color: var(--quiz-wrong); background: #fee2e2; color: var(--quiz-wrong); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9em; color: var(--text-light); min-height: 1.2em; }
+.footer-nav {
+  display: flex; justify-content: space-between; margin-top: 3rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9em;
+}
+.footer-nav .lesson-counter { color: var(--text-light); }
+.tip {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.95em;
+}
+.tip-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+.citation { font-size: 0.8em; color: var(--text-light); vertical-align: super; }
+.primary-source { margin-top: 2rem; padding: 1rem; background: var(--code-bg); border-radius: 6px; font-size: 0.9em; }
+.primary-source strong { color: var(--accent); }
+.ask-agent {
+  margin-top: 1.5rem; padding: 1rem; border: 1px dashed var(--border);
+  border-radius: 6px; text-align: center; color: var(--text-light); font-size: 0.9em;
+}
+@media print {
+  html { font-size: 12pt; }
+  body { max-width: 100%; padding: 0; }
+  h1, h2, h3 { page-break-after: avoid; }
+  pre, table { page-break-inside: avoid; }
+  .quiz { page-break-inside: avoid; }
+  a { border-bottom: none; color: inherit; text-decoration: underline; }
+}
+</style>
+</head>
+<body>
+
+<h1>Lesson 0001 — 模电全景图 &amp; 半导体导论</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · 考研导向 · 零基础 · 约 20 分钟</p>
+
+<h2>欢迎来到模拟电子电路</h2>
+<p>
+  你说没碰过模电——完全没关系。模电的核心直觉其实很朴素：
+  <strong>电流怎么流、电压怎么分、信号怎么变</strong>。但它有一个门槛：
+  <strong>必须从最微观的半导体物理开始</strong>。
+</p>
+<p>
+  这一课我们先建立全景图（你要学的 10 章内容），然后踏入第一站：
+  <strong>半导体是怎么导电的</strong>。
+</p>
+
+<h2>考研模电考点地图</h2>
+<p>
+  模电是电子信息类考研专业课的核心。不同高校考纲略有差异，但下面 10 个板块是<strong>全覆盖</strong>的：
+</p>
+
+<table>
+  <tr>
+    <th>序号</th>
+    <th>板块</th>
+    <th>核心考点</th>
+    <th>权重</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td><strong>半导体基础</strong></td>
+    <td>本征/杂质半导体、N 型/P 型、PN 结单向导电性</td>
+    <td>★★</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td><strong>二极管电路</strong></td>
+    <td>理想/恒压降模型、整流、限幅、钳位、稳压管</td>
+    <td>★★</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td><strong>BJT 放大电路</strong></td>
+    <td>共射/共基/共集组态、静态工作点、微变等效电路、放大倍数</td>
+    <td>★★★★★</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td><strong>FET 放大电路</strong></td>
+    <td>结型/MOS 型、转移特性、三种组态</td>
+    <td>★★★</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td><strong>频率响应</strong></td>
+    <td>增益带宽积、波特图、上限/下限截止频率</td>
+    <td>★★★</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td><strong>负反馈放大电路</strong></td>
+    <td>四种反馈类型判断、对放大倍数/输入输出电阻的影响</td>
+    <td>★★★★★</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td><strong>差分放大</strong></td>
+    <td>差模/共模放大倍数、共模抑制比 CMRR</td>
+    <td>★★★★</td>
+  </tr>
+  <tr>
+    <td>8</td>
+    <td><strong>集成运放</strong></td>
+    <td>理想运放、虚短虚断、基本运算电路、有源滤波</td>
+    <td>★★★★★</td>
+  </tr>
+  <tr>
+    <td>9</td>
+    <td><strong>正弦波振荡</strong></td>
+    <td>起振条件、相位平衡、RC/LC 振荡电路</td>
+    <td>★★★</td>
+  </tr>
+  <tr>
+    <td>10</td>
+    <td><strong>直流稳压电源</strong></td>
+    <td>整流、滤波、稳压电路原理</td>
+    <td>★★</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">学习顺序</span>
+  上表就是我们的学习顺序。前 2 章打基础，3 和 6、8 是考试重点（★★★★★）。
+  每一章的理解都依赖前面的积累，<strong>跳着学很容易断链</strong>。
+</div>
+
+<h2>第一站：半导体是怎么导电的</h2>
+<p>
+  好，全景图看完了。现在让我们深入最微观的一层——
+  <strong>一块硅片为什么能导电？为什么它的导电能力可以被控制？</strong>
+</p>
+
+<h3>金属 vs 半导体 vs 绝缘体</h3>
+<p>
+  所有材料都可以按<strong>电阻率</strong>（ρ，单位 Ω·cm）大致分三类：
+</p>
+
+<table>
+  <tr>
+    <th>类型</th>
+    <th>电阻率范围</th>
+    <th>典型代表</th>
+    <th>为什么这样分？</th>
+  </tr>
+  <tr>
+    <td>导体</td>
+    <td>ρ &lt; 10⁻⁴</td>
+    <td>铜、铝、银</td>
+    <td>有大量自由电子，一拉就跑</td>
+  </tr>
+  <tr>
+    <td>半导体</td>
+    <td>10⁻² ~ 10⁹</td>
+    <td>硅 Si、锗 Ge、砷化镓 GaAs</td>
+    <td>导电性<strong>可以被精确控制</strong>——这是它的魔法</td>
+  </tr>
+  <tr>
+    <td>绝缘体</td>
+    <td>ρ &gt; 10⁹</td>
+    <td>玻璃、橡胶</td>
+    <td>电子被牢牢锁住</td>
+  </tr>
+</table>
+
+<p>
+  硅的电阻率大约在 <strong>10⁵ Ω·cm</strong>（纯净硅），处于中间位置。但真正让它特别的是：
+  <strong>你可以通过掺入极少量其他元素，把它的电阻率改变几个数量级</strong>。
+  这就是整个微电子工业的基础。
+</p>
+
+<h3>硅的晶体结构</h3>
+<p>
+  硅是第 IV 族元素，原子最外层有 <strong>4 个电子</strong>。在晶体中，每个硅原子和周围
+  4 个硅原子形成<strong>共价键</strong>——像手拉手围成一个正四面体。
+</p>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="硅晶体共价键结构：中心硅原子与四个相邻硅原子成键">
+    <line class="wire" x1="140" y1="58" x2="260" y2="110"/>
+    <line class="wire" x1="380" y1="58" x2="260" y2="110"/>
+    <line class="wire" x1="140" y1="162" x2="260" y2="110"/>
+    <line class="wire" x1="380" y1="162" x2="260" y2="110"/>
+    <line class="wire thin" x1="140" y1="58" x2="88" y2="32"/>
+    <line class="wire thin" x1="380" y1="58" x2="432" y2="32"/>
+    <line class="wire thin" x1="140" y1="162" x2="88" y2="188"/>
+    <line class="wire thin" x1="380" y1="162" x2="432" y2="188"/>
+    <circle class="area" cx="260" cy="110" r="24" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="140" cy="58" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="380" cy="58" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="140" cy="162" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="380" cy="162" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="260" y="116" text-anchor="middle">Si</text>
+    <text x="140" y="64" text-anchor="middle">Si</text>
+    <text x="380" y="64" text-anchor="middle">Si</text>
+    <text x="140" y="168" text-anchor="middle">Si</text>
+    <text x="380" y="168" text-anchor="middle">Si</text>
+    <text x="198" y="72" class="lbl" transform="rotate(23 198 72)">共价键</text>
+    <text x="260" y="212" text-anchor="middle" class="lbl">每个 Si 与 4 个邻居共用 4 对价电子（共 8 个）→ 绝对零度时全被锁住，不导电</text>
+  </svg>
+</div>
+
+<h3>本征半导体：天然的「半导」</h3>
+<p>
+  纯净的半导体（比如 99.9999999% 纯度的硅）叫<strong>本征半导体</strong>。
+  温度升高时，一些共价键会被打断，产生<strong>自由电子-空穴对</strong>：
+</p>
+
+<ul>
+  <li><strong>自由电子</strong>：带负电的载流子，挣脱了共价键</li>
+  <li><strong>空穴</strong>：带正电的"空位"——不是真实粒子，但可以把它想象成带正电的电子</li>
+</ul>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="本征半导体：热激发打断共价键，成对产生自由电子与空穴">
+    <line class="wire" x1="92" y1="110" x2="158" y2="110"/>
+    <line class="wire" x1="202" y1="110" x2="222" y2="110"/>
+    <line class="wire" x1="248" y1="110" x2="268" y2="110"/>
+    <line class="wire" x1="312" y1="110" x2="378" y2="110"/>
+    <circle class="area" cx="70" cy="110" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="180" cy="110" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="290" cy="110" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="400" cy="110" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="70" y="116" text-anchor="middle">Si</text>
+    <text x="180" y="116" text-anchor="middle">Si</text>
+    <text x="290" y="116" text-anchor="middle">Si</text>
+    <text x="400" y="116" text-anchor="middle">Si</text>
+    <circle cx="235" cy="110" r="9" fill="#fff" stroke="#2b6cb0" stroke-width="2.5" stroke-dasharray="4 3"/>
+    <path class="wire ideal" d="M235,98 L235,60"/>
+    <polygon points="229,60 241,60 235,48" fill="var(--accent)"/>
+    <circle class="dot" cx="235" cy="40" r="7"/>
+    <text x="252" y="46" class="lbl">自由电子 e⁻</text>
+    <text x="235" y="150" text-anchor="middle" class="lbl">空穴（缺一个电子）</text>
+    <text x="260" y="200" text-anchor="middle" class="lbl">热激发 → 电子-空穴对成对产生：n_i = p_i，数量极少</text>
+  </svg>
+</div>
+
+<p>
+  在电场下，自由电子向正极移动，空穴向负极移动——<strong>都形成电流</strong>。
+  但本征半导体中自由电子和空穴数量<strong>始终相等</strong>，而且数量极少，所以本征导电能力弱。
+</p>
+
+<div class="math">
+  本征载流子浓度：nᵢ = pᵢ ≈ 1.5 × 10¹⁰ cm⁻³（硅，室温 300K）
+</div>
+
+<p>
+  这个数字看似很大，但对比一下：金属铜的自由电子浓度约 <strong>10²² cm⁻³</strong>，
+  是硅的一万亿倍。所以纯净硅基本是<strong>不导电</strong>的。
+</p>
+
+<h3>杂质半导体：真正的魔法</h3>
+<p>
+  现在关键一步来了。我们往本征硅里<strong>掺入极少量</strong>其他元素——
+  不是掺一点，是掺<strong>百万分之一量级</strong>（1 ppm），就能把导电性提高几个数量级。
+</p>
+
+<h4>N 型半导体（掺磷、砷、锑 —— V 族元素）</h4>
+<p>
+  V 族元素有 <strong>5 个最外层电子</strong>。当它取代硅原子进入晶体时：
+</p>
+<ol>
+  <li>4 个电子参与共价键，和周围 4 个硅原子"手拉手"</li>
+  <li>还剩 <strong>1 个额外电子</strong>，几乎不受束缚——室温下几乎全部成为自由电子</li>
+</ol>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="N 型半导体：五价磷原子多出一个自由电子">
+    <line class="wire" x1="130" y1="58" x2="250" y2="112"/>
+    <line class="wire" x1="370" y1="58" x2="250" y2="112"/>
+    <line class="wire" x1="130" y1="166" x2="250" y2="112"/>
+    <line class="wire" x1="370" y1="166" x2="250" y2="112"/>
+    <circle class="area" cx="250" cy="112" r="24" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="130" cy="58" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="370" cy="58" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="130" cy="166" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="area" cx="370" cy="166" r="22" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="250" y="118" text-anchor="middle">P</text>
+    <text x="130" y="64" text-anchor="middle">Si</text>
+    <text x="370" y="64" text-anchor="middle">Si</text>
+    <text x="130" y="172" text-anchor="middle">Si</text>
+    <text x="370" y="172" text-anchor="middle">Si</text>
+    <circle cx="250" cy="44" r="16" fill="none" stroke="#2b6cb0" stroke-width="2" stroke-dasharray="5 4"/>
+    <circle class="dot" cx="250" cy="44" r="6"/>
+    <text x="276" y="50" class="lbl">e⁻ 多余电子</text>
+    <text x="260" y="208" text-anchor="middle" class="lbl">P 原子 5 个价电子：4 个成键，1 个自由 → 多数载流子 = 电子</text>
+  </svg>
+</div>
+
+<p>
+  这种半导体叫 <strong>N 型</strong>（Negative 负），因为<strong>自由电子是多数载流子</strong>。
+  掺磷的硅中，自由电子浓度可以达到 <strong>10¹⁷ cm⁻³</strong>——是本征硅的 1000 万倍！
+</p>
+
+<h4>P 型半导体（掺硼、镓、铟 —— III 族元素）</h4>
+<p>
+  III 族元素只有 <strong>3 个最外层电子</strong>。取代硅后：
+</p>
+<ol>
+  <li>3 个电子只能形成 3 条共价键</li>
+  <li><strong>缺一个电子 = 形成一个空穴</strong></li>
+</ol>
+
+<p>
+  这种半导体叫 <strong>P 型</strong>（Positive 正），因为<strong>空穴是多数载流子</strong>。
+  当电子填补这个空穴时，相邻硅原子又会产生新空穴——空穴"移动"起来了。
+</p>
+
+<table>
+  <tr>
+    <th>类型</th>
+    <th>掺杂元素</th>
+    <th>多数载流子</th>
+    <th>少数载流子</th>
+    <th>掺杂浓度</th>
+  </tr>
+  <tr>
+    <td>N 型</td>
+    <td>V 族（P, As, Sb）</td>
+    <td>自由电子</td>
+    <td>空穴</td>
+    <td>10¹⁵ ~ 10²⁰ cm⁻³</td>
+  </tr>
+  <tr>
+    <td>P 型</td>
+    <td>III 族（B, Ga, In）</td>
+    <td>空穴</td>
+    <td>自由电子</td>
+    <td>10¹⁵ ~ 10²⁰ cm⁻³</td>
+  </tr>
+</table>
+
+<div class="circuit">
+  <svg viewBox="0 0 520 220" class="schematic" role="img" aria-label="N 型与 P 型对比：N 型多电子，P 型多空穴">
+    <text x="130" y="34" text-anchor="middle">N 型</text>
+    <text x="390" y="34" text-anchor="middle">P 型</text>
+    <rect class="area" x="20" y="46" width="220" height="118" rx="8" stroke="#1a1a1a" stroke-width="2"/>
+    <rect class="area" x="280" y="46" width="220" height="118" rx="8" stroke="#1a1a1a" stroke-width="2"/>
+    <circle class="dot" cx="60" cy="76" r="7"/>
+    <circle class="dot" cx="110" cy="76" r="7"/>
+    <circle class="dot" cx="160" cy="76" r="7"/>
+    <circle class="dot" cx="210" cy="76" r="7"/>
+    <circle class="dot" cx="60" cy="108" r="7"/>
+    <circle class="dot" cx="110" cy="108" r="7"/>
+    <circle class="dot" cx="160" cy="108" r="7"/>
+    <circle class="dot" cx="210" cy="108" r="7"/>
+    <circle cx="60" cy="140" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="210" cy="140" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="340" cy="76" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="390" cy="76" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="440" cy="76" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="490" cy="76" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="340" cy="108" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="390" cy="108" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="440" cy="108" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="490" cy="108" r="7" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle class="dot" cx="340" cy="140" r="7"/>
+    <circle class="dot" cx="440" cy="140" r="7"/>
+    <text x="130" y="188" text-anchor="middle" class="lbl">● 自由电子 = 多数载流子</text>
+    <text x="130" y="208" text-anchor="middle" class="lbl">○ 空穴 = 少数载流子</text>
+    <text x="390" y="188" text-anchor="middle" class="lbl">○ 空穴 = 多数载流子</text>
+    <text x="390" y="208" text-anchor="middle" class="lbl">● 自由电子 = 少数载流子</text>
+  </svg>
+</div>
+
+<div class="tip">
+  <span class="tip-label">好记的口诀</span>
+  <strong>N → Negative → 多电子（带负电的载流子多）</strong><br>
+  <strong>P → Positive → 多空穴（带正电的载流子多）</strong><br>
+  虽然名字里有 N/P 表示的是多数载流子的电性，不是掺杂离子本身的电性。
+</div>
+
+<h2>Quick Quiz — 确认理解</h2>
+<p>
+  下面 3 道题是这一课的知识点检查。能独立答出来就可以继续 PN 结了。
+</p>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h2>这一课学到了什么</h2>
+<p>
+  让我们把这一课压缩成<strong>3 个核心记忆点</strong>：
+</p>
+<ol>
+  <li><strong>模电全景图</strong>：10 个板块，重点在 BJT 放大、负反馈、集成运放</li>
+  <li><strong>本征 vs 杂质半导体</strong>：纯净的硅不导电，掺 V 族得 N 型，掺 III 族得 P 型</li>
+  <li><strong>载流子的分类</strong>：N 型多电子，P 型多空穴——这是一切半导体器件的基础</li>
+</ol>
+
+<p>
+  下一课（<strong>Lesson 0002</strong>）我们会把 P 型和 N 型半导体<strong>贴在一起</strong>——
+  就会得到整个电子工业最重要的东西：<strong>PN 结</strong>。
+  二极管、三极管、芯片里的每一个晶体管，本质上都是 PN 结的不同组合。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第一章。
+  国内模电教材的标杆——童老从 1980 年首版开始就把这门课教明白了。
+  同时参考：<a href="https://www.tsinghua.edu.cn/info/3155/120176.htm">清华大学介绍</a>。
+</div>
+
+<div class="ask-agent">
+  不理解"空穴"到底是什么？对 N 型/P 型记混了？想让我换个角度解释？<br>
+  <strong>直接问我</strong>——我就是你的老师，什么都可以问。
+</div>
+
+<div class="footer-nav">
+  <span class="lesson-counter">模电 · Lesson 0001 / ∞</span>
+  <span><a href="../MISSION.md">Mission</a> · <a href="../RESOURCES.md">Resources</a></span>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "硅是哪一族的元素？最外层有几个电子？",
+    options: ["第 III 族，3 个", "第 IV 族，4 个", "第 V 族，5 个", "第 VI 族，6 个"],
+    correct: 1,
+    explain: "硅（Si）和碳（C）、锗（Ge）同属第 IV 族，最外层 4 个电子，形成四对共价键。"
+  },
+  {
+    q: "往硅里掺入磷（V 族元素），会得到什么类型的半导体？",
+    options: ["P 型半导体", "N 型半导体", "本征半导体", "绝缘体"],
+    correct: 1,
+    explain: "磷有 5 个价电子，与 4 个硅形成共价键后多出 1 个自由电子——N 型半导体，电子是多数载流子。"
+  },
+  {
+    q: "P 型半导体中的多数载流子是什么？",
+    options: ["自由电子", "空穴", "磷原子", "硼原子"],
+    correct: 1,
+    explain: "P 型半导体因掺 III 族元素（如硼），共价键缺电子形成空穴——空穴是多数载流子。记忆：P = Positive = 多空穴。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+});
+</script>
+
+</body>
+</html>
