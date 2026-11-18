@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0026 — 有源滤波电路</title>
+<link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+
+<h1>Lesson 0026 — 有源滤波电路</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0026 / 0026 · 约 60 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  本课是第 7 章的收尾。需要 <a href="./0024-basic-opamp-math-circuits.html">Lesson 0024</a>
+  的虚短虚断与积分器，以及 <a href="./0017-frequency-response-and-bode-plots.html">Lesson 0017（频率响应与波特图）</a>
+  的 <code>−20 dB/十倍频</code>、<code>−3 dB</code> 截止频率概念。
+  如果波特图还看不熟，先回去把一阶 RC 的幅频曲线画三遍。
+</div>
+
+<p>
+  无源 RC 滤波器便宜，但有三个硬伤：<strong>带负载后截止频率漂移</strong>、
+  <strong>通带内有衰减</strong>、<strong>不能级联</strong>（后级会加载前级）。
+  把 RC 网络放进运放的负反馈环，运放的低输出阻抗和高输入阻抗把这三个问题一次解决，
+  这就是<strong>有源滤波器</strong>。
+</p>
+<p>
+  本课从四种基本类型出发，先做一阶，再做二阶压控电压源（Sallen-Key）结构，
+  最后把阶数、Q 值和衰减斜率串成一张设计表。所有推导仍然只用两招：虚短、虚断。
+</p>
+
+<h2>一、四种基本滤波类型</h2>
+
+<p>
+  按通带位置分四类：
+</p>
+
+<table>
+  <tr><th>类型</th><th>英文</th><th>通带</th><th>阻带</th><th>典型用途</th></tr>
+  <tr><td>低通</td><td>LPF</td><td><code>f &lt; f_p</code></td><td><code>f &gt; f_p</code></td><td>抗混叠、去高频噪声、积分</td></tr>
+  <tr><td>高通</td><td>HPF</td><td><code>f &gt; f_p</code></td><td><code>f &lt; f_p</code></td><td>隔直、去工频干扰、交流耦合</td></tr>
+  <tr><td>带通</td><td>BPF</td><td><code>f_L &lt; f &lt; f_H</code></td><td>两侧</td><td>选频、通信中频、振动监测</td></tr>
+  <tr><td>带阻</td><td>BRF</td><td>两侧</td><td><code>f_L &lt; f &lt; f_H</code></td><td>陷波、50 Hz 工频抑制</td></tr>
+</table>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" width="100%" height="auto" role="img" aria-label="四种理想滤波器的幅频特性示意：低通、高通、带通、带阻">
+    <text x="180" y="26" text-anchor="middle" class="lbl">低通 LPF</text>
+    <line class="wire thin" x1="40" y1="130" x2="320" y2="130"/>
+    <line class="wire thin" x1="40" y1="40" x2="40" y2="130"/>
+    <path class="wire" d="M40,55 L150,55 L200,110 L320,120" style="stroke:var(--accent)"/>
+    <text x="34" y="50" text-anchor="end" class="lbl">A_up</text>
+    <text x="34" y="134" text-anchor="end" class="lbl">0</text>
+    <text x="200" y="148" text-anchor="middle" class="lbl">f_p</text>
+
+    <text x="540" y="26" text-anchor="middle" class="lbl">高通 HPF</text>
+    <line class="wire thin" x1="400" y1="130" x2="680" y2="130"/>
+    <line class="wire thin" x1="400" y1="40" x2="400" y2="130"/>
+    <path class="wire" d="M400,120 L520,110 L570,55 L680,55" style="stroke:var(--accent)"/>
+    <text x="394" y="50" text-anchor="end" class="lbl">A_up</text>
+    <text x="394" y="134" text-anchor="end" class="lbl">0</text>
+    <text x="570" y="148" text-anchor="middle" class="lbl">f_p</text>
+
+    <text x="180" y="206" text-anchor="middle" class="lbl">带通 BPF</text>
+    <line class="wire thin" x1="40" y1="310" x2="320" y2="310"/>
+    <line class="wire thin" x1="40" y1="220" x2="40" y2="310"/>
+    <path class="wire" d="M40,300 L110,290 L160,235 L220,235 L270,290 L320,300" style="stroke:var(--accent)"/>
+    <text x="34" y="230" text-anchor="end" class="lbl">A_up</text>
+    <text x="34" y="314" text-anchor="end" class="lbl">0</text>
+    <text x="160" y="328" text-anchor="middle" class="lbl">f_L</text>
+    <text x="220" y="328" text-anchor="middle" class="lbl">f_H</text>
+
+    <text x="540" y="206" text-anchor="middle" class="lbl">带阻 BRF</text>
+    <line class="wire thin" x1="400" y1="310" x2="680" y2="310"/>
+    <line class="wire thin" x1="400" y1="220" x2="400" y2="310"/>
+    <path class="wire" d="M400,235 L470,235 L520,290 L560,290 L610,235 L680,235" style="stroke:var(--accent)"/>
+    <text x="394" y="230" text-anchor="end" class="lbl">A_up</text>
+    <text x="394" y="314" text-anchor="end" class="lbl">0</text>
+    <text x="520" y="328" text-anchor="middle" class="lbl">f_L</text>
+    <text x="560" y="328" text-anchor="middle" class="lbl">f_H</text>
+  </svg>
+</div>
+
+<h3>1.1 三个关键指标</h3>
+
+<ul>
+  <li><strong>通带增益 <code>A_up</code></strong>：通带内（远离截止频率）的电压放大倍数。
+      一阶/二阶低通的通带都在直流处，高通的通带在无穷高处。</li>
+  <li><strong>截止频率 <code>f_p</code></strong>：幅值下降到 <code>A_up/√2</code>
+      （即 <code>−3 dB</code>）处的频率。一阶只有一个 <code>f_p</code>；
+      二阶有两个特征频率，通常用自然频率 <code>f₀</code> 和品质因数 <code>Q</code> 描述。</li>
+  <li><strong>过渡带斜率</strong>：阻带内幅值随频率下降（或上升）的速率，
+      单位 <code>dB/十倍频</code>。一阶 <code>±20 dB/十倍频</code>，
+      二阶 <code>±40 dB/十倍频</code>，<code>n</code> 阶 <code>±20n dB/十倍频</code>。</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">阶数从哪来</span>
+  每增加一个独立的储能元件（一个电容），传递函数就多一个极点，阶数加一，
+  过渡带就陡 <code>20 dB/十倍频</code>。
+  一阶只有一个电容；二阶有两个电容；四阶有四个。
+  想要 60 dB/十倍频，就必须三阶——没有例外。
+</div>
+
+<h2>二、一阶低通有源滤波器</h2>
+
+<p>
+  最简单的有源低通：<code>R</code> 串联、<code>C</code> 并联到地，后面接一级同相跟随器。
+  跟随器的输入电阻极高，所以 <code>RC</code> 节点几乎不被后级加载，
+  截止频率严格等于 <code>1/(2πRC)</code>。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" width="100%" height="auto" role="img" aria-label="一阶低通有源滤波器：R串联C并联，后接同相跟随器">
+    <circle cx="60" cy="180" r="4" class="dot"/>
+    <text x="26" y="172" class="lbl">u_i</text>
+    <line class="wire" x1="60" y1="180" x2="60" y2="205"/>
+    <circle cx="60" cy="220" r="15" fill="none" style="stroke:var(--text);stroke-width:2.5"/>
+    <text x="60" y="226" text-anchor="middle" class="lbl">~</text>
+    <line class="wire" x1="60" y1="235" x2="60" y2="255"/>
+    <line class="wire thin" x1="38" y1="255" x2="82" y2="255"/>
+    <line class="wire thin" x1="45" y1="263" x2="75" y2="263"/>
+    <line class="wire thin" x1="52" y1="271" x2="68" y2="271"/>
+
+    <line class="wire" x1="60" y1="180" x2="150" y2="180"/>
+    <rect class="area" x="150" y="166" width="60" height="28" rx="3" style="stroke:var(--text);stroke-width:2.5"/>
+    <text x="180" y="158" text-anchor="middle" class="lbl">R</text>
+    <line class="wire" x1="210" y1="180" x2="330" y2="180"/>
+    <circle class="dot" cx="270" cy="180" r="4"/>
+
+    <line class="wire" x1="270" y1="180" x2="270" y2="230"/>
+    <line class="wire" x1="248" y1="230" x2="292" y2="230" stroke-width="4"/>
+    <line class="wire" x1="248" y1="246" x2="292" y2="246" stroke-width="4"/>
+    <line class="wire" x1="270" y1="246" x2="270" y2="276"/>
+    <line class="wire thin" x1="248" y1="276" x2="292" y2="276"/>
+    <line class="wire thin" x1="255" y1="284" x2="285" y2="284"/>
+    <line class="wire thin" x1="262" y1="292" x2="278" y2="292"/>
+    <text x="304" y="242" class="lbl">C</text>
+
+    <polygon points="330,150 330,230 400,190" class="area" style="stroke:var(--text);stroke-width:2.5"/>
+    <text x="341" y="184">+</text>
+    <text x="341" y="217">−</text>
+
+    <line class="wire" x1="400" y1="190" x2="450" y2="190"/>
+    <circle class="dot" cx="450" cy="190" r="4"/>
+    <line class="wire" x1="450" y1="190" x2="450" y2="248"/>
+    <line class="wire" x1="450" y1="248" x2="310" y2="248"/>
+    <line class="wire" x1="310" y1="248" x2="310" y2="210"/>
+    <line class="wire" x1="310" y1="210" x2="330" y2="210"/>
+    <text x="450" y="282" text-anchor="middle" class="lbl">A_up = 1（跟随器）</text>
+
+    <line class="wire" x1="450" y1="190" x2="580" y2="190"/>
+    <text x="586" y="184" class="lbl">u_o</text>
+
+    <text x="360" y="322" text-anchor="middle" class="lbl">f_p = 1/(2πRC)　，　A_u = A_up/(1 + j f/f_p)</text>
+  </svg>
+</div>
+
+<h3>2.1 推导</h3>
+
+<p>
+  设 <code>RC</code> 节点电压为 <code>u_A</code>，跟随器使 <code>u_o = u_A</code>。
+  对节点 <code>A</code> 列 KCL（运放输入不取电流）：
+</p>
+
+<div class="math">(u_A − u_i)/R + u_A · jωC = 0</div>
+
+<p>整理：</p>
+
+<div class="math">u_A (1 + jωRC) = u_i　　⟹　　u_o/u_i = 1/(1 + jωRC)</div>
+
+<p>令 <code>ω_p = 1/(RC)</code>，即 <code>f_p = 1/(2πRC)</code>：</p>
+
+<div class="math">A_u = 1/(1 + j f/f_p)</div>
+
+<p>幅频与相频：</p>
+
+<div class="math">|A_u| = 1/√(1 + (f/f_p)²)　；　φ = −arctan(f/f_p)</div>
+
+<ul>
+  <li><code>f ≪ f_p</code>：<code>|A_u| ≈ 1</code>，相移≈0，信号原样通过；</li>
+  <li><code>f = f_p</code>：<code>|A_u| = 1/√2 = 0.707</code>（<code>−3 dB</code>），相移 <code>−45°</code>；</li>
+  <li><code>f ≫ f_p</code>：<code>|A_u| ≈ f_p/f</code>，每升高十倍频下降十倍，即 <code>−20 dB/十倍频</code>，相移趋于 <code>−90°</code>。</li>
+</ul>
+
+<p>
+  如果要在通带内放大，把跟随器换成同相比例，增益为
+  <code>A_up = 1 + R_f/R₁</code>，传递函数变成
+  <code>A_u = A_up/(1 + jf/f_p)</code>。注意：<strong>增益不改变截止频率</strong>，
+  只把整条曲线上下平移。这是因为反馈网络只放大 <code>u_A</code>，没有改变 <code>RC</code> 的时间常数。
+</p>
+
+<h3>2.2 幅频特性</h3>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" width="100%" height="auto" role="img" aria-label="一阶低通幅频特性：低频平坦，截止频率后以每十倍频20分贝下降">
+    <line class="wire thin" x1="80" y1="270" x2="660" y2="270"/>
+    <polygon points="660,264 660,276 676,270" fill="#1a1a1a"/>
+    <line class="wire thin" x1="80" y1="270" x2="80" y2="50"/>
+    <polygon points="74,50 86,50 80,34" fill="#1a1a1a"/>
+    <text x="690" y="276" class="lbl">f</text>
+    <text x="72" y="46" text-anchor="end" class="lbl">dB</text>
+
+    <line class="wire thin" x1="80" y1="110" x2="660" y2="110"/>
+    <text x="72" y="114" text-anchor="end" class="lbl">0</text>
+    <line class="wire thin" x1="80" y1="210" x2="660" y2="210"/>
+    <text x="72" y="214" text-anchor="end" class="lbl">−20</text>
+
+    <line class="wire thin ideal" x1="80" y1="110" x2="380" y2="110"/>
+    <line class="wire thin ideal" x1="380" y1="110" x2="620" y2="210"/>
+    <path class="wire" d="M80,110 C200,110 330,118 380,125 C440,135 540,180 620,210" style="stroke:var(--accent)"/>
+
+    <line class="wire thin" x1="380" y1="125" x2="380" y2="270"/>
+    <text x="380" y="290" text-anchor="middle" class="lbl">f_p</text>
+    <line class="wire thin" x1="620" y1="210" x2="620" y2="270"/>
+    <text x="620" y="290" text-anchor="middle" class="lbl">10f_p</text>
+    <circle cx="380" cy="125" r="4" class="dot" style="fill:var(--accent)"/>
+    <text x="392" y="120" class="lbl" style="fill:var(--accent)">−3 dB</text>
+    <text x="520" y="168" class="lbl" style="fill:var(--accent)">−20 dB/十倍频</text>
+  </svg>
+</div>
+
+<h3>例 1：设计 f_p = 1 kHz 的一阶低通</h3>
+
+<p>
+  要求 <code>f_p = 1 kHz</code>，通带增益 <code>A_up = 2</code>。
+  选择 <code>C = 10 nF</code>，求 <code>R</code>、反馈电阻，并计算 <code>10 kHz</code> 处的衰减。
+</p>
+
+<p><strong>第一步：求 R</strong></p>
+<div class="math">R = 1/(2π f_p C) = 1/(2π × 10³ × 10 × 10⁻⁹)</div>
+<div class="math">R = 1/(6.283 × 10⁻⁵) ≈ 15.9 kΩ</div>
+
+<p><strong>第二步：取标称值并验算</strong></p>
+<div class="math">R = 15.9 kΩ　⟹　f_p = 1/(2π × 15.9k × 10n) ≈ 1.001 kHz ✓</div>
+
+<p><strong>第三步：反馈电阻</strong>。同相比例 <code>A_up = 1 + R_f/R₁</code>，取
+<code>R₁ = 10 kΩ</code>：</p>
+<div class="math">2 = 1 + R_f/10k　⟹　R_f = 10 kΩ</div>
+
+<p><strong>第四步：10 kHz 处的衰减</strong></p>
+<div class="math">f/f_p = 10　；　|A_u| = 2/√(1 + 10²) = 2/10.05 = 0.199</div>
+<div class="math">20 lg(0.199/2) = 20 lg(0.0995) ≈ −20.1 dB</div>
+
+<p>
+  <strong>物理意义</strong>：一阶滤波器每升高十倍频，增益降为十分之一。
+  10 kHz 比截止频率高一个十倍频，所以相对通带衰减 20 dB。
+  若要把 10 kHz 压到 <code>−40 dB</code>，必须用二阶。
+</p>
+
+<div class="tip">
+  <span class="tip-label">为什么不用无源 RC</span>
+  无源 RC 接上负载 <code>R_L</code> 后，截止频率变成
+  <code>1/(2π(R∥R_L)C)</code>，随负载漂移；而且通带本身就有
+  <code>R_L/(R+R_L)</code> 的衰减。有源滤波器用跟随器隔离，
+  <code>f_p</code> 与负载无关，通带增益还可以大于 1。
+</div>
+
+<h2>三、一阶高通有源滤波器</h2>
+
+<p>
+  把 <code>R</code> 和 <code>C</code> 的位置互换：<code>C</code> 串联、<code>R</code> 并联。
+  低频时电容容抗大，信号被挡住；高频时容抗趋零，信号直通。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" width="100%" height="auto" role="img" aria-label="一阶高通有源滤波器：C串联R并联，后接同相跟随器">
+    <circle cx="60" cy="180" r="4" class="dot"/>
+    <text x="26" y="172" class="lbl">u_i</text>
+    <line class="wire" x1="60" y1="180" x2="60" y2="205"/>
+    <circle cx="60" cy="220" r="15" fill="none" style="stroke:var(--text);stroke-width:2.5"/>
+    <text x="60" y="226" text-anchor="middle" class="lbl">~</text>
+    <line class="wire" x1="60" y1="235" x2="60" y2="255"/>
+    <line class="wire thin" x1="38" y1="255" x2="82" y2="255"/>
+    <line class="wire thin" x1="45" y1="263" x2="75" y2="263"/>
+    <line class="wire thin" x1="52" y1="271" x2="68" y2="271"/>
+
+    <line class="wire" x1="60" y1="180" x2="160" y2="180"/>
+    <line class="wire" x1="160" y1="158" x2="160" y2="202" stroke-width="4"/>
+    <line class="wire" x1="176" y1="158" x2="176" y2="202" stroke-width="4"/>
+    <line class="wire" x1="176" y1="180" x2="330" y2="180"/>
+    <text x="168" y="146" text-anchor="middle" class="lbl">C</text>
+    <circle class="dot" cx="270" cy="180" r="4"/>
+
+    <line class="wire" x1="270" y1="180" x2="270" y2="222"/>
+    <rect class="area" x="256" y="222" width="28" height="56" rx="3" style="stroke:var(--text);stroke-width:2.5"/>
+    <text x="300" y="254" class="lbl">R</text>
+    <line class="wire" x1="270" y1="278" x2="270" y2="294"/>
+    <line class="wire thin" x1="248" y1="294" x2="292" y2="294"/>
+    <line class="wire thin" x1="255" y1="302" x2="285" y2="302"/>
+    <line class="wire thin" x1="262" y1="310" x2="278" y2="310"/>
+
+    <polygon points="330,150 330,230 400,190" class="area" style="stroke:var(--text);stroke-width:2.5"/>
+    <text x="341" y="184">+</text>
+    <text x="341" y="217">−</text>
+
+    <line class="wire" x1="400" y1="190" x2="450" y2="190"/>
+    <circle class="dot" cx="450" cy="190" r="4"/>
+    <line class="wire" x1="450" y1="190" x2="450" y2="248"/>
+    <line class="wire" x1="450" y1="248" x2="310" y2="248"/>
+    <line class="wire" x1="310" y1="248" x2="310" y2="210"/>
+    <line class="wire" x1="310" y1="210" x2="330" y2="210"/>
+
+    <line class="wire" x1="450" y1="190" x2="580" y2="190"/>
+    <text x="586" y="184" class="lbl">u_o</text>
+
+    <text x="360" y="330" text-anchor="middle" class="lbl">f_p = 1/(2πRC)　，　A_u = A_up · (j f/f_p)/(1 + j f/f_p)</text>
+  </svg>
+</div>
+
+<h3>3.1 推导</h3>
+
+<p>对 <code>RC</code> 节点列 KCL，电容电流为 <code>(u_A − u_i) jωC</code>：</p>
+<div class="math">(u_A − u_i) jωC + u_A/R = 0</div>
+<div class="math">u_A (jωC + 1/R) = u_i jωC</div>
+<div class="math">A_u = u_o/u_i = (jωRC)/(1 + jωRC) = (j f/f_p)/(1 + j f/f_p)</div>
+
+<p>幅频：</p>
+<div class="math">|A_u| = (f/f_p)/√(1 + (f/f_p)²)</div>
+
+<ul>
+  <li><code>f ≪ f_p</code>：<code>|A_u| ≈ f/f_p</code>，每升高十倍频上升十倍，即
+      <code>+20 dB/十倍频</code>，相移 <code>+90°</code>；</li>
+  <li><code>f = f_p</code>：<code>|A_u| = 0.707</code>（<code>−3 dB</code>），相移 <code>+45°</code>；</li>
+  <li><code>f ≫ f_p</code>：<code>|A_u| ≈ 1</code>，相移趋于 0。</li>
+</ul>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" width="100%" height="auto" role="img" aria-label="一阶高通幅频特性：低频以每十倍频20分贝上升，截止频率后平坦">
+    <line class="wire thin" x1="80" y1="270" x2="660" y2="270"/>
+    <polygon points="660,264 660,276 676,270" fill="#1a1a1a"/>
+    <line class="wire thin" x1="80" y1="270" x2="80" y2="50"/>
+    <polygon points="74,50 86,50 80,34" fill="#1a1a1a"/>
+    <text x="690" y="276" class="lbl">f</text>
+    <text x="72" y="46" text-anchor="end" class="lbl">dB</text>
+
+    <line class="wire thin" x1="80" y1="110" x2="660" y2="110"/>
+    <text x="72" y="114" text-anchor="end" class="lbl">0</text>
+    <line class="wire thin" x1="80" y1="210" x2="660" y2="210"/>
+    <text x="72" y="214" text-anchor="end" class="lbl">−20</text>
+
+    <line class="wire thin ideal" x1="140" y1="210" x2="380" y2="110"/>
+    <line class="wire thin ideal" x1="380" y1="110" x2="620" y2="110"/>
+    <path class="wire" d="M140,210 C210,178 330,132 380,125 C450,118 540,110 620,110" style="stroke:var(--accent)"/>
+
+    <line class="wire thin" x1="380" y1="125" x2="380" y2="270"/>
+    <text x="380" y="290" text-anchor="middle" class="lbl">f_p</text>
+    <line class="wire thin" x1="140" y1="210" x2="140" y2="270"/>
+    <text x="140" y="290" text-anchor="middle" class="lbl">0.1f_p</text>
+    <circle cx="380" cy="125" r="4" class="dot" style="fill:var(--accent)"/>
+    <text x="392" y="120" class="lbl" style="fill:var(--accent)">−3 dB</text>
+    <text x="230" y="164" class="lbl" style="fill:var(--accent)">+20 dB/十倍频</text>
+  </svg>
+</div>
+
+<p>
+  一阶高通的设计步骤与低通完全对称：先定 <code>f_p</code> 和 <code>C</code>，
+  再算 <code>R = 1/(2π f_p C)</code>。若用同相比例提高通带增益，
+  <code>A_up = 1 + R_f/R₁</code>，不影响 <code>f_p</code>。
+</p>
+
+<h2>四、二阶压控电压源低通滤波器（Sallen-Key）</h2>
+
+<p>
+  一阶滤波器的过渡带只有 <code>−20 dB/十倍频</code>，对付强干扰不够。
+  在 <code>RC</code> 网络里再加一节，并让运放提供增益，就得到二阶
+  <strong>压控电压源</strong>（VCVS，Sallen-Key）结构。它只需要一个运放、两只电阻、两只电容，
+  是有源滤波器里性价比最高的拓扑。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="100%" height="auto" role="img" aria-label="二阶Sallen-Key低通滤波器：两节RC级联，C1从中间节点接输出，运放接成同相放大">
+    <circle cx="55" cy="210" r="4" class="dot"/>
+    <text x="22" y="202" class="lbl">u_i</text>
+    <line class="wire" x1="55" y1="210" x2="55" y2="235"/>
+    <circle cx="55" cy="250" r="15" fill="none" style="stroke:var(--text);stroke-width:2.5"/>
+    <text x="55" y="256" text-anchor="middle" class="lbl">~</text>
+    <line class="wire" x1="55" y1="265" x2="55" y2="285"/>
+    <line class="wire thin" x1="33" y1="285" x2="77" y2="285"/>
+    <line class="wire thin" x1="40" y1="293" x2="70" y2="293"/>
+    <line class="wire thin" x1="47" y1="301" x2="63" y2="301"/>
+
+    <line class="wire" x1="55" y1="210" x2="120" y2="210"/>
+    <rect class="area" x="120" y="196" width="55" height="28" rx="3" style="stroke:var(--text);stroke-width:2.5"/>
+    <text x="147" y="188" text-anchor="middle" class="lbl">R</text>
+    <line class="wire" x1="175" y1="210" x2="250" y2="210"/>
+    <circle class="dot" cx="220" cy="210" r="4"/>
+
+    <rect class="area" x="250" y="196" width="55" height="28" rx="3" style="stroke:var(--text);stroke-width:2.5"/>
+    <text x="277" y="188" text-anchor="middle" class="lbl">R</text>
+    <line class="wire" x1="305" y1="210" x2="410" y2="210"/>
+    <circle class="dot" cx="350" cy="210" r="4"/>
+
+    <line class="wire" x1="350" y1="210" x2="350" y2="248"/>
+    <line class="wire" x1="328" y1="248" x2="372" y2="248" stroke-width="4"/>
+    <line class="wire" x1="328" y1="264" x2="372" y2="264" stroke-width="4"/>
+    <line class="wire" x1="350" y1="264" x2="350" y2="300"/>
+    <line class="wire thin" x1="328" y1="300" x2="372" y2="300"/>
+    <line class="wire thin" x1="335" y1="308" x2="365" y2="308"/>
+    <line class="wire thin" x1="342" y1="316" x2="358" y2="316"/>
+    <text x="384" y="260" class="lbl">C</text>
+
+    <line class="wire" x1="220" y1="210" x2="220" y2="120"/>
+    <line class="wire" x1="220" y1="120" x2="370" y2="120"/>
+    <line class="wire" x1="370" y1="100" x2="370" y2="140" stroke-width="4"/>
+    <line class="wire" x1="386" y1="100" x2="386" y2="140" stroke-width="4"/>
+    <line class="wire" x1="386" y1="120" x2="540" y2="120"/>
+    <line class="wire" x1="540" y1="120" x2="540" y2="220"/>
+    <line class="wire" x1="540" y1="220" x2="480" y2="220"/>
+    <circle class="dot" cx="540" cy="220" r="4"/>
+    <text x="378" y="88" text-anchor="middle" class="lbl">C</text>
+
+    <polygon points="410,180 410,260 480,220" class="area" style="stroke:var(--text);stroke-width:2.5"/>
+    <text x="421" y="214">+</text>
+    <text x="421" y="247">−</text>
+
+    <line class="wire" x1="410" y1="235" x2="410" y2="270"/>
+    <circle class="dot" cx="410" cy="270" r="4"/>
+    <rect class="area" x="396" y="300" width="28" height="50" rx="3" style="stroke:var(--text);stroke-width:2.5"/>
+    <text x="438" y="330" class="lbl">R₁</text>
+    <line class="wire" x1="410" y1="350" x2="410" y2="366"/>
+    <line class="wire thin" x1="388" y1="366" x2="432" y2="366"/>
+    <line class="wire thin" x1="395" y1="374" x2="425" y2="374"/>
+    <line class="wire thin" x1="402" y1="382" x2="418" y2="382"/>
+
+    <line class="wire" x1="410" y1="270" x2="460" y2="270"/>
+    <rect class="area" x="460" y="256" width="55" height="28" rx="3" style="stroke:var(--text);stroke-width:2.5"/>
+    <text x="487" y="248" text-anchor="middle" class="lbl">R_f</text>
+    <line class="wire" x1="515" y1="270" x2="540" y2="270"/>
+    <line class="wire" x1="540" y1="270" x2="540" y2="220"/>
+
+    <line class="wire" x1="480" y1="220" x2="590" y2="220"/>
+    <text x="596" y="214" class="lbl">u_o</text>
+
+    <text x="360" y="404" text-anchor="middle" class="lbl">A_up = 1 + R_f/R₁　，　f₀ = 1/(2πRC)　，　Q = 1/(3 − A_up)</text>
+  </svg>
+</div>
+
+<h3>4.1 传递函数推导</h3>
+
+<p>
+  设两个 <code>R</code> 相等、两个 <code>C</code> 相等，中间节点为 <code>A</code>，
+  运放同相端为 <code>B</code>。运放接成同相放大：
+</p>
+
+<div class="math">u_o = A_up · u_B　，　A_up = 1 + R_f/R₁</div>
+
+<p>对节点 <code>A</code> 列 KCL（<code>C</code> 从 <code>A</code> 接到输出 <code>u_o</code>）：</p>
+
+<div class="math">(u_A − u_i)/R + (u_A − u_B)/R + (u_A − u_o) jωC = 0</div>
+
+<p>对节点 <code>B</code> 列 KCL（<code>C</code> 从 <code>B</code> 接地）：</p>
+
+<div class="math">(u_B − u_A)/R + u_B · jωC = 0</div>
+
+<p>两式联立，消去 <code>u_A、u_B</code>，得到标准二阶低通形式：</p>
+
+<div class="math">A_u(jω) = A_up / [ 1 + jωRC(3 − A_up) + (jωRC)² ]</div>
+
+<p>把它写成标准式：</p>
+
+<div class="math">A_u = A_up / [ 1 − (f/f₀)² + j (1/Q)(f/f₀) ]</div>
+
+<p>对比系数，得到三个设计公式：</p>
+
+<div class="math">f₀ = 1/(2πRC)　；　1/Q = 3 − A_up　；　Q = 1/(3 − A_up)</div>
+
+<p>幅频特性：</p>
+
+<div class="math">|A_u| = A_up / √[ (1 − (f/f₀)²)² + (f/(Q f₀))² ]</div>
+
+<h3>4.2 Q 值是二阶滤波器的灵魂</h3>
+
+<p>
+  <code>Q</code> 描述"极点离虚轴有多近"，直接决定幅频曲线在 <code>f₀</code> 附近是
+  <strong>下凹、平坦还是凸起</strong>：
+</p>
+
+<table>
+  <tr><th>Q</th><th><code>A_up = 3 − 1/Q</code></th><th>幅频形状</th><th>用途</th></tr>
+  <tr><td>0.5</td><td>1.0</td><td>两个实极点，临界阻尼，<code>f₀</code> 处 −6 dB</td><td>最平坦无峰值，但过渡带最缓</td></tr>
+  <tr><td>0.707</td><td>1.586</td><td>巴特沃斯，最大平坦，<code>f₀</code> 处 −3 dB</td><td>通用低通、抗混叠</td></tr>
+  <tr><td>1</td><td>2.0</td><td><code>f₀</code> 处 0 dB，峰值 +1.25 dB</td><td>略提升高频边缘</td></tr>
+  <tr><td>2</td><td>2.5</td><td>峰值 +6.3 dB</td><td>窄带选频、需要陡峭边缘</td></tr>
+  <tr><td>→∞</td><td>→3</td><td>自激振荡</td><td>不能用于滤波</td></tr>
+</table>
+
+<p>
+  关键结论：<strong><code>A_up</code> 必须小于 3</strong>。当 <code>A_up → 3</code> 时
+  <code>Q → ∞</code>，极点跑到虚轴上，电路自激；超过 3 则极点进入右半平面，
+  电路不稳定。设计时通常留 20% 余量，把 <code>A_up</code> 控制在 2.5 以下。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="100%" height="auto" role="img" aria-label="二阶低通不同Q值的幅频特性曲线族：Q越大峰值越高，高频均以每十倍频40分贝下降">
+    <line class="wire thin" x1="110" y1="360" x2="640" y2="360"/>
+    <polygon points="640,354 640,366 656,360" fill="#1a1a1a"/>
+    <line class="wire thin" x1="110" y1="360" x2="110" y2="46"/>
+    <polygon points="104,46 116,46 110,30" fill="#1a1a1a"/>
+    <text x="670" y="366" class="lbl">f/f₀</text>
+    <text x="102" y="40" text-anchor="end" class="lbl">dB</text>
+
+    <line class="wire thin" x1="110" y1="120" x2="640" y2="120"/>
+    <text x="102" y="124" text-anchor="end" class="lbl">0</text>
+    <line class="wire thin" x1="110" y1="60" x2="640" y2="60"/>
+    <text x="102" y="64" text-anchor="end" class="lbl">+10</text>
+    <line class="wire thin" x1="110" y1="180" x2="640" y2="180"/>
+    <text x="102" y="184" text-anchor="end" class="lbl">−10</text>
+    <line class="wire thin" x1="110" y1="240" x2="640" y2="240"/>
+    <text x="102" y="244" text-anchor="end" class="lbl">−20</text>
+    <line class="wire thin" x1="110" y1="300" x2="640" y2="300"/>
+    <text x="102" y="304" text-anchor="end" class="lbl">−30</text>
+    <line class="wire thin" x1="110" y1="360" x2="640" y2="360"/>
+    <text x="102" y="364" text-anchor="end" class="lbl">−40</text>
+
+    <line class="wire thin" x1="360" y1="120" x2="360" y2="360"/>
+    <text x="360" y="382" text-anchor="middle" class="lbl">1</text>
+    <text x="110" y="382" text-anchor="middle" class="lbl">0.1</text>
+    <text x="610" y="382" text-anchor="middle" class="lbl">10</text>
+
+    <path class="wire thin" d="M110,120 C180,121 250,127 285,132 C310,137 340,146 360,156 C390,170 415,190 435,204 C460,222 470,230 479,240 C520,270 570,320 610,360"/>
+    <path class="wire" d="M110,120 C180,120 250,121 285,122 C320,124 350,131 360,138 C390,153 415,177 435,194 C460,214 470,225 479,235 C520,268 570,320 610,360" style="stroke:var(--accent)"/>
+    <path class="wire" d="M110,120 C170,119 230,116 270,113 C300,112 330,114 360,120 C390,132 415,152 435,187 C460,210 470,220 479,232 C520,266 570,320 610,360" style="stroke:var(--accent);stroke-dasharray:8 5"/>
+    <path class="wire" d="M110,120 C160,116 200,110 240,103 C280,96 320,86 352,82 C380,84 400,110 410,130 C420,145 425,160 435,180 C460,210 470,220 479,229 C520,264 570,320 610,360" style="stroke:var(--accent);stroke-width:3.5"/>
+
+    <text x="300" y="118" class="lbl">Q=0.5</text>
+    <text x="250" y="146" class="lbl">Q=0.707</text>
+    <text x="332" y="100" class="lbl">Q=1</text>
+    <text x="380" y="76" class="lbl" style="fill:var(--accent)">Q=2</text>
+    <text x="500" y="330" class="lbl" style="fill:var(--accent)">−40 dB/十倍频</text>
+  </svg>
+</div>
+
+<h3>例 2：Sallen-Key 二阶低通的参数</h3>
+
+<p>
+  取 <code>R = 10 kΩ，C = 16 nF</code>，<code>R₁ = 10 kΩ，R_f = 5.86 kΩ</code>。
+  求 <code>f₀、A_up、Q</code>，并判断是否为巴特沃斯响应。
+</p>
+
+<p><strong>第一步：f₀</strong></p>
+<div class="math">f₀ = 1/(2πRC) = 1/(2π × 10k × 16n)</div>
+<div class="math">f₀ = 1/(1.005 × 10⁻³) ≈ 995 Hz</div>
+
+<p><strong>第二步：A_up</strong></p>
+<div class="math">A_up = 1 + R_f/R₁ = 1 + 5.86/10 = 1.586</div>
+
+<p><strong>第三步：Q</strong></p>
+<div class="math">Q = 1/(3 − A_up) = 1/(3 − 1.586) = 1/1.414 = 0.707</div>
+
+<p><strong>第四步：判断</strong></p>
+<p>
+  <code>Q = 0.707 = 1/√2</code>，正是<strong>巴特沃斯</strong>（最大平坦）响应。
+  <code>f = f₀</code> 处：
+</p>
+<div class="math">|A_u| = A_up · Q = 1.586 × 0.707 = 1.121 = A_up/√2</div>
+<p>
+  正好是 <code>−3 dB</code>，且通带内没有峰值。这就是"截止频率处恰好 −3 dB"的由来。
+</p>
+
+<h3>例 3：给定 A_up = 2，求 Q 与峰值</h3>
+
+<p>
+  其余参数不变，只把 <code>R_f</code> 调到 <code>10 kΩ</code>，使 <code>A_up = 2</code>。
+  求 <code>Q</code>、峰值频率、峰值幅度。
+</p>
+
+<p><strong>第一步：Q</strong></p>
+<div class="math">Q = 1/(3 − 2) = 1</div>
+
+<p><strong>第二步：峰值频率</strong>。对幅频公式求极值，令
+<code>d|A_u|/d(f/f₀) = 0</code>：</p>
+<div class="math">f_pk = f₀ √(1 − 1/(2Q²)) = f₀ √(1 − 0.5) = 0.707 f₀</div>
+
+<p><strong>第三步：峰值幅度</strong></p>
+<div class="math">|A_u|max = A_up · Q / √(1 − 1/(4Q²)) = 2 × 1 / √(0.75) = 2.309</div>
+<div class="math">相对通带：2.309/2 = 1.1547　⟹　20 lg 1.1547 = +1.25 dB</div>
+
+<p>
+  <strong>物理意义</strong>：<code>Q = 1</code> 时曲线在 <code>0.707f₀</code> 处鼓起
+  <code>1.25 dB</code>，然后才下降到 <code>−3 dB</code>。如果输入信号含有该频率附近的成分，
+  会被轻微放大。对多数抗混叠应用，<code>1.25 dB</code> 的凸起可以接受；
+  对增益平坦度要求高的测量电路，应选 <code>Q = 0.707</code>。
+</p>
+
+<p>
+  对照：<code>A_up = 2.5</code> 时 <code>Q = 2</code>，峰值
+  <code>2.5 × 2/√(1 − 1/16) ≈ 5.16</code>，相对提升 <code>6.3 dB</code>，
+  已经非常尖锐；再往上就逼近自激。
+</p>
+
+<h2>五、二阶高通、带通与带阻</h2>
+
+<h3>5.1 二阶高通：电容电阻互换</h3>
+
+<p>
+  把 Sallen-Key 低通里的两只 <code>R</code> 换成 <code>C</code>、两只 <code>C</code>
+  换成 <code>R</code>，就得到二阶高通。传递函数变成
+</p>
+
+<div class="math">A_u = A_up (j f/f₀)² / [ 1 − (f/f₀)² + j (1/Q)(f/f₀) ]</div>
+
+<p>
+  <code>f₀、Q、A_up</code> 的公式完全不变：
+  <code>f₀ = 1/(2πRC)</code>，<code>Q = 1/(3 − A_up)</code>。
+  低频段以 <code>+40 dB/十倍频</code> 上升，高频段平坦。
+</p>
+
+<h3>5.2 带通：低通 + 高通级联</h3>
+
+<p>
+  把高通和低通串联，让高通的 <code>f_L</code> 远低于低通的 <code>f_H</code>，
+  中间就形成通带。总增益是两级增益之积：
+</p>
+
+<div class="math">A_up = A_up1 · A_up2</div>
+
+<p>
+  中心频率与带宽：
+</p>
+
+<div class="math">f₀ = √(f_L · f_H)　；　BW = f_H − f_L　；　Q = f₀/BW</div>
+
+<p>
+  例：<code>f_L = 300 Hz，f_H = 3 kHz</code>，则
+  <code>f₀ = √(300 × 3000) ≈ 949 Hz</code>，
+  <code>BW = 2700 Hz</code>，<code>Q ≈ 0.35</code>。
+  两级级联的过渡带更陡：低端 <code>+20 dB/十倍频</code>，高端
+  <code>−20 dB/十倍频</code>；若每级都用二阶，则两侧各 <code>±40 dB/十倍频</code>。
+</p>
+
+<div class="tip">
+  <span class="tip-label">级联的加载问题</span>
+  无源 RC 级联时，后级输入阻抗会加载前级，导致 <code>f_L、f_H</code> 都偏移。
+  有源滤波器每级都有运放缓冲，输出阻抗接近零，才能按公式直接相乘。
+  这就是"有源"最实际的价值。
+</div>
+
+<h3>5.3 带阻：双 T 网络</h3>
+
+<p>
+  带阻（陷波）最经典的实现是<strong>双 T 网络</strong>：两个 T 型网络并联，
+  一个由两只 <code>R</code> 和一只 <code>C</code> 组成，另一个由两只 <code>C</code>
+  和一只 <code>R</code> 组成。在中心频率
+</p>
+
+<div class="math">f₀ = 1/(2πRC)</div>
+
+<p>
+  两条支路的信号大小相等、相位相反，互相抵消，输出出现很深的陷波。
+  把双 T 网络接在运放的反馈里，并用同相放大提供少量正反馈，
+  可以提高 <code>Q</code>、加深陷波。无源双 T 的 <code>Q</code> 只有 0.25，
+  加入正反馈后可做到 5～50。
+</p>
+
+<p>
+  陷波深度受元件匹配限制：电阻、电容只要有 1% 失配，凹陷就不再是"无穷深"。
+  50 Hz 工频陷波器通常需要 <code>0.1%</code> 的 <code>RC</code> 匹配，
+  或者用开关电容/数字滤波方案。
+</p>
+
+<h3>5.4 阶数与衰减斜率</h3>
+
+<table>
+  <tr><th>阶数 n</th><th>低通阻带斜率</th><th>高通阻带斜率</th><th>实现要点</th></tr>
+  <tr><td>1</td><td>−20 dB/十倍频</td><td>+20 dB/十倍频</td><td>1 个电容、1 个运放</td></tr>
+  <tr><td>2</td><td>−40 dB/十倍频</td><td>+40 dB/十倍频</td><td>2 个电容、1 个运放（Sallen-Key）</td></tr>
+  <tr><td>4</td><td>−80 dB/十倍频</td><td>+80 dB/十倍频</td><td>两个二阶级联</td></tr>
+  <tr><td>6</td><td>−120 dB/十倍频</td><td>+120 dB/十倍频</td><td>三个二阶级联</td></tr>
+</table>
+
+<p>
+  注意：斜率是<strong>渐近</strong>值，只在远离 <code>f₀</code> 的阻带成立。
+  在 <code>f₀</code> 附近，实际曲线受 <code>Q</code> 影响，可能比渐近线高或低。
+</p>
+
+<h3>例 4：某频率处的衰减</h3>
+
+<p>
+  二阶巴特沃斯低通（<code>Q = 0.707，A_up = 1.586</code>），<code>f₀ = 1 kHz</code>。
+  求 <code>2 kHz</code> 和 <code>10 kHz</code> 处相对通带的衰减，并与一阶比较。
+</p>
+
+<p><strong>第一步：2 kHz</strong>，<code>f/f₀ = 2</code></p>
+<div class="math">|A_u|/A_up = 1/√[ (1 − 2²)² + (2/0.707)² ]</div>
+<div class="math">= 1/√[ (−3)² + (2.828)² ] = 1/√(9 + 8) = 1/√17</div>
+<div class="math">= 0.2425　⟹　20 lg 0.2425 = −12.3 dB</div>
+
+<p><strong>第二步：10 kHz</strong>，<code>f/f₀ = 10</code></p>
+<div class="math">|A_u|/A_up = 1/√[ (1 − 100)² + (10/0.707)² ]</div>
+<div class="math">= 1/√(9801 + 200) = 1/√10001 ≈ 0.01</div>
+<div class="math">20 lg 0.01 = −40 dB</div>
+
+<p><strong>第三步：与一阶比较</strong></p>
+<table>
+  <tr><th>频率</th><th>一阶衰减</th><th>二阶巴特沃斯衰减</th></tr>
+  <tr><td>2 kHz</td><td>−7.0 dB</td><td>−12.3 dB</td></tr>
+  <tr><td>10 kHz</td><td>−20.0 dB</td><td>−40.0 dB</td></tr>
+</table>
+
+<p>
+  <strong>物理意义</strong>：二阶在 <code>2f₀</code> 处只比一阶多衰减 5.3 dB，
+  但在 <code>10f₀</code> 处多衰减 20 dB。阶数的优势要在<strong>远离</strong>
+  <code>f₀</code> 的阻带才充分体现。如果干扰频率紧贴截止频率，
+  单纯提高阶数不如先把 <code>f₀</code> 挪近干扰源。
+</p>
+
+<h2>六、设计流程与工程陷阱</h2>
+
+<h3>6.1 五步设计法</h3>
+
+<ol>
+  <li><strong>定指标</strong>：通带增益 <code>A_up</code>、截止频率 <code>f_p</code>（或 <code>f₀</code>）、
+      阻带衰减要求、过渡带宽度。</li>
+  <li><strong>定阶数</strong>：根据衰减斜率选 <code>n</code>。例如要求 <code>10f_p</code> 处
+      <code>−40 dB</code>，一阶只有 <code>−20 dB</code>，必须二阶。</li>
+  <li><strong>选电容</strong>：先取一个标称电容（如 <code>10 nF、16 nF、100 nF</code>），
+      再算电阻。电容比电阻更难凑，先定电容更容易落到标称值。</li>
+  <li><strong>算电阻与增益</strong>：一阶 <code>R = 1/(2πf_pC)</code>；
+      二阶 <code>f₀ = 1/(2πRC)</code>，<code>Q = 1/(3 − A_up)</code>，
+      <code>A_up = 1 + R_f/R₁</code>。</li>
+  <li><strong>验算</strong>：检查 <code>A_up &lt; 3</code>、运放带宽、压摆率、
+      电容耐压与温漂，并用实际标称值重算 <code>f₀</code>。</li>
+</ol>
+
+<h3>6.2 常见陷阱</h3>
+
+<ul>
+  <li><strong><code>A_up</code> 太接近 3</strong>：<code>Q</code> 对 <code>A_up</code> 极其敏感。
+      <code>A_up = 2.9</code> 时 <code>Q = 10</code>，元件误差 1% 就可能让 <code>Q</code>
+      翻倍甚至自激。设计值不要超过 2.5。</li>
+  <li><strong>把跟随器当万能缓冲</strong>：Sallen-Key 的 <code>C</code> 从中间节点接输出，
+      运放输出阻抗在高频下不是零，会引入相位滞后，可能导致峰值偏高。
+      高频应用要选高带宽、低输出阻抗的运放。</li>
+  <li><strong>忽略运放带宽</strong>：运放的闭环带宽必须远高于 <code>f₀</code>，
+      否则实际 <code>Q</code> 和 <code>f₀</code> 都会偏移。经验值：<code>GBW ≥ 20 f₀</code>。</li>
+  <li><strong>电容介质选错</strong>：陶瓷 <code>Y5V</code> 的容量随电压、温度变化可达 50%，
+      会直接把 <code>f₀</code> 拉走。滤波电容优先 <code>C0G/NP0</code> 或薄膜电容。</li>
+  <li><strong>二阶高通直接套低通公式</strong>：<code>f₀、Q</code> 公式相同，但
+      <code>A_up</code> 对 <code>Q</code> 的影响方向不变，仍要 <code>A_up &lt; 3</code>。</li>
+</ul>
+
+<h3>6.3 有源 vs 无源</h3>
+
+<table>
+  <tr><th>项目</th><th>无源 RC</th><th>有源 RC</th></tr>
+  <tr><td>通带增益</td><td>&lt; 1，且随负载变</td><td>可大于 1，由电阻比决定</td></tr>
+  <tr><td>负载影响</td><td>大，<code>f_p</code> 漂移</td><td>几乎无，运放隔离</td></tr>
+  <tr><td>级联</td><td>会互相加载</td><td>可直接级联</td></tr>
+  <tr><td>高频性能</td><td>好（无运放限制）</td><td>受运放 GBW、压摆率限制</td></tr>
+  <tr><td>成本/功耗</td><td>低</td><td>需要运放与电源</td></tr>
+  <tr><td>适用频率</td><td>射频、大功率</td><td>音频、测量、低频</td></tr>
+</table>
+
+<h2>七、例题小结</h2>
+
+<table>
+  <tr><th>例题</th><th>核心公式</th><th>结果</th></tr>
+  <tr><td>例 1：一阶 LPF 设计</td><td><code>R = 1/(2πf_pC)</code></td><td><code>R ≈ 15.9 kΩ，A_up = 2，10 kHz 处 −20 dB</code></td></tr>
+  <tr><td>例 2：Sallen-Key 参数</td><td><code>f₀ = 1/(2πRC)，Q = 1/(3−A_up)</code></td><td><code>f₀ ≈ 995 Hz，A_up = 1.586，Q = 0.707</code></td></tr>
+  <tr><td>例 3：A_up = 2</td><td><code>f_pk = f₀√(1−1/(2Q²))</code></td><td><code>Q = 1，峰值 +1.25 dB @ 0.707f₀</code></td></tr>
+  <tr><td>例 4：衰减计算</td><td><code>|A|/A_up</code> 公式</td><td><code>2f₀ 处 −12.3 dB，10f₀ 处 −40 dB</code></td></tr>
+</table>
+
+<h2>八、速查表</h2>
+
+<table>
+  <tr><th>项目</th><th>一阶</th><th>二阶 Sallen-Key</th></tr>
+  <tr><td>传递函数</td><td><code>A_up/(1 + jf/f_p)</code></td><td><code>A_up/[1−(f/f₀)² + j(f/(Qf₀))]</code></td></tr>
+  <tr><td>特征频率</td><td><code>f_p = 1/(2πRC)</code></td><td><code>f₀ = 1/(2πRC)</code></td></tr>
+  <tr><td>Q</td><td>固定 0.707（无峰值）</td><td><code>Q = 1/(3−A_up)</code></td></tr>
+  <tr><td>通带增益</td><td><code>A_up = 1 + R_f/R₁</code></td><td>同左，且必须 <code>&lt; 3</code></td></tr>
+  <tr><td>阻带斜率</td><td><code>−20 dB/十倍频</code></td><td><code>−40 dB/十倍频</code></td></tr>
+  <tr><td>峰值</td><td>无</td><td><code>Q &gt; 0.707</code> 时出现，<code>f_pk = f₀√(1−1/(2Q²))</code></td></tr>
+  <tr><td>元件数</td><td>1R + 1C + 运放</td><td>2R + 2C + 运放 + 增益电阻</td></tr>
+</table>
+
+<h2>九、Quiz — 考研风格题</h2>
+
+<p>下面 4 道题覆盖一阶、二阶、稳定性与斜率四个高频考点。</p>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>四种类型一张图</strong>：低通、高通、带通、带阻，靠通带位置区分；指标是 <code>A_up、f_p、</code>斜率。</li>
+  <li><strong>一阶靠 RC</strong>：<code>f_p = 1/(2πRC)</code>，过渡带 <code>−20 dB/十倍频</code>；
+      运放只负责缓冲和增益，不改变 <code>f_p</code>。</li>
+  <li><strong>二阶靠 Q</strong>：Sallen-Key 的 <code>Q = 1/(3−A_up)</code>，
+      <code>A_up &lt; 3</code> 是稳定底线；<code>Q = 0.707</code> 是巴特沃斯。</li>
+  <li><strong>阶数决定斜率</strong>：<code>n</code> 阶 = <code>±20n dB/十倍频</code>，
+      但优势只在远离 <code>f₀</code> 的阻带体现。</li>
+  <li><strong>有源的价值是隔离</strong>：输入阻抗高、输出阻抗低，<code>f_p</code> 不随负载漂移，才能级联。</li>
+</ol>
+
+<p>
+  到这里，第 7 章"信号的运算和处理"完整闭环：
+  0024 用线性网络做加减积分，0025 用非线性网络做对数指数与乘法，0026 用复数网络做频率选择。
+  三条路都从同一个起点出发——<strong>负反馈 + 虚短虚断</strong>。
+  下一章进入波形发生与信号转换，这套分析工具仍然不会过时。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第 7 章 §7.4「有源滤波电路」。
+  重点看一阶低通/高通的传递函数推导、Sallen-Key 二阶低通的 <code>Q</code> 与
+  <code>A_up</code> 关系，以及巴特沃斯、切比雪夫响应的定义。
+</div>
+
+<div class="ask-agent">
+  截止频率算出来和仿真差 20%？二阶滤波器一上电就自激？<code>Q</code> 到底该取多少？<br>
+  <strong>直接问我</strong>——把 <code>R、C、A_up</code> 和目标 <code>f₀</code> 发我，一起把极点和峰值算清楚。
+</div>
+
+<div class="footer-nav">
+  <a href="./0025-log-antilog-and-multiplier.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0026 / 0035</span>
+  <a href="./0027-instrumentation-amplifier.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "一阶低通滤波器 f_p = 1 kHz，通带增益 A_up = 1。在 f = 10 kHz 处，相对通带的衰减约为？",
+    options: [
+      "−3 dB",
+      "−10 dB",
+      "−20 dB",
+      "−40 dB"
+    ],
+    correct: 2,
+    explain: "一阶低通 |A_u| = A_up/√(1+(f/f_p)²)。f/f_p = 10，|A_u| = 1/√101 ≈ 0.0995，20 lg 0.0995 ≈ −20 dB。每升高一个十倍频衰减 20 dB，这是「一阶 −20 dB/十倍频」的直接结果；−40 dB 是二阶才有的斜率。"
+  },
+  {
+    q: "Sallen-Key 二阶低通中，运放接成同相放大且 A_up = 2。品质因数 Q 等于？",
+    options: [
+      "0.5",
+      "0.707",
+      "1",
+      "2"
+    ],
+    correct: 2,
+    explain: "Q = 1/(3 − A_up) = 1/(3 − 2) = 1。A_up = 1 时 Q = 0.5；A_up = 1.586 时 Q = 0.707（巴特沃斯）；A_up = 2.5 时 Q = 2。记住分母是 3 − A_up，不是 A_up − 3。"
+  },
+  {
+    q: "Sallen-Key 二阶低通的 A_up 调到 3 会发生什么？",
+    options: [
+      "Q = 0，滤波器变成一阶",
+      "Q → ∞，电路自激振荡",
+      "截止频率翻倍",
+      "通带增益自动降为 1"
+    ],
+    correct: 1,
+    explain: "Q = 1/(3 − A_up)。A_up → 3 时分母趋于零，Q → ∞，极点跑到虚轴上，电路失去阻尼并自激。A_up > 3 时极点进入右半平面，电路不稳定。所以设计时必须保证 A_up < 3，工程上常留余量取 A_up ≤ 2.5。"
+  },
+  {
+    q: "二阶低通滤波器在远离截止频率的阻带，幅频曲线渐近斜率是多少？",
+    options: [
+      "−20 dB/十倍频",
+      "−30 dB/十倍频",
+      "−40 dB/十倍频",
+      "−60 dB/十倍频"
+    ],
+    correct: 2,
+    explain: "每增加一个极点，阻带斜率增加 −20 dB/十倍频。二阶有两个极点，所以是 −40 dB/十倍频；三阶才是 −60 dB/十倍频。注意这是渐近值，在 f₀ 附近实际曲线还受 Q 影响。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！第 7 章的运算与滤波已经闭环，可以进下一章了。' :
+        right >= 2 ? '👍 基本掌握。建议回看错题对应的那一节，重点练 Q 与 A_up 的关系。' :
+        '📚 先把一阶和二阶的传递函数、Q 公式各写一遍，再回到 quiz。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

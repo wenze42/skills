@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0022 — 差分放大电路的四种接法与共模抑制比</title>
+<link rel="stylesheet" href="../assets/teach.css">
+<style>
+/* 720 宽视图下的字号补偿，保证手机端可读 */
+.schematic text { font-size: 21px; }
+.schematic .lbl { font-size: 18px; }
+</style>
+</head>
+<body>
+
+<h1>Lesson 0022 — 差分放大电路的四种接法与共模抑制比</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0022 / 0023 · 约 55 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  需要 <a href="./0013-differential-amplifier.html">Lesson 0013（差分放大电路）</a> 的
+  差模/共模分解、半边电路法，以及
+  <a href="./0021-current-source-circuits.html">Lesson 0021（电流源电路）</a> 的输出电阻概念。
+  0013 给了结论，这一课把四种接法<strong>逐行推导</strong>，并回答“为什么恒流源能把 K_CMR 再抬高二十多分贝”。
+</div>
+
+<p>
+  差分放大电路有<strong>两个输入端、两个输出端</strong>。实际使用时，每个端口都可以选择“双端”或“单端”，
+  组合起来就是四种接法。考研几乎年年在这里出选择题或计算题，因为一张表就能同时考
+  <code>A_d、R_i、R_o、K_CMR</code> 四个量。
+</p>
+<p>
+  四种接法的差别只来自两件事：<strong>输入端怎么加信号</strong>，<strong>输出端从哪取电压</strong>。
+  输入方式影响 <code>R_i</code> 和共模分量；输出方式影响增益是否减半、<code>R_o</code> 是一只还是两只 <code>R_c</code>。
+  把这两件事分开看，表就不用死记。
+</p>
+
+<h2>一、完整电路与符号约定</h2>
+
+<p>
+  先约定本课的统一电路：T1、T2 完全对称，<code>R_c1 = R_c2 = R_c</code>，
+  基极各串 <code>R_b</code>，发射极共接一个<strong>恒流源</strong> <code>I_0</code> 到负电源。
+  这个恒流源就是 0021 讲的电流源，它的交流等效电阻记作 <code>r_o</code>。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" width="100%" height="auto" role="img" aria-label="恒流源偏置的差分放大电路：T1 与 T2 对称，集电极各接 Rc，发射极共接恒流源 I0 到负电源，双端输入双端输出">
+    <text x="360" y="30" text-anchor="middle">+V_CC</text>
+    <line class="wire" x1="120" y1="46" x2="600" y2="46"/>
+
+    <line class="wire" x1="210" y1="46" x2="210" y2="90"/>
+    <rect class="area" x="193" y="90" width="34" height="60" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="238" y="126" class="lbl">R_c1</text>
+    <line class="wire" x1="210" y1="150" x2="210" y2="200"/>
+    <circle class="dot" cx="210" cy="200" r="4"/>
+
+    <line class="wire" x1="490" y1="46" x2="490" y2="90"/>
+    <rect class="area" x="473" y="90" width="34" height="60" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="518" y="126" class="lbl">R_c2</text>
+    <line class="wire" x1="490" y1="150" x2="490" y2="200"/>
+    <circle class="dot" cx="490" cy="200" r="4"/>
+
+    <line class="wire" x1="180" y1="222" x2="180" y2="278" stroke-width="4"/>
+    <line class="wire" x1="180" y1="235" x2="210" y2="208"/>
+    <line class="wire" x1="210" y1="208" x2="210" y2="200"/>
+    <line class="wire" x1="180" y1="265" x2="210" y2="292"/>
+    <polygon points="195,274 211,280 205,297" fill="#1a1a1a"/>
+    <line class="wire" x1="210" y1="292" x2="210" y2="320"/>
+    <text x="166" y="300" text-anchor="end" class="lbl">T1</text>
+
+    <line class="wire" x1="460" y1="222" x2="460" y2="278" stroke-width="4"/>
+    <line class="wire" x1="460" y1="235" x2="490" y2="208"/>
+    <line class="wire" x1="490" y1="208" x2="490" y2="200"/>
+    <line class="wire" x1="460" y1="265" x2="490" y2="292"/>
+    <polygon points="475,274 491,280 485,297" fill="#1a1a1a"/>
+    <line class="wire" x1="490" y1="292" x2="490" y2="320"/>
+    <text x="516" y="300" class="lbl">T2</text>
+
+    <circle cx="70" cy="250" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="54" y="240" text-anchor="end" class="lbl">u_i1</text>
+    <line class="wire" x1="70" y1="250" x2="180" y2="250"/>
+
+    <circle cx="630" cy="250" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="646" y="240" class="lbl">u_i2</text>
+    <line class="wire" x1="630" y1="250" x2="460" y2="250"/>
+
+    <line class="wire" x1="210" y1="200" x2="110" y2="200"/>
+    <circle cx="100" cy="200" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="100" y="184" text-anchor="middle" class="lbl">u_o1</text>
+
+    <line class="wire" x1="490" y1="200" x2="590" y2="200"/>
+    <circle cx="600" cy="200" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="600" y="184" text-anchor="middle" class="lbl">u_o2</text>
+
+    <line class="wire" x1="210" y1="320" x2="490" y2="320"/>
+    <circle class="dot" cx="350" cy="320" r="4"/>
+    <line class="wire" x1="350" y1="320" x2="350" y2="328"/>
+    <circle cx="350" cy="350" r="22" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire thin" x1="350" y1="332" x2="350" y2="366"/>
+    <polygon points="342,354 358,354 350,370" fill="#1a1a1a"/>
+    <text x="384" y="356" class="lbl">I_0</text>
+    <line class="wire" x1="350" y1="372" x2="350" y2="400"/>
+
+    <line class="wire" x1="120" y1="400" x2="600" y2="400"/>
+    <text x="126" y="390" text-anchor="start" class="lbl">−V_EE</text>
+
+    <text x="360" y="426" text-anchor="middle" class="lbl">恒流源偏置：直流电阻小、交流电阻 r_o 很大，共模负反馈很强</text>
+  </svg>
+</div>
+
+<p>
+  符号约定：<code>u_id = u_i1 − u_i2</code> 是差模输入，<code>u_ic = (u_i1 + u_i2)/2</code> 是共模输入。
+  输出也有两种取法：双端输出取 <code>u_o = u_o1 − u_o2</code>，单端输出只取 <code>u_o1</code>（或 <code>u_o2</code>）。
+</p>
+
+<h2>二、差模半边电路与共模半边电路</h2>
+
+<p>
+  四种接法的增益都能由两个“半边电路”推出来。这一步是整课的地基，务必自己画一遍。
+</p>
+
+<h3>2.1 差模：发射极是虚地</h3>
+
+<p>
+  差模输入时 <code>u_i1 = −u_i2 = u_id/2</code>。两管电流一增一减，在发射极节点相互抵消，
+  发射极电压不变，对差模信号相当于<strong>交流接地</strong>。沿中线劈开，半边就是一个普通共射电路：
+</p>
+
+<div class="math">A_d(半边) = −β R_c / (R_b + r_be)</div>
+
+<p>
+  注意：半边电路的输入电压是 <code>u_id/2</code>，输出是 <code>u_o1</code>。
+  双端输出时 <code>u_o = u_o1 − u_o2 = 2u_o1</code>，而输入 <code>u_id = 2 × (u_id/2)</code>，
+  分子分母的 2 约掉，所以<strong>双端输出的差模增益仍等于半边增益</strong>。
+</p>
+
+<h3>2.2 共模：每管等效发射极电阻 2R_e</h3>
+
+<p>
+  共模输入时两管基极同时升降，两管电流同增同减，流过发射极公共电阻的电流变化是单管的两倍。
+  把发射极公共电阻记为 <code>R_E</code>（长尾电阻或恒流源的 <code>r_o</code>），
+  则每管看到的等效发射极电阻是 <code>2R_E</code>。半边电路变成带发射极负反馈的共射电路：
+</p>
+
+<div class="math">A_c(单端) = −β R_c / [R_b + r_be + 2(1+β)R_E] ≈ −R_c / (2R_E)</div>
+
+<p>
+  近似条件 <code>2(1+β)R_E ≫ R_b + r_be</code>，在 <code>R_E</code> 为 10 kΩ、β 为 100 时成立得很好。
+  双端输出时，若电路完全对称，两个集电极的共模变化一模一样，相减为零，理想 <code>A_c = 0</code>。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" width="100%" height="auto" role="img" aria-label="共模与差模信号分解：左列两输入同相为共模，中列两输入反相为差模，右列合成后一管幅度大、一管幅度小">
+    <text x="130" y="34" text-anchor="middle" class="lbl">共模分量</text>
+    <text x="360" y="34" text-anchor="middle" class="lbl">差模分量</text>
+    <text x="590" y="34" text-anchor="middle" class="lbl">实际输入（合成）</text>
+
+    <line class="wire thin" x1="40" y1="120" x2="220" y2="120"/>
+    <line class="wire thin" x1="280" y1="120" x2="460" y2="120"/>
+    <line class="wire thin" x1="500" y1="120" x2="680" y2="120"/>
+    <line class="wire thin" x1="40" y1="250" x2="220" y2="250"/>
+    <line class="wire thin" x1="280" y1="250" x2="460" y2="250"/>
+    <line class="wire thin" x1="500" y1="250" x2="680" y2="250"/>
+
+    <text x="4" y="116" text-anchor="start" class="lbl">u_i1</text>
+    <text x="4" y="246" text-anchor="start" class="lbl">u_i2</text>
+
+    <path class="wire" d="M40,120 Q62,85 85,120 T130,120 T175,120 T220,120"/>
+    <path class="wire" d="M40,250 Q62,215 85,250 T130,250 T175,250 T220,250" style="stroke:var(--accent);stroke-dasharray:6 4"/>
+
+    <path class="wire" d="M280,120 Q302,85 325,120 T370,120 T415,120 T460,120"/>
+    <path class="wire" d="M280,250 Q302,285 325,250 T370,250 T415,250 T460,250" style="stroke:var(--accent)"/>
+
+    <path class="wire" d="M500,120 Q522,50 545,120 T590,120 T635,120 T680,120"/>
+    <path class="wire" d="M500,250 Q522,286 545,250 T590,250 T635,250 T680,250" style="stroke:var(--accent)"/>
+
+    <text x="130" y="300" text-anchor="middle" class="lbl">两路同相：只含共模</text>
+    <text x="360" y="300" text-anchor="middle" class="lbl">两路反相：只含差模</text>
+    <text x="590" y="300" text-anchor="middle" class="lbl">幅度一大一小：两者叠加</text>
+
+    <text x="360" y="340" text-anchor="middle" class="lbl">u_i1 = U_ic + U_id/2　　u_i2 = U_ic − U_id/2</text>
+  </svg>
+</div>
+
+<p>
+  上图右列是“实际输入”的样子：共模把两条曲线同时抬高，差模让它们一上一下。
+  分解公式就是图中最后一行的两式，反过来也成立：
+  <code>U_id = u_i1 − u_i2</code>，<code>U_ic = (u_i1 + u_i2)/2</code>。
+</p>
+
+<div class="tip">
+  <span class="tip-label">一句话记住半边电路</span>
+  <strong>差模看虚地，共模看 2R_E。</strong>
+  差模半边是普通共射，增益大；共模半边有强发射极负反馈，增益小。
+  两者之比就是共模抑制比。
+</div>
+
+<h2>三、四种接法逐一拆解</h2>
+
+<p>
+  四种接法的连线区别只有两处：输入端是“两路都接信号”还是“一路接信号、一路接地”；
+  输出端是“取两个集电极之差”还是“只取一个集电极”。
+  下图把四种情况并排画出来，注意接地符号和“空”端的位置。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 520" width="100%" height="auto" role="img" aria-label="差分放大电路四种接法示意：双端入双端出、双端入单端出、单端入双端出、单端入单端出，标出各端口的连接方式">
+    <text x="195" y="34" text-anchor="middle" class="lbl">① 双端输入 · 双端输出</text>
+    <rect class="area" x="125" y="110" width="140" height="90" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="195" y="148" text-anchor="middle" class="lbl">差分</text>
+    <text x="195" y="174" text-anchor="middle" class="lbl">放大电路</text>
+    <circle cx="60" cy="132" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="52" y="120" text-anchor="end" class="lbl">u_i1</text>
+    <line class="wire" x1="60" y1="132" x2="125" y2="132"/>
+    <circle cx="60" cy="178" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="52" y="196" text-anchor="end" class="lbl">u_i2</text>
+    <line class="wire" x1="60" y1="178" x2="125" y2="178"/>
+    <line class="wire" x1="265" y1="132" x2="330" y2="132"/>
+    <line class="wire" x1="265" y1="178" x2="330" y2="178"/>
+    <circle cx="340" cy="132" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="340" cy="178" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="298" y="122" text-anchor="middle" class="lbl">u_o1</text>
+    <text x="298" y="168" text-anchor="middle" class="lbl">u_o2</text>
+
+    <text x="555" y="34" text-anchor="middle" class="lbl">② 双端输入 · 单端输出</text>
+    <rect class="area" x="485" y="110" width="140" height="90" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="555" y="148" text-anchor="middle" class="lbl">差分</text>
+    <text x="555" y="174" text-anchor="middle" class="lbl">放大电路</text>
+    <circle cx="420" cy="132" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="412" y="120" text-anchor="end" class="lbl">u_i1</text>
+    <line class="wire" x1="420" y1="132" x2="485" y2="132"/>
+    <circle cx="420" cy="178" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="412" y="196" text-anchor="end" class="lbl">u_i2</text>
+    <line class="wire" x1="420" y1="178" x2="485" y2="178"/>
+    <line class="wire" x1="625" y1="132" x2="690" y2="132"/>
+    <circle cx="700" cy="132" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="694" y="120" text-anchor="end" class="lbl">u_o</text>
+    <line class="wire" x1="625" y1="178" x2="660" y2="178"/>
+    <text x="668" y="184" class="lbl">空</text>
+
+    <text x="195" y="270" text-anchor="middle" class="lbl">③ 单端输入 · 双端输出</text>
+    <rect class="area" x="125" y="346" width="140" height="90" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="195" y="384" text-anchor="middle" class="lbl">差分</text>
+    <text x="195" y="410" text-anchor="middle" class="lbl">放大电路</text>
+    <circle cx="60" cy="368" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="52" y="356" text-anchor="end" class="lbl">u_i</text>
+    <line class="wire" x1="60" y1="368" x2="125" y2="368"/>
+    <line class="wire" x1="60" y1="414" x2="125" y2="414"/>
+    <line class="wire" x1="60" y1="414" x2="60" y2="426"/>
+    <line class="wire" x1="46" y1="426" x2="74" y2="426"/>
+    <line class="wire" x1="52" y1="434" x2="68" y2="434"/>
+    <line class="wire" x1="58" y1="442" x2="62" y2="442"/>
+    <line class="wire" x1="265" y1="368" x2="330" y2="368"/>
+    <line class="wire" x1="265" y1="414" x2="330" y2="414"/>
+    <circle cx="340" cy="368" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="340" cy="414" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="298" y="358" text-anchor="middle" class="lbl">u_o1</text>
+    <text x="298" y="404" text-anchor="middle" class="lbl">u_o2</text>
+
+    <text x="555" y="270" text-anchor="middle" class="lbl">④ 单端输入 · 单端输出</text>
+    <rect class="area" x="485" y="346" width="140" height="90" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="555" y="384" text-anchor="middle" class="lbl">差分</text>
+    <text x="555" y="410" text-anchor="middle" class="lbl">放大电路</text>
+    <circle cx="420" cy="368" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="412" y="356" text-anchor="end" class="lbl">u_i</text>
+    <line class="wire" x1="420" y1="368" x2="485" y2="368"/>
+    <line class="wire" x1="420" y1="414" x2="485" y2="414"/>
+    <line class="wire" x1="420" y1="414" x2="420" y2="426"/>
+    <line class="wire" x1="406" y1="426" x2="434" y2="426"/>
+    <line class="wire" x1="412" y1="434" x2="428" y2="434"/>
+    <line class="wire" x1="418" y1="442" x2="422" y2="442"/>
+    <line class="wire" x1="625" y1="368" x2="690" y2="368"/>
+    <circle cx="700" cy="368" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="694" y="356" text-anchor="end" class="lbl">u_o</text>
+    <line class="wire" x1="625" y1="414" x2="660" y2="414"/>
+    <text x="668" y="420" class="lbl">空</text>
+
+    <text x="360" y="500" text-anchor="middle" class="lbl">输入决定 R_i 与共模分量；输出决定增益与 R_o</text>
+  </svg>
+</div>
+
+<h3>3.1 输入方式：<code>R_i</code> 与信号的分配</h3>
+
+<p>
+  双端输入时，信号源跨接在两个输入端之间，差模输入电阻是两管基极回路的串联：
+</p>
+
+<div class="math">R_i = 2(R_b + r_be)　（双端输入）</div>
+
+<p>
+  单端输入时，一端接信号、另一端接地。信号源仍然“看见”两管的基极回路串联：
+  电流从信号源出发，经 T1 的 <code>R_b + r_be</code> 到发射极，再经 T2 的 <code>R_b + r_be</code> 到地。
+  因此：
+</p>
+
+<div class="math">R_i = 2(R_b + r_be)　（单端输入，从信号源两端看）</div>
+
+<div class="tip">
+  <span class="tip-label">关于“单端输入 R_i 减半”的说法</span>
+  有的资料写“单端输入时 <code>R_i = R_b + r_be</code>”，那是<strong>半边电路单侧的输入电阻</strong>，
+  不是信号源两端看到的电阻。若题目问“差模输入电阻 <code>R_id</code>”，
+  按定义是两输入端之间的电阻，四种接法都是 <code>2(R_b + r_be)</code>。
+  答题时先写定义式，再代入，避免口径之争。
+</div>
+
+<h3>3.2 输出方式：增益与 <code>R_o</code></h3>
+
+<p>
+  双端输出取两集电极之差，差模成分相加、共模成分相消；单端输出只取一只管子，
+  差模输出只有双端的一半，共模却完整保留。输出电阻也相应变成两只 <code>R_c</code> 串联或一只 <code>R_c</code>：
+</p>
+
+<ul>
+  <li><strong>双端输出</strong>：<code>R_o = 2R_c</code>（从两个集电极之间看，两只 <code>R_c</code> 串联）；</li>
+  <li><strong>单端输出</strong>：<code>R_o = R_c</code>（从一只集电极到地看）。</li>
+</ul>
+
+<h3>3.3 单端输入时，共模分量去哪了</h3>
+
+<p>
+  单端输入是最容易想不清楚的一种。设 <code>u_i1 = u_i、u_i2 = 0</code>，代入分解式：
+</p>
+
+<div class="math">u_id = u_i − 0 = u_i　　u_ic = (u_i + 0)/2 = u_i/2</div>
+
+<p>
+  也就是说，单端输入<strong>同时含有差模和共模</strong>，而且共模分量正好是输入的一半。
+  这两部分在电路里的命运完全不同：
+</p>
+
+<ul>
+  <li><strong>差模部分</strong> <code>u_i</code> 让两管基极一高一低，发射极是虚地，
+      每管的 <code>v_be</code> 是 <code>±u_i/2</code>；</li>
+  <li><strong>共模部分</strong> <code>u_i/2</code> 让两管基极同时抬高，发射极跟随抬高约
+      <code>u_i/2</code>，所以两管的 <code>v_be</code> 共模变化几乎为零（被负反馈压掉）。</li>
+</ul>
+
+<p>
+  合起来，T1 的净 <code>v_be ≈ u_i/2</code>，T2 的净 <code>v_be ≈ −u_i/2</code>，
+  与“双端输入差模 <code>u_i</code>”的效果一样。电流从信号源出发，经 T1 的
+  <code>R_b + r_be</code> 到发射极，再经 T2 的 <code>R_b + r_be</code> 到地，两段串联，
+  所以源看到的电阻是 <code>2(R_b + r_be)</code>——这正是 3.1 节结论的来源。
+</p>
+
+<p>
+  对输出而言，共模分量不会消失得那么干净。单端输出时：
+</p>
+
+<div class="math">u_o1 = A_d · u_i + A_c · (u_i/2) = (A_d + A_c/2) · u_i</div>
+
+<p>
+  因为 <code>A_c</code> 通常远小于 <code>A_d</code>，这一项看起来可以忽略；
+  但当 K_CMR 只有 50~60 dB 时，<code>A_c/2</code> 已经能造成千分之几的增益偏差。
+  这就是“单端输入 + 单端输出”在精度上不如“双端输入 + 双端输出”的原因。
+</p>
+
+<h3>3.4 四种接法对照表（考研必背）</h3>
+
+<table>
+  <tr>
+    <th>接法</th><th><code>A_d</code></th><th><code>R_i</code></th><th><code>R_o</code></th><th><code>A_c</code>（单端）</th>
+  </tr>
+  <tr>
+    <td>双端输入 · 双端输出</td>
+    <td>−βR_c/(R_b+r_be)</td>
+    <td>2(R_b+r_be)</td>
+    <td>2R_c</td>
+    <td>理想 0（对称）</td>
+  </tr>
+  <tr>
+    <td>双端输入 · 单端输出</td>
+    <td>−βR_c/[2(R_b+r_be)]</td>
+    <td>2(R_b+r_be)</td>
+    <td>R_c</td>
+    <td>−R_c/(2R_E)</td>
+  </tr>
+  <tr>
+    <td>单端输入 · 双端输出</td>
+    <td>−βR_c/(R_b+r_be)</td>
+    <td>2(R_b+r_be)</td>
+    <td>2R_c</td>
+    <td>理想 0（对称）</td>
+  </tr>
+  <tr>
+    <td>单端输入 · 单端输出</td>
+    <td>−βR_c/[2(R_b+r_be)]</td>
+    <td>2(R_b+r_be)</td>
+    <td>R_c</td>
+    <td>−R_c/(2R_E)</td>
+  </tr>
+</table>
+
+<p>
+  这张表只有两个自由度：<strong>输出方式决定 1 还是 1/2、<code>R_o</code> 是 2R_c 还是 R_c</strong>；
+  输入方式不改变 <code>A_d</code> 和 <code>R_i</code>，只改变共模分量的大小。
+  换句话说，双端输入双端输出与单端输入双端输出的差模增益完全一样——
+  因为单端输入可以分解成“差模 + 共模”，差模部分仍是 <code>u_id</code>，共模部分被双端输出抵消。
+</p>
+
+<h3>例题 1：四种接法的数值对照</h3>
+
+<p>
+  已知 <code>β = 100，R_c = 10 kΩ，R_b = 1 kΩ，r_be = 2.6 kΩ，R_E = 10 kΩ</code>。
+  求四种接法的 <code>A_d、R_i、R_o</code>。
+</p>
+
+<p><strong>第一步：先算公共量</strong></p>
+<div class="math">R_b + r_be = 1 kΩ + 2.6 kΩ = 3.6 kΩ</div>
+<div class="math">β R_c / (R_b + r_be) = 100 × 10 kΩ / 3.6 kΩ ≈ 277.8</div>
+
+<p><strong>第二步：按表填数</strong></p>
+
+<table>
+  <tr><th>接法</th><th><code>A_d</code></th><th><code>R_i</code></th><th><code>R_o</code></th></tr>
+  <tr><td>双端入 · 双端出</td><td>−277.8</td><td>7.2 kΩ</td><td>20 kΩ</td></tr>
+  <tr><td>双端入 · 单端出</td><td>−138.9</td><td>7.2 kΩ</td><td>10 kΩ</td></tr>
+  <tr><td>单端入 · 双端出</td><td>−277.8</td><td>7.2 kΩ</td><td>20 kΩ</td></tr>
+  <tr><td>单端入 · 单端出</td><td>−138.9</td><td>7.2 kΩ</td><td>10 kΩ</td></tr>
+</table>
+
+<p>
+  数值规律很清楚：<strong>输出从双端变单端，增益减半、<code>R_o</code> 减半；输入怎么变，这两个量都不变。</strong>
+  记忆时只记“双端输出一倍、单端输出一半”，再记住 <code>R_o</code> 跟着输出方式走，就不会混。
+</p>
+
+<h2>四、共模增益与共模抑制比</h2>
+
+<p>
+  共模抑制比的定义是差模增益与共模增益之比：
+</p>
+
+<div class="math">K_CMR = |A_d / A_c|　　　K_CMR(dB) = 20 lg |A_d / A_c|</div>
+
+<p>
+  它衡量“想要的差模信号”比“不想要的共模干扰”被放大得强多少。
+  共模干扰来自温度漂移、50 Hz 工频、电源波动，它们同时作用在两管上，正是共模信号。
+</p>
+
+<h3>4.1 单端输出的共模增益</h3>
+
+<p>
+  由 2.2 节的近似式，长尾电阻 <code>R_e</code> 偏置时：
+</p>
+
+<div class="math">A_c ≈ −R_c / (2R_e)</div>
+
+<p>
+  这个式子的推导只用了一条：共模时每管等效发射极电阻是 <code>2R_e</code>，
+  而 <code>(1+β)2R_e</code> 远大于 <code>R_b + r_be</code>，所以增益近似为集电极电阻与发射极电阻之比。
+</p>
+
+<h3>4.2 双端输出的共模增益：对称时为零，失配时由 ΔR_c 决定</h3>
+
+<p>
+  双端输出取 <code>u_o1 − u_o2</code>。若两管、两电阻完全对称，共模变化一模一样，相减为零，
+  理想 <code>A_c = 0、K_CMR = ∞</code>。实际电路总有失配，最主要的失配来源是两只集电极电阻不完全相等。
+</p>
+
+<p>
+  设 <code>R_c1 = R_c + ΔR_c/2，R_c2 = R_c − ΔR_c/2</code>。共模时两管的集电极电流变化相同，
+  但电阻不同，输出电压变化也不同。相减后：
+</p>
+
+<div class="math">A_c(双端) ≈ −ΔR_c / (2R_E)</div>
+
+<p>
+  注意分母仍是 <code>2R_E</code>，但分子从 <code>R_c</code> 变成了<strong>失配量 ΔR_c</strong>。
+  这就是双端输出共模抑制比高的原因：只要匹配得好，<code>ΔR_c</code> 可以比 <code>R_c</code> 小两个数量级。
+</p>
+
+<h3>例题 2：1% 失配下的 K_CMR</h3>
+
+<p>
+  沿用例题 1 的参数，<code>R_c = 10 kΩ，R_e = 10 kΩ，A_d = −277.8</code>。
+  若 <code>R_c1 = 10 kΩ、R_c2 = 10.1 kΩ</code>（失配 1%），分别求双端输出与单端输出的
+  <code>A_c</code> 和 <code>K_CMR</code>。
+</p>
+
+<p><strong>第一步：失配量</strong></p>
+<div class="math">ΔR_c = 10.1 kΩ − 10 kΩ = 0.1 kΩ = 100 Ω</div>
+
+<p><strong>第二步：双端输出</strong></p>
+<div class="math">A_c ≈ −ΔR_c/(2R_e) = −100 Ω / 20 kΩ = −0.005</div>
+<div class="math">K_CMR = 277.8 / 0.005 = 55 560　⇒　20 lg 55 560 ≈ 94.9 dB</div>
+
+<p><strong>第三步：单端输出</strong></p>
+<div class="math">A_c ≈ −R_c/(2R_e) = −10 kΩ / 20 kΩ = −0.5</div>
+<div class="math">K_CMR = 277.8 / 0.5 = 555.6　⇒　20 lg 555.6 ≈ 54.9 dB</div>
+
+<p>
+  两者差了整整 40 dB。原因不是双端输出“更对称”，而是它的共模误差只来自<strong>失配量</strong>，
+  单端输出的共模误差却来自<strong>整个 R_c</strong>。这也说明：
+</p>
+
+<ul>
+  <li>单端输出的 K_CMR 主要由 <code>R_e</code> 决定，想提高就增大 <code>R_e</code> 或换恒流源；</li>
+  <li>双端输出的 K_CMR 主要由<strong>匹配精度</strong>决定，电阻差 0.1% 就能再提高 20 dB；</li>
+  <li>理想对称的双端输出 <code>A_c = 0</code>，但实际永远达不到，考试一般按失配量估算。</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">反过来问：要 100 dB 需要多高的匹配精度</span>
+  由 <code>K_CMR = A_d · 2R_e/ΔR_c</code> 反解：
+  <code>ΔR_c/R_c = A_d · 2R_e/(K_CMR · R_c)</code>。
+  代入 <code>A_d=277.8、2R_e=20k、K_CMR=10⁵、R_c=10k</code>，得 <code>ΔR_c/R_c ≈ 0.56%</code>。
+  也就是说，1% 失配只能到约 95 dB，想要 100 dB 必须匹配到 0.5% 以内。
+</div>
+
+<h3>4.3 共模输入范围与输出范围</h3>
+
+<p>
+  K_CMR 再高，也要先保证两管工作在放大区。共模输入范围就是“两管都不饱和、不截止”时
+  <code>u_ic</code> 允许的范围。以上图的双电源电路为例，设
+  <code>V_CC = +12 V、V_EE = −12 V、I_C R_c = 4 V、U_BE = 0.7 V、U_CES = 0.3 V</code>。
+</p>
+
+<p><strong>上限</strong>：共模输入抬高时，集电极电位 <code>V_C = V_CC − I_C R_c = 8 V</code>。
+基极电位不能比集电极高出太多，否则基极-集电极正偏、管子进入饱和。留 0.4 V 余量：</p>
+
+<div class="math">u_ic,max ≈ V_CC − I_C R_c + 0.4 V = 12 − 4 + 0.4 = 8.4 V</div>
+
+<p><strong>下限</strong>：发射极电位 <code>V_E = u_ic − U_BE</code> 不能低于恒流源的最小管压降
+<code>V_EE + U_CES = −11.7 V</code>：</p>
+
+<div class="math">u_ic,min ≈ V_EE + U_CES + U_BE = −12 + 0.3 + 0.7 = −11.0 V</div>
+
+<p>
+  所以共模输入范围约为 <code>−11.0 V ~ +8.4 V</code>。若静态时 <code>u_ic = 5 V</code>，
+  则集电极静态电位 8 V、发射极 4.3 V、<code>U_CEQ = 3.7 V</code>，
+  单端输出大约能在 <code>4.6 V ~ 12 V</code> 之间摆动（下限由饱和决定，上限由截止决定）。
+  双端输出的差模摆幅约为单端的两倍。
+</p>
+
+<div class="tip">
+  <span class="tip-label">共模范围与 K_CMR 是两件事</span>
+  K_CMR 描述“共模干扰漏到输出多少”，共模输入范围描述“共模电压能加到多大而不失真”。
+  前者是精度指标，后者是生存指标。选型时先确认共模范围覆盖实际工况，再谈 K_CMR。
+</div>
+
+<p>
+  另外，<code>K_CMR</code> 并非常数。频率升高后，<code>A_d</code> 按主极点滚降，
+  而 <code>A_c</code> 主要由电阻比决定、下降较慢，所以 <code>K_CMR</code> 会随频率变差。
+  数据手册通常分别给出直流和 50 Hz/1 kHz 的 K_CMR；高频应用不能只看直流那一行。
+</p>
+
+<h2>五、恒流源偏置：把 <code>R_e</code> 换成 <code>r_o</code></h2>
+
+<p>
+  从 <code>A_c ≈ −R_c/(2R_E)</code> 看，<code>R_E</code> 越大共模抑制越好。但 <code>R_e</code> 不能无限增大：
+  它会吃掉电源电压，集成电路里也做不出大电阻。工程上的标准答案是<strong>用恒流源代替 R_e</strong>。
+</p>
+
+<p>
+  恒流源的直流电阻很小（只需保证管子不饱和的几伏），交流等效电阻却是 <code>r_o</code>。
+  把上式中的 <code>R_e</code> 换成 <code>r_o</code>：
+</p>
+
+<div class="math">A_c(单端) ≈ −R_c/(2r_o)　　A_c(双端) ≈ −ΔR_c/(2r_o)</div>
+
+<p>
+  由于 <code>r_o</code> 通常是 <code>R_e</code> 的几十倍，<code>K_CMR</code> 会提高
+  <code>20 lg(r_o/R_e)</code> 分贝。
+</p>
+
+<h3>5.1 为什么恒流源不改变差模增益</h3>
+
+<p>
+  有人会担心：把 <code>R_e</code> 换成恒流源，差模增益会不会也变？答案是不会。
+  看差模半边电路：发射极对差模信号是<strong>虚地</strong>，公共发射极电阻（或恒流源）
+  根本不进入半边电路，所以 <code>A_d</code> 的表达式里没有 <code>R_E</code>。
+</p>
+
+<p>
+  共模半边电路则相反：两管电流同向变化，公共阻抗上的电流是单管的两倍，
+  每管等效发射极电阻是 <code>2R_E</code>。恒流源把 <code>R_E</code> 从 10 kΩ 提到 200 kΩ，
+  受影响的只有这一条共模通路。
+</p>
+
+<div class="math">A_d 不变：−βR_c/(R_b+r_be)　　A_c 下降：−R_c/(2R_E) → −R_c/(2r_o)</div>
+
+<p>
+  这就是“只压共模、不动差模”的来源，也是恒流源偏置最漂亮的地方。
+  代价有两条：恒流源需要额外的电压裕度（少了约一个 <code>U_CE</code> 的摆幅），
+  以及它在高频下被寄生电容旁路，<code>r_o</code> 会随频率下降，K_CMR 在高频段没有直流那么好。
+</p>
+
+<h3>例题 3：恒流源替代后 K_CMR 提高多少</h3>
+
+<p>
+  仍用前面的参数，把 <code>R_e = 10 kΩ</code> 换成输出电阻 <code>r_o = 200 kΩ</code> 的恒流源。
+  求单端输出与双端输出（1% 失配）的 K_CMR 各提高多少分贝。
+</p>
+
+<p><strong>第一步：单端输出</strong></p>
+<div class="math">A_c = −R_c/(2r_o) = −10 kΩ / 400 kΩ = −0.025</div>
+<div class="math">K_CMR = 277.8 / 0.025 = 11 112　⇒　80.9 dB</div>
+<div class="math">提高量 = 80.9 − 54.9 = 26.0 dB</div>
+
+<p><strong>第二步：双端输出</strong></p>
+<div class="math">A_c = −ΔR_c/(2r_o) = −100 Ω / 400 kΩ = −0.00025</div>
+<div class="math">K_CMR = 277.8 / 0.00025 = 1.111 × 10⁶　⇒　120.9 dB</div>
+<div class="math">提高量 = 120.9 − 94.9 = 26.0 dB</div>
+
+<p><strong>第三步：直接用比值验证</strong></p>
+<div class="math">20 lg(r_o/R_e) = 20 lg(200 kΩ/10 kΩ) = 20 lg 20 ≈ 26.0 dB ✅</div>
+
+<p>
+  两种输出的提高量完全一样，都是 26 dB。这说明<strong>恒流源改善的是共模负反馈的强度</strong>，
+  与输出取单端还是双端无关；单端与双端之间那 40 dB 的差距来自失配，是另一条独立的分辨率。
+  把两条叠加起来，恒流源 + 双端输出 + 良好匹配，才能做到 120 dB 量级的共模抑制。
+</p>
+
+<div class="tip">
+  <span class="tip-label">为什么集成运放能到 100~140 dB</span>
+  运放输入级几乎一律是“恒流源偏置 + 双端输入 + 有源负载”：
+  恒流源把 <code>A_c</code> 压到 <code>R_c/(2r_o)</code>，有源负载又把 <code>A_d</code> 提高一个数量级，
+  分子分母同时优化，K_CMR 自然高。这也是 0021 与 0022 两课必须连起来看的原因。
+</div>
+
+<h2>六、把差模与共模误差合成到输出</h2>
+
+<p>
+  实际输出是两项之和：
+</p>
+
+<div class="math">u_o = A_d · u_id + A_c · u_ic</div>
+
+<p>
+  题目若同时给出两路输入，标准做法是先分解、再分别乘、最后相加。
+  这一步最能暴露“只算差模、忘记共模”的错误。
+</p>
+
+<h3>例题 4：共模误差到底有多大</h3>
+
+<p>
+  已知 <code>u_i1 = 10 mV，u_i2 = 8 mV</code>，单端输出，<code>A_d = −138.9</code>。
+  分别求长尾 <code>R_e = 10 kΩ</code>（<code>A_c = −0.5</code>）和恒流源
+  <code>r_o = 200 kΩ</code>（<code>A_c = −0.025</code>）时的输出电压。
+</p>
+
+<p><strong>第一步：分解输入</strong></p>
+<div class="math">u_id = 10 − 8 = 2 mV　　u_ic = (10 + 8)/2 = 9 mV</div>
+
+<p><strong>第二步：长尾电阻</strong></p>
+<div class="math">u_o = (−138.9)(2 mV) + (−0.5)(9 mV)</div>
+<div class="math">= −277.8 mV − 4.5 mV = −282.3 mV</div>
+
+<p><strong>第三步：恒流源</strong></p>
+<div class="math">u_o = (−138.9)(2 mV) + (−0.025)(9 mV)</div>
+<div class="math">= −277.8 mV − 0.225 mV = −278.0 mV</div>
+
+<p>
+  长尾时共模项贡献 4.5 mV，占输出 282.3 mV 的 1.6%；换恒流源后只剩 0.225 mV，占 0.08%。
+  差模项几乎没变（都是 277.8 mV），变的只是共模误差。
+</p>
+
+<p>
+  这就是共模抑制比的实际意义：它不改变你想要的那部分增益，只决定“干扰漏到输出端多少”。
+  在传感器前置放大、电桥测量这类“差模信号很小、共模干扰很大”的场合，
+  K_CMR 往往比 <code>A_d</code> 更重要。
+</p>
+
+<div class="tip">
+  <span class="tip-label">误差的另一种算法</span>
+  共模误差也可以写成 <code>u_o,error = A_d · u_ic / K_CMR</code>。
+  长尾时 <code>K_CMR = 277.8</code>，误差 <code>277.8 × 9 mV / 277.8 = 9 mV</code>？
+  注意这里的 <code>A_d</code> 要用单端值 138.9，且 <code>K_CMR = 138.9/0.5 = 277.8</code>，
+  误差 <code>= 138.9 × 9 mV / 277.8 = 4.5 mV</code>，与上面一致。
+  用这个式子检查，比重新乘一遍 <code>A_c</code> 更快。
+</div>
+
+<h2>七、易错点与速查表</h2>
+
+<h3>五个高频错误</h3>
+<ol>
+  <li><strong>把“单端输出”当成“单端输入”</strong>。增益减半只看输出方式，不看输入方式；
+      单端输入 + 双端输出的增益仍然是全值。</li>
+  <li><strong><code>R_o</code> 记成一只 <code>R_c</code></strong>。双端输出是两只 <code>R_c</code> 串联，
+      即 <code>2R_c</code>；只有单端输出才是 <code>R_c</code>。</li>
+  <li><strong>双端输出共模抑制当成“靠 R_e”</strong>。理想对称时 <code>A_c = 0</code>；
+      实际由 <code>ΔR_c</code> 决定，<code>A_c ≈ −ΔR_c/(2R_E)</code>。</li>
+  <li><strong>算 K_CMR 时用错 <code>A_d</code></strong>。单端输出的 <code>A_d</code> 是双端的一半，
+      而 <code>A_c</code> 不变，所以单端输出的 K_CMR 也是双端（对称理想情况）的一半，
+      但在失配模型下两者差 40 dB，别混用。</li>
+  <li><strong>把恒流源的直流电阻当成 <code>r_o</code></strong>。直流分析时恒流源两端电压由外电路决定，
+      交流分析才用 <code>r_o</code> 计算 <code>A_c</code>。</li>
+</ol>
+
+<h3>速查表</h3>
+<table>
+  <tr><th>项目</th><th>公式 / 结论</th><th>要点</th></tr>
+  <tr><td>差模输入</td><td>u_id = u_i1 − u_i2</td><td>两输入之差</td></tr>
+  <tr><td>共模输入</td><td>u_ic = (u_i1 + u_i2)/2</td><td>两输入平均</td></tr>
+  <tr><td>差模半边增益</td><td>−βR_c/(R_b+r_be)</td><td>发射极虚地</td></tr>
+  <tr><td>共模增益（单端）</td><td>−R_c/(2R_E)</td><td>每管等效 2R_E</td></tr>
+  <tr><td>共模增益（双端失配）</td><td>−ΔR_c/(2R_E)</td><td>对称时为零</td></tr>
+  <tr><td>K_CMR</td><td>|A_d/A_c|，dB 值 = 20 lg</td><td>干扰抑制能力</td></tr>
+  <tr><td>恒流源改善</td><td>20 lg(r_o/R_e) dB</td><td>与单/双端无关</td></tr>
+  <tr><td>R_i</td><td>2(R_b+r_be)</td><td>四种接法相同（两端定义）</td></tr>
+  <tr><td>R_o</td><td>双端 2R_c，单端 R_c</td><td>只由输出方式决定</td></tr>
+</table>
+
+<h2>八、Quiz — 考研风格题</h2>
+
+<p>4 道题覆盖接法判别、K_CMR 计算、恒流源改善与输入电阻。先算再点。</p>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>四种接法只有两个自由度</strong>：输入方式决定共模分量与信号分配，输出方式决定增益减半与 <code>R_o</code>。</li>
+  <li><strong>差模看虚地，共模看 2R_E</strong>：差模半边是普通共射，共模半边有强发射极负反馈，这是 K_CMR 的物理来源。</li>
+  <li><strong>单端输出增益减半、<code>R_o = R_c</code></strong>；双端输出增益全值、<code>R_o = 2R_c</code>。</li>
+  <li><strong>双端输出的共模误差由失配 ΔR_c 决定</strong>，所以匹配精度比 <code>R_e</code> 更关键；单端输出则由 <code>R_e</code> 决定。</li>
+  <li><strong>恒流源把 <code>R_e</code> 换成 <code>r_o</code></strong>，K_CMR 提高 <code>20 lg(r_o/R_e)</code> dB，本例是 26 dB。</li>
+</ol>
+
+<p>
+  下一课（<strong>Lesson 0023</strong>）从电路内部走到器件外部：
+  把运放当成一个黑盒，逐项讲开环增益、输入失调、转换速率这些参数，
+  并说明在“精度、速度、功耗、成本”之间怎么选型。本课算出的 <code>A_d</code> 和 K_CMR，
+  正是下一课参数表里最重要的两行。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第 4 章「集成运算放大电路」，
+  §4.2「集成运放中的电流源电路」与 §4.3「集成运放电路简介」中差分输入级的四种接法。
+</div>
+
+<div class="ask-agent">
+  四种接法的表总是记混？K_CMR 的 dB 换算老出错？<br>
+  <strong>直接问我</strong>——把 R_c、R_e、β 发我，我用同一组数据把四种接法各算一遍给你对照。
+</div>
+
+<div class="footer-nav">
+  <a href="./0021-current-source-circuits.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0022 / 0035</span>
+  <a href="./0023-opamp-parameters-and-selection.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "两输入端分别接 u_i1、u_i2（双端输入），输出只从一个集电极取出（单端输出）。该接法的差模增益与输出电阻是？",
+    options: [
+      "−βR_c/(R_b+r_be)，2R_c",
+      "−βR_c/[2(R_b+r_be)]，R_c",
+      "−βR_c/(R_b+r_be)，R_c",
+      "−βR_c/[2(R_b+r_be)]，2R_c"
+    ],
+    correct: 1,
+    explain: "双端输入不改变差模增益，单端输出才使增益减半并让输出电阻变成一只 R_c。所以 A_d = −βR_c/[2(R_b+r_be)]，R_o = R_c。选项 A 把 R_o 写成了 2R_c，那是双端输出的值；选项 C 增益没减半、R_o 却是单只 R_c；选项 D 增益减半了却保留了 2R_c。"
+  },
+  {
+    q: "某差分放大电路 A_d = −200，A_c = −0.01，其共模抑制比约为多少分贝？",
+    options: [
+      "86 dB",
+      "26 dB",
+      "100 dB",
+      "20 000 dB"
+    ],
+    correct: 0,
+    explain: "K_CMR = |A_d/A_c| = 200/0.01 = 20 000。换算成分贝：20 lg 20 000 = 20 × 4.301 ≈ 86 dB。20 000 是倍数，不是分贝；26 dB 对应 20 倍，100 dB 对应 10⁵ 倍。"
+  },
+  {
+    q: "长尾电阻 R_e = 10 kΩ 的差分电路，改用输出电阻 r_o = 200 kΩ 的恒流源偏置后，共模抑制比约提高多少分贝？",
+    options: [
+      "13 dB",
+      "20 dB",
+      "26 dB",
+      "40 dB"
+    ],
+    correct: 2,
+    explain: "共模增益与发射极等效电阻成反比，K_CMR 提高量 = 20 lg(r_o/R_e) = 20 lg(200k/10k) = 20 lg 20 ≈ 26 dB。注意这个提高量与单端/双端输出无关，两者都提高 26 dB。"
+  },
+  {
+    q: "单端输入时，另一端接地。从信号源两端看进去的差模输入电阻 R_i 约为？",
+    options: [
+      "R_b + r_be",
+      "2(R_b + r_be)",
+      "4(R_b + r_be)",
+      "无穷大"
+    ],
+    correct: 1,
+    explain: "差模输入电阻定义为两输入端之间的电阻。信号电流从信号源出发，经 T1 的 R_b+r_be 到发射极，再经 T2 的 R_b+r_be 到地，两段串联，所以 R_i = 2(R_b+r_be)。R_b+r_be 只是半边电路单侧的输入电阻，不是源两端看到的电阻。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！四种接法、K_CMR、恒流源改善全部拿下，下一课去背参数表。' :
+        right >= 3 ? '👍 不错。重点回看双端/单端输出的 R_o 与失配模型下的 A_c。' :
+        '📚 先把四种接法的表默写一遍，再用例题 2 的 1% 失配重算一次 K_CMR。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

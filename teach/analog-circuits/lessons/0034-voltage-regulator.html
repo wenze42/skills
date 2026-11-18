@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0034 — 稳压电路：从稳压管到三端集成</title>
+<link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+
+<h1>Lesson 0034 — 稳压电路：从稳压管到三端集成</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0034 / 0035 · 约 60 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  必须掌握 <a href="./0033-rectifier-and-filter.html">Lesson 0033（整流与滤波）</a>：
+  <code>U_o ≈ 1.2U_2</code>、纹波 <code>ΔU ≈ I_oT/(2C)</code>。还要熟悉
+  <a href="./0015-feedback-basics.html">Lesson 0015</a> 的负反馈思想——
+  本课的串联型稳压，本质上就是一个<strong>深度电压负反馈</strong>系统。
+</div>
+
+<p>
+  上一课留下的问题很具体：电容滤波后的 24 V 并不"稳"。
+</p>
+<ul>
+  <li>电网从 220 V 掉到 200 V，输出跟着掉到 22 V；</li>
+  <li>负载从空载加到满载，输出从 28 V 掉到 22 V；</li>
+  <li>纹波还有 2~3 V，放大电路里能直接听到 100 Hz 的嗡嗡声。</li>
+</ul>
+
+<p>
+  这三点分别叫<strong>电网调整率</strong>、<strong>负载调整率</strong>和<strong>纹波抑制</strong>。
+  稳压电路的任务就是把它们全部压下去——输出 <code>U_o</code> 只由<strong>基准</strong>和<strong>取样比</strong>决定，
+  与输入、负载无关。
+</p>
+
+<div class="math">U_o = f(基准, 取样比)　，与 U_I、I_o 无关</div>
+
+<h2>一、稳压管稳压电路：最便宜的方案</h2>
+
+<h3>1.1 电路与原理</h3>
+
+<p>
+  一只限流电阻 <code>R</code>、一只稳压管 <code>D_Z</code>，并联在负载两端，就是全部。
+  稳压管工作在<strong>反向击穿区</strong>：电流从几毫安变到几十毫安，两端电压几乎不变。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 410" width="100%" height="auto" role="img" aria-label="稳压管稳压电路：限流电阻与稳压管串联，稳压管并联在负载两端">
+    <line class="wire" x1="120" y1="80" x2="540" y2="80"/>
+    <circle class="wire" cx="120" cy="200" r="24"/>
+    <text x="120" y="194" text-anchor="middle" class="lbl">＋</text>
+    <text x="120" y="216" text-anchor="middle" class="lbl">－</text>
+    <line class="wire" x1="120" y1="80" x2="120" y2="176"/>
+    <line class="wire" x1="120" y1="224" x2="120" y2="330"/>
+    <text x="88" y="200" text-anchor="end" class="lbl">U_I</text>
+
+    <line class="wire" x1="220" y1="80" x2="220" y2="108"/>
+    <rect class="area" x="206" y="108" width="28" height="60" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="220" y1="168" x2="220" y2="220"/>
+    <text x="244" y="142" class="lbl">R</text>
+    <circle class="dot" cx="220" cy="220" r="5"/>
+
+    <line class="wire" x1="220" y1="220" x2="220" y2="240"/>
+    <line class="wire" x1="206" y1="240" x2="234" y2="240"/>
+    <polygon points="206,282 234,282 220,242" fill="#1a1a1a"/>
+    <line class="wire" x1="200" y1="240" x2="200" y2="232"/>
+    <line class="wire" x1="240" y1="240" x2="240" y2="248"/>
+    <line class="wire" x1="220" y1="282" x2="220" y2="330"/>
+    <text x="252" y="272" class="lbl">D_Z</text>
+
+    <line class="wire" x1="220" y1="220" x2="450" y2="220"/>
+    <line class="wire" x1="450" y1="220" x2="450" y2="250"/>
+    <rect class="area" x="436" y="250" width="28" height="60" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="450" y1="310" x2="450" y2="330"/>
+    <text x="474" y="286" class="lbl">R_L</text>
+
+    <line class="wire thin" x1="120" y1="330" x2="540" y2="330"/>
+    <line class="wire thin" x1="450" y1="330" x2="450" y2="340"/>
+    <line class="wire thin" x1="432" y1="340" x2="468" y2="340"/>
+    <line class="wire thin" x1="440" y1="348" x2="460" y2="348"/>
+    <line class="wire thin" x1="447" y1="356" x2="453" y2="356"/>
+
+    <path class="wire thin" d="M220,190 L220,205" style="stroke:var(--accent)"/>
+    <polygon points="216,199 224,199 220,208" fill="#2b6cb0"/>
+    <text x="228" y="200" class="lbl" style="fill:var(--accent)">I_R</text>
+    <path class="wire thin" d="M232,250 L232,270" style="stroke:var(--accent)"/>
+    <polygon points="228,266 236,266 232,276" fill="#2b6cb0"/>
+    <text x="240" y="262" class="lbl" style="fill:var(--accent)">I_Z</text>
+    <path class="wire thin" d="M470,240 L470,258" style="stroke:var(--accent)"/>
+    <polygon points="466,254 474,254 470,264" fill="#2b6cb0"/>
+    <text x="478" y="250" class="lbl" style="fill:var(--accent)">I_L</text>
+
+    <text x="500" y="212" class="lbl">＋</text>
+    <text x="500" y="330" class="lbl">－</text>
+    <text x="512" y="262" class="lbl">U_o</text>
+    <text x="330" y="392" text-anchor="middle" class="lbl">R 既是限流电阻，也是"把多余电压吃掉"的元件；D_Z 与 R_L 并联，钳住 U_o</text>
+  </svg>
+</div>
+
+<p>
+  两个回路要分清：
+</p>
+<ul>
+  <li><strong>负载回路</strong>：<code>U_I → R → 节点 → R_L → 地</code>，电流 <code>I_L</code>；</li>
+  <li><strong>稳压回路</strong>：<code>U_I → R → 节点 → D_Z → 地</code>，电流 <code>I_Z</code>。</li>
+</ul>
+
+<div class="math">I_R = I_Z + I_L　，　U_o = U_I − I_R · R = U_Z</div>
+
+<p>
+  稳压的机理是<strong>电流分配</strong>：<code>U_I</code> 升高时，节点电压想升高，
+  <code>D_Z</code> 立刻"多吃"电流（<code>I_Z</code> 增大），<code>R</code> 上的压降随之增大，
+  把多余的电压吃掉，<code>U_o</code> 几乎不动。负载变重时反过来：<code>I_L</code> 增大，
+  <code>I_Z</code> 减小，总电流基本不变。
+</p>
+
+<div class="tip">
+  <span class="tip-label">关键前提</span>
+  稳压管必须<strong>始终工作在击穿区</strong>，即 <code>I_Zmin ≤ I_Z ≤ I_Zmax</code>。<br>
+  电流太小 → 退不出击穿区，失去稳压能力；<br>
+  电流太大 → 超过 <code>P_ZM</code>，管子烧毁。<br>
+  整个限流电阻的设计，就是在保证"任何工况下都落在这个窗口里"。
+</div>
+
+<h3>1.2 限流电阻 R 的取值范围（本节核心）</h3>
+
+<p>
+  两种极端工况决定了 <code>R</code> 的上下限：
+</p>
+
+<table>
+  <tr><th>工况</th><th>发生条件</th><th>约束</th></tr>
+  <tr>
+    <td>最容易烧管</td>
+    <td><code>U_I</code> 最高、负载最轻（<code>I_L = 0</code>）</td>
+    <td><code>I_Z</code> 最大，必须 <code>≤ I_Zmax</code> → 这给出 <code>R</code> 的<strong>下限</strong></td>
+  </tr>
+  <tr>
+    <td>最容易失效</td>
+    <td><code>U_I</code> 最低、负载最重（<code>I_L = I_Lmax</code>）</td>
+    <td><code>I_Z</code> 最小，必须 <code>≥ I_Zmin</code> → 这给出 <code>R</code> 的<strong>上限</strong></td>
+  </tr>
+</table>
+
+<p>列式：由 <code>I_R = (U_I − U_Z)/R = I_Z + I_L</code>，</p>
+
+<div class="math">R ≥ (U_Imax − U_Z) / (I_Zmax + I_Lmin)</div>
+<div class="math">R ≤ (U_Imin − U_Z) / (I_Zmin + I_Lmax)</div>
+
+<p>
+  合起来就是那个必须背下来的<strong>窗口公式</strong>：
+</p>
+
+<div class="math">(U_I − U_Z)/(I_Zmax + I_Lmax) ≤ R ≤ (U_I − U_Z)/(I_Zmin + I_Lmin)</div>
+
+<p>
+  当 <code>U_I</code> 恒定、<code>I_Lmin = 0</code> 时，公式退化为最常见的考试形式：
+</p>
+
+<div class="math">(U_I − U_Z)/I_Zmax ≤ R ≤ (U_I − U_Z)/(I_Zmin + I_Lmax)</div>
+
+<div class="tip">
+  <span class="tip-label">为什么下限的分母是 I_Zmax + I_Lmax</span>
+  这是"窗口公式"最容易被记错的地方。严格推导：<br>
+  取 <code>U_I</code> 在其<strong>最大值</strong>、<code>I_L</code> 在其<strong>最小值</strong>时，<code>I_Z</code> 最大，
+  要求 <code>I_Z ≤ I_Zmax</code> → 得到 <code>R ≥ (U_Imax − U_Z)/(I_Zmax + I_Lmin)</code>。<br>
+  取 <code>U_I</code> 最小、<code>I_L</code> 最大时，<code>I_Z</code> 最小，要求 <code>I_Z ≥ I_Zmin</code>
+  → 得到 <code>R ≤ (U_Imin − U_Z)/(I_Zmin + I_Lmax)</code>。<br>
+  若 <code>U_I</code> 不波动，则两式中 <code>U_I</code> 相同，下限分母里的 <code>I_Lmin</code> 常为 0。
+  看到题目给了 <code>U_I</code> 的波动范围，就一定要代 <code>U_Imax</code> 和 <code>U_Imin</code>。
+</div>
+
+<h3>1.3 稳压管的选型</h3>
+<ul>
+  <li><code>U_Z</code>：等于需要的 <code>U_o</code>（考虑温度系数，<code>U_Z</code> 在 5~6 V 附近温度系数最小）；</li>
+  <li><code>P_ZM ≥ U_Z · I_Zmax</code>，并留 1.5 倍裕量；</li>
+  <li><code>I_Zmin</code> 一般取 <code>I_Zmax</code> 的 1/5~1/10（手册给的是 <code>I_Z</code> 测试点）。</li>
+</ul>
+
+<h3>1.4 优缺点</h3>
+<table>
+  <tr><th>优点</th><th>缺点</th></tr>
+  <tr>
+    <td>元件最少、成本最低、电路简单</td>
+    <td>输出功率小（几十毫安到几百毫安）；<code>U_o</code> 不可调；稳压精度一般（<code>S_r ≈ 10⁻²</code>）</td>
+  </tr>
+</table>
+<p>
+  它真正的用武之地是<strong>给后面的电路提供基准电压</strong>——串联型稳压里的 <code>U_Z</code> 就是它。
+</p>
+
+<h2>二、串联型稳压电路：把负反馈搬进电源</h2>
+
+<h3>2.1 四个环节</h3>
+
+<p>
+  稳压管电路的问题在于：它是<strong>并联</strong>稳压，多余的电流全被稳压管烧掉了，效率低、电流小。
+  改进思路是<strong>串联</strong>一个"可变电阻"——用调整管代替 <code>R</code>，让它自动改变压降。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 370" width="100%" height="auto" role="img" aria-label="串联型稳压电路的四个环节框图：调整管、取样电路、基准电压、比较放大">
+    <rect class="area" x="150" y="70" width="120" height="60" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="210" y="106" text-anchor="middle" style="font-size:16px">调整管</text>
+
+    <rect class="area" x="490" y="70" width="120" height="60" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="550" y="106" text-anchor="middle" style="font-size:16px">取样电路</text>
+
+    <rect class="area" x="320" y="230" width="130" height="60" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="385" y="266" text-anchor="middle" style="font-size:16px">比较放大</text>
+
+    <rect class="area" x="120" y="230" width="120" height="60" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="180" y="266" text-anchor="middle" style="font-size:16px">基准电压</text>
+
+    <line class="wire" x1="60" y1="100" x2="150" y2="100"/>
+    <polygon points="150,94 150,106 162,100" fill="#1a1a1a"/>
+    <text x="56" y="90" text-anchor="end" class="lbl">U_I</text>
+
+    <line class="wire" x1="270" y1="100" x2="490" y2="100"/>
+    <polygon points="490,94 490,106 502,100" fill="#1a1a1a"/>
+    <circle class="dot" cx="400" cy="100" r="5"/>
+    <line class="wire" x1="610" y1="100" x2="680" y2="100"/>
+    <polygon points="680,94 680,106 692,100" fill="#1a1a1a"/>
+    <text x="690" y="88" text-anchor="end" class="lbl">U_o</text>
+
+    <line class="wire" x1="550" y1="130" x2="550" y2="300" style="stroke:var(--accent)"/>
+    <line class="wire" x1="450" y1="300" x2="550" y2="300" style="stroke:var(--accent)"/>
+    <line class="wire" x1="450" y1="290" x2="450" y2="300" style="stroke:var(--accent)"/>
+    <polygon points="444,290 456,290 450,280" fill="#2b6cb0"/>
+    <text x="560" y="292" class="lbl" style="fill:var(--accent)">U_f 反馈</text>
+
+    <line class="wire" x1="240" y1="260" x2="320" y2="260"/>
+    <polygon points="320,254 320,266 332,260" fill="#1a1a1a"/>
+    <text x="250" y="250" class="lbl">U_Z</text>
+
+    <line class="wire" x1="385" y1="230" x2="385" y2="185"/>
+    <line class="wire" x1="210" y1="185" x2="385" y2="185"/>
+    <line class="wire" x1="210" y1="185" x2="210" y2="130"/>
+    <polygon points="204,130 216,130 210,140" fill="#1a1a1a"/>
+    <text x="270" y="176" class="lbl">控制电压</text>
+
+    <text x="360" y="340" text-anchor="middle" class="lbl">四个环节构成一个深度电压负反馈闭环：取样 → 比较 → 放大 → 调压</text>
+  </svg>
+</div>
+
+<p>
+  四个环节的分工：
+</p>
+<ol>
+  <li><strong>调整管 T₁</strong>：串联在输入与输出之间，工作在放大区，相当于一个受控的可变电阻。<code>U_CE = U_I − U_o</code>，全部多余电压都降在它身上。</li>
+  <li><strong>取样电路</strong>：<code>R₁、R₂、R_W</code> 分压，取出 <code>U_f = k·U_o</code>，<code>k</code> 是取样比。</li>
+  <li><strong>基准电压</strong>：稳压管 <code>D_Z</code> 提供 <code>U_Z</code>，是"标准尺子"。</li>
+  <li><strong>比较放大</strong>：把 <code>U_f</code> 与 <code>U_Z</code> 的差值放大，去控制 T₁ 的基极。</li>
+</ol>
+
+<h3>2.2 自动调节的过程（必考的文字题）</h3>
+
+<p>
+  设某种原因使 <code>U_o</code> 上升，链条如下：
+</p>
+
+<div class="math">U_o ↑ → U_f ↑ → (U_f − U_Z) ↑ → T₂ 基极电流 ↑ → T₂ 集电极电位 ↓ → T₁ 基极电位 ↓ → U_CE1 ↑ → U_o ↓</div>
+
+<p>
+  结果 <code>U_o</code> 被拉回。这是一个<strong>负反馈</strong>：反馈量取自输出电压，与基准比较后
+  控制串联的调整管。反馈越深（比较放大增益越大），稳压性能越好。
+</p>
+
+<div class="tip">
+  <span class="tip-label">极性判断三步</span>
+  ① 假设 <code>U_o</code> 升高；② 沿取样 → 比较 → 放大 → 调整管 走一圈；③ 看最终是否让 <code>U_o</code> 下降。<br>
+  若下降，是负反馈（正常工作）；若上升，是正反馈（会自激，电路接错了）。<br>
+  考试常问"若取样电阻 R₁ 增大，U_o 如何变化"——按同样的链条推一遍即可。
+</div>
+
+<h3>2.3 输出电压公式与调节范围</h3>
+
+<p>
+  稳态时比较放大器的两个输入近似相等（虚短，因为增益很大）：
+</p>
+
+<div class="math">U_f = U_Z　，　U_f = U_o · (R₂ + R_W)/(R₁ + R₂ + R_W)</div>
+
+<p>反解出：</p>
+
+<div class="math">U_o = (R₁ + R₂ + R_W)/(R₂ + R_W) · U_Z</div>
+
+<p>
+  这正是教材的写法。符号含义必须说清：<strong>分子里的 <code>R_W</code> 是电位器的总阻值，
+  分母里的 <code>R_W</code> 是电位器<strong>滑到下面那一段</strong>的阻值</strong>。
+  为区分，下面把分母中的记为 <code>R_W′</code>：
+</p>
+
+<div class="math">U_o = (R₁ + R₂ + R_W总)/(R₂ + R_W′) · U_Z　，　0 ≤ R_W′ ≤ R_W总</div>
+
+<p>
+  于是调节范围一目了然：
+</p>
+<ul>
+  <li><code>R_W′ = 0</code>（滑到最下端，取样比最小）→ <strong><code>U_o</code> 最大</strong>：<code>U_omax = (R₁+R₂+R_W总)/R₂ · U_Z</code>；</li>
+  <li><code>R_W′ = R_W总</code>（滑到最上端）→ <strong><code>U_o</code> 最小</strong>：<code>U_omin = (R₁+R₂+R_W总)/(R₂+R_W总) · U_Z</code>。</li>
+</ul>
+
+<p>
+  记忆要点：<strong>取样比越小，输出越大</strong>——因为要让分压后的 <code>U_f</code> 仍等于 <code>U_Z</code>，
+  <code>U_o</code> 必须更高。
+</p>
+
+<h2>三、实际电路长什么样</h2>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 540" width="100%" height="auto" role="img" aria-label="串联型稳压电路：调整管T1串联，T2作比较放大，稳压管提供基准，R1、Rw、R2组成取样电路">
+    <line class="wire" x1="100" y1="70" x2="660" y2="70"/>
+    <text x="92" y="62" text-anchor="end" class="lbl">＋U_I</text>
+
+    <line class="wire" x1="360" y1="140" x2="380" y2="120"/>
+    <line class="wire" x1="380" y1="120" x2="380" y2="70"/>
+    <line class="wire" x1="360" y1="160" x2="380" y2="180"/>
+    <line class="wire" x1="380" y1="180" x2="380" y2="190"/>
+    <polygon points="372,182 386,176 380,192" fill="#1a1a1a"/>
+    <line class="wire" x1="360" y1="130" x2="360" y2="170" stroke-width="4"/>
+    <line class="wire" x1="345" y1="150" x2="360" y2="150"/>
+    <text x="396" y="136" class="lbl">T₁</text>
+
+    <line class="wire" x1="380" y1="190" x2="660" y2="190"/>
+    <text x="668" y="184" class="lbl">U_o</text>
+
+    <line class="wire" x1="520" y1="190" x2="520" y2="210"/>
+    <rect class="area" x="506" y="210" width="28" height="50" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="520" y1="260" x2="520" y2="270"/>
+    <rect class="area" x="506" y="270" width="28" height="50" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="520" y1="320" x2="520" y2="330"/>
+    <rect class="area" x="506" y="330" width="28" height="50" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="520" y1="380" x2="520" y2="470"/>
+    <text x="544" y="240" class="lbl">R₁</text>
+    <text x="544" y="300" class="lbl">R_W</text>
+    <text x="544" y="360" class="lbl">R₂</text>
+    <circle class="dot" cx="520" cy="295" r="4"/>
+
+    <line class="wire" x1="470" y1="295" x2="506" y2="295" style="stroke:var(--accent)"/>
+    <line class="wire" x1="470" y1="295" x2="470" y2="440" style="stroke:var(--accent)"/>
+    <line class="wire" x1="220" y1="440" x2="470" y2="440" style="stroke:var(--accent)"/>
+    <line class="wire" x1="220" y1="380" x2="220" y2="440" style="stroke:var(--accent)"/>
+
+    <polygon points="250,315 250,395 345,355" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="262" y="341" class="lbl">＋</text>
+    <text x="262" y="386" class="lbl">−</text>
+    <text x="300" y="360" text-anchor="middle" class="lbl">A</text>
+    <line class="wire" x1="220" y1="380" x2="250" y2="380" style="stroke:var(--accent)"/>
+    <line class="wire" x1="180" y1="330" x2="250" y2="330"/>
+
+    <line class="wire" x1="345" y1="355" x2="345" y2="150"/>
+    <line class="wire" x1="345" y1="150" x2="360" y2="150"/>
+
+    <line class="wire" x1="180" y1="70" x2="180" y2="100"/>
+    <rect class="area" x="166" y="100" width="28" height="56" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="180" y1="156" x2="180" y2="330"/>
+    <text x="140" y="132" text-anchor="end" class="lbl">R₃</text>
+
+    <line class="wire" x1="166" y1="330" x2="194" y2="330"/>
+    <polygon points="166,370 194,370 180,332" fill="#1a1a1a"/>
+    <line class="wire" x1="180" y1="370" x2="180" y2="470"/>
+    <text x="160" y="392" text-anchor="end" class="lbl">D_Z</text>
+
+    <line class="wire thin" x1="120" y1="470" x2="660" y2="470"/>
+    <line class="wire thin" x1="180" y1="470" x2="180" y2="480"/>
+    <line class="wire thin" x1="162" y1="480" x2="198" y2="480"/>
+    <line class="wire thin" x1="170" y1="488" x2="190" y2="488"/>
+    <line class="wire thin" x1="177" y1="496" x2="183" y2="496"/>
+
+    <line class="wire" x1="640" y1="190" x2="640" y2="240"/>
+    <rect class="area" x="626" y="240" width="28" height="60" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="640" y1="300" x2="640" y2="470"/>
+    <text x="600" y="276" text-anchor="end" class="lbl">R_L</text>
+
+    <text x="360" y="524" text-anchor="middle" class="lbl">A 为比较放大器（可用运放或差放）；取样电压 U_f 与基准 U_Z 比较后控制 T₁ 的基极</text>
+  </svg>
+</div>
+
+<p>
+  读这张图的顺序：<strong>先找调整管</strong>（串联在 <code>U_I</code> 与 <code>U_o</code> 之间的那只），
+  <strong>再找基准</strong>（<code>R₃ + D_Z</code> 支路），<strong>再找取样</strong>（跨接在输出端的 <code>R₁、R_W、R₂</code>），
+  剩下的比较放大器自然就认出来了。
+</p>
+
+<div class="tip">
+  <span class="tip-label">四个环节的"位置记忆法"</span>
+  串联型稳压的电路图千变万化，但四个环节的<strong>拓扑位置</strong>永远不变：<br>
+  · 调整管：<strong>横</strong>在输入输出之间（串联）；<br>
+  · 取样：<strong>竖</strong>在输出与地之间（并联在输出端）；<br>
+  · 基准：<strong>竖</strong>在某个支路里，带稳压管；<br>
+  · 比较放大：<strong>夹在</strong>取样与基准之间，输出去驱动调整管。
+</div>
+
+<h2>四、稳压系数与输出电阻</h2>
+
+<p>
+  "稳不稳"要用两个数说话。它们都是<strong>小信号增量之比</strong>，和放大电路的 <code>A_u</code>、<code>R_o</code> 是一套语言。
+</p>
+
+<h3>4.1 稳压系数 S_r</h3>
+
+<div class="math">S_r = (ΔU_o / U_o) / (ΔU_I / U_I) │_{ΔI_L = 0}</div>
+
+<p>
+  物理意义：<strong>输入电压变化 1%，输出变化百分之几</strong>。
+  它是无量纲的相对值，越小越好。典型值：
+</p>
+<ul>
+  <li>稳压管电路：<code>S_r ≈ 10⁻²</code>（输入变 1%，输出变 0.01%? 不，是变 1% × 10⁻² = 0.01%）；
+      实际约 <code>10⁻¹~10⁻²</code>；</li>
+  <li>串联型分立电路：<code>10⁻³~10⁻⁴</code>；</li>
+  <li>三端集成稳压器：<code>10⁻⁴~10⁻⁵</code>（手册里常写成 <code>0.01%/V</code> 之类的形式）。</li>
+</ul>
+
+<h3>4.2 输出电阻 r_o</h3>
+
+<div class="math">r_o = ΔU_o / ΔI_L │_{ΔU_I = 0}</div>
+
+<p>
+  物理意义：<strong>负载电流变 1 mA，输出变几毫伏</strong>。单位是 Ω，越小越好。
+  本质上它就是"电源作为一个电压源"的内阻。典型值：稳压管电路 <code>几 Ω~几十 Ω</code>，
+  三端集成 <code>几 mΩ~几十 mΩ</code>。
+</p>
+
+<div class="tip">
+  <span class="tip-label">两者与负反馈深度的关系</span>
+  <code>S_r</code> 与 <code>r_o</code> 都随环路增益 <code>1+AF</code> 成反比下降——
+  和 Lesson 0016 讲的"负反馈减小输入端的扰动影响"完全同构。<br>
+  所以：<strong>比较放大器的增益越大、取样越深，电源越稳</strong>。
+</div>
+
+<h2>五、过流保护</h2>
+
+<p>
+  调整管串在主回路里，输出一旦短路，<code>U_CE = U_I</code> 全压在它身上，电流又不受限，
+  <code>P = U_I · I</code> 瞬间超限，管子几毫秒就烧。所以必须加保护。两种主流方案：
+</p>
+
+<table>
+  <tr><th>类型</th><th>做法</th><th>故障时表现</th></tr>
+  <tr>
+    <td><strong>限流型</strong></td>
+    <td>在输出回路串检测电阻 <code>R_s</code>，当 <code>I_o R_s</code> 超过阈值时，保护管导通，
+        把调整管的基极电流分流，<strong>把电流钳在 <code>I_omax</code></strong></td>
+    <td>输出电流不再增大，输出电压被拉低（近似恒流源）</td>
+  </tr>
+  <tr>
+    <td><strong>截流型</strong></td>
+    <td>检测到过流后，保护电路使调整管<strong>近乎截止</strong>，并靠正反馈维持</td>
+    <td>输出电流降到很小（几毫安），故障排除后需重新启动</td>
+  </tr>
+</table>
+
+<p>
+  两者都是<strong>用一只小功率管去"抢"调整管的基极电流</strong>——理解了"控制基极电流就控制了输出电流"，
+  保护电路就不难读。三端集成稳压器内部已经集成了限流与过热保护，这也是它们"接上就能用"的原因。
+</p>
+
+<h2>六、三端集成稳压器</h2>
+
+<h3>6.1 78xx / 79xx：固定输出</h3>
+
+<p>
+  "三端"指只有三个引脚：<strong>输入端 IN、输出端 OUT、公共端 GND</strong>。
+  型号里的 <code>xx</code> 就是输出电压：
+</p>
+
+<table>
+  <tr><th>系列</th><th>极性</th><th>常见型号</th><th>输出</th></tr>
+  <tr><td>78xx</td><td>正电压</td><td>7805 / 7809 / 7812 / 7815 / 7824</td><td>5 / 9 / 12 / 15 / 24 V</td></tr>
+  <tr><td>79xx</td><td>负电压</td><td>7905 / 7909 / 7912 / 7915</td><td>−5 / −9 / −12 / −15 V</td></tr>
+  <tr><td>LM317</td><td>正电压可调</td><td>LM317 / LM350</td><td>1.25 V ~ 37 V</td></tr>
+  <tr><td>LM337</td><td>负电压可调</td><td>LM337</td><td>−1.25 V ~ −37 V</td></tr>
+</table>
+
+<div class="math">U_o = xx（V）　，例如 7812 → +12 V，7912 → −12 V</div>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330" width="100%" height="auto" role="img" aria-label="78xx三端稳压器典型应用电路：输入端接0.33微法电容，输出端接0.1微法电容">
+    <rect class="area" x="300" y="110" width="130" height="72" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="365" y="142" text-anchor="middle" style="font-size:17px">78xx</text>
+    <text x="365" y="166" text-anchor="middle" class="lbl">IN / OUT / GND</text>
+
+    <line class="wire" x1="100" y1="140" x2="300" y2="140"/>
+    <text x="94" y="132" text-anchor="end" class="lbl">U_I</text>
+    <line class="wire" x1="430" y1="140" x2="640" y2="140"/>
+    <text x="648" y="134" class="lbl">U_o</text>
+    <line class="wire" x1="365" y1="182" x2="365" y2="250"/>
+
+    <line class="wire" x1="200" y1="140" x2="200" y2="180"/>
+    <line class="wire thin" x1="182" y1="180" x2="218" y2="180" stroke-width="3"/>
+    <line class="wire thin" x1="182" y1="192" x2="218" y2="192" stroke-width="3"/>
+    <line class="wire" x1="200" y1="192" x2="200" y2="250"/>
+    <text x="212" y="174" class="lbl">0.33 μF</text>
+
+    <line class="wire" x1="560" y1="140" x2="560" y2="180"/>
+    <line class="wire thin" x1="542" y1="180" x2="578" y2="180" stroke-width="3"/>
+    <line class="wire thin" x1="542" y1="192" x2="578" y2="192" stroke-width="3"/>
+    <line class="wire" x1="560" y1="192" x2="560" y2="250"/>
+    <text x="572" y="174" class="lbl">0.1 μF</text>
+
+    <line class="wire thin" x1="120" y1="250" x2="640" y2="250"/>
+    <line class="wire thin" x1="200" y1="250" x2="200" y2="260"/>
+    <line class="wire thin" x1="182" y1="260" x2="218" y2="260"/>
+    <line class="wire thin" x1="190" y1="268" x2="210" y2="268"/>
+    <line class="wire thin" x1="197" y1="276" x2="203" y2="276"/>
+
+    <text x="240" y="112" class="lbl">输入</text>
+    <text x="470" y="112" class="lbl">输出</text>
+    <text x="386" y="218" class="lbl">公共端接地</text>
+    <text x="360" y="312" text-anchor="middle" class="lbl">0.33 μF 抑制输入端的高频干扰，0.1 μF 防止输出端自激振荡——两只电容不能省</text>
+  </svg>
+</div>
+
+<p>
+  三条铁律：
+</p>
+<ol>
+  <li><strong>压差要够</strong>：<code>U_I − U_o ≥ 2~3 V</code>。低了调整管进饱和，稳压失效，输出跟着输入掉，还夹杂纹波。7812 至少给 15 V，工程上常给 18 V。</li>
+  <li><strong>压差不能太大</strong>：<code>P = (U_I − U_o) · I_o</code> 全变成热。7812 从 24 V 降到 12 V、1 A，就是 12 W，必须加散热片。</li>
+  <li><strong>两只电容</strong>：输入端 <code>0.33 μF</code>（抗干扰、防输入端瞬间断路时输出电容反灌），输出端 <code>0.1 μF</code>（防自激）。大电容（如 1000 μF）是滤波用的，可以另加。</li>
+</ol>
+
+<h3>6.2 LM317：可调输出</h3>
+
+<p>
+  LM317 的 <code>OUT</code> 与 <code>ADJ</code> 之间有一个 <strong>1.25 V</strong> 的基准（带隙基准），
+  它强迫 <code>R₁</code> 上的电压恒为 1.25 V，于是 <code>R₁</code> 上的电流恒定，
+  这股电流流过 <code>R₂</code> 就抬高了输出电压。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 390" width="100%" height="auto" role="img" aria-label="LM317可调稳压电路：输出与调整端之间接R1，调整端经R2接地">
+    <rect class="area" x="280" y="110" width="140" height="80" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="350" y="142" text-anchor="middle" style="font-size:17px">LM317</text>
+    <text x="350" y="166" text-anchor="middle" class="lbl">IN  ADJ  OUT</text>
+
+    <line class="wire" x1="110" y1="140" x2="280" y2="140"/>
+    <text x="104" y="132" text-anchor="end" class="lbl">U_I</text>
+    <line class="wire" x1="420" y1="140" x2="630" y2="140"/>
+    <text x="638" y="134" class="lbl">U_o</text>
+    <line class="wire" x1="350" y1="190" x2="350" y2="232"/>
+    <circle class="dot" cx="350" cy="232" r="5"/>
+
+    <line class="wire" x1="490" y1="140" x2="490" y2="160"/>
+    <rect class="area" x="476" y="160" width="28" height="50" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="490" y1="210" x2="490" y2="232"/>
+    <line class="wire" x1="350" y1="232" x2="490" y2="232"/>
+    <text x="512" y="190" class="lbl">R₁ = 240 Ω</text>
+    <text x="428" y="254" text-anchor="middle" class="lbl">U_R1 = 1.25 V</text>
+
+    <line class="wire" x1="350" y1="232" x2="350" y2="260"/>
+    <rect class="area" x="336" y="260" width="28" height="56" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="350" y1="316" x2="350" y2="340"/>
+    <text x="372" y="292" class="lbl">R₂（可调）</text>
+
+    <line class="wire thin" x1="130" y1="340" x2="630" y2="340"/>
+    <line class="wire thin" x1="350" y1="340" x2="350" y2="350"/>
+    <line class="wire thin" x1="332" y1="350" x2="368" y2="350"/>
+    <line class="wire thin" x1="340" y1="358" x2="360" y2="358"/>
+    <line class="wire thin" x1="347" y1="366" x2="353" y2="366"/>
+
+    <line class="wire" x1="200" y1="140" x2="200" y2="180"/>
+    <line class="wire thin" x1="182" y1="180" x2="218" y2="180" stroke-width="3"/>
+    <line class="wire thin" x1="182" y1="192" x2="218" y2="192" stroke-width="3"/>
+    <line class="wire" x1="200" y1="192" x2="200" y2="340"/>
+    <text x="210" y="174" class="lbl">0.1 μF</text>
+
+    <line class="wire" x1="590" y1="140" x2="590" y2="180"/>
+    <line class="wire thin" x1="572" y1="180" x2="608" y2="180" stroke-width="3"/>
+    <line class="wire thin" x1="572" y1="192" x2="608" y2="192" stroke-width="3"/>
+    <line class="wire" x1="590" y1="192" x2="590" y2="340"/>
+    <text x="600" y="174" class="lbl">1 μF</text>
+
+    <text x="360" y="382" text-anchor="middle" class="lbl">U_o = 1.25 (1 + R₂/R₁)，改变 R₂ 即可在 1.25 V~37 V 之间连续调节</text>
+  </svg>
+</div>
+
+<div class="math">U_o = 1.25 × (1 + R₂/R₁) + I_ADJ · R₂ ≈ 1.25 × (1 + R₂/R₁)</div>
+
+<p>
+  因为 <code>I_ADJ ≈ 50 μA</code>，很小，通常忽略。取 <code>R₁ = 240 Ω</code> 时，
+  <code>R₂ = 0</code> 输出 1.25 V，<code>R₂ = 2.4 kΩ</code> 输出约 13.75 V。
+</p>
+
+<div class="tip">
+  <span class="tip-label">LM317 的两个细节</span>
+  ① <code>R₁</code> 不能省、也不能太大（一般 120~240 Ω），否则 <code>I_ADJ</code> 不能忽略，空载时输出会升高；<br>
+  ② 最小压差约 <strong>2~3 V</strong>，且输入输出都要接电容，否则容易自激。
+</div>
+
+<h3>6.3 扩流：让 78xx 带几安培</h3>
+
+<p>
+  78xx 系列一般 1~1.5 A，还要受功耗限制。要更大电流，就外接一只<strong>功率管</strong>与它<strong>并联</strong>：
+</p>
+
+<ul>
+  <li>外接 PNP 管的发射极接输入端、集电极接输出端，基极由 78xx 的输入侧经电阻驱动；</li>
+  <li>电流小时只有 78xx 工作；电流大时 <code>R_s</code> 上的压降使外接管导通，分担大部分电流；</li>
+  <li>本质是一个<strong>电流负反馈</strong>：外接管电流越大，<code>R_s</code> 压降越大，抑制它继续增大。</li>
+</ul>
+
+<p>
+  读数要点：<strong>集成块负责"稳压"（决定电压），外接管负责"出力"（承担电流）</strong>。
+</p>
+
+<h2>七、典型例题</h2>
+
+<h3>例 1：稳压管限流电阻的取值范围</h3>
+
+<p>
+  稳压管电路：<code>U_I = 20 V，U_Z = 10 V，I_Zmin = 5 mA，I_Zmax = 40 mA</code>，
+  负载电流 <code>I_L = 0~20 mA</code>。求 <code>R</code> 的范围并选一个标称值。
+</p>
+
+<p><strong>第一步：下限</strong>（<code>I_L = 0</code> 时稳压管电流最大）</p>
+<div class="math">R ≥ (20 − 10)/(40 mA + 0) = 10/0.04 = 250 Ω</div>
+
+<p><strong>第二步：上限</strong>（<code>I_L = 20 mA</code> 时稳压管电流最小）</p>
+<div class="math">R ≤ (20 − 10)/(5 mA + 20 mA) = 10/0.025 = 400 Ω</div>
+
+<p><strong>第三步：选值并验算</strong>。取 <code>R = 300 Ω</code>：</p>
+<div class="math">I_R = 10/300 = 33.3 mA</div>
+<div class="math">I_L = 0 → I_Z = 33.3 mA &lt; 40 mA ✅　；　I_L = 20 mA → I_Z = 13.3 mA &gt; 5 mA ✅</div>
+
+<p>
+  再校验稳压管功耗：<code>P_Z = 10 V × 40 mA = 0.4 W</code> → 选 <code>P_ZM = 0.5 W</code> 的管子。
+</p>
+
+<p><strong>追问</strong>：若电网波动 ±10%（<code>U_I = 18~22 V</code>），范围怎么变？</p>
+<div class="math">R ≥ (22 − 10)/40 mA = 300 Ω　，　R ≤ (18 − 10)/25 mA = 320 Ω</div>
+
+<p>
+  窗口只剩 300~320 Ω，非常窄。取 300 Ω 时，22 V 下 <code>I_Z</code> 正好顶到 40 mA，
+  18 V 下满载还有 6.7 mA。这说明<strong>稳压管电路对输入波动很敏感</strong>——
+  电网波动一大，就得换更好的方案。
+</p>
+
+<h3>例 2：串联型稳压的输出电压与调节范围</h3>
+
+<p>
+  串联型稳压电路，<code>U_Z = 5.6 V，R₁ = 2 kΩ，R₂ = 1 kΩ，R_W总 = 1 kΩ</code>。
+  求输出电压的调节范围；若 <code>U_I = 28 V</code>、<code>I_o = 0.5 A</code>，求调整管的最大功耗。
+</p>
+
+<p><strong>第一步：最大输出</strong>（<code>R_W′ = 0</code>）</p>
+<div class="math">U_omax = (R₁ + R₂ + R_W总)/R₂ × U_Z = (2+1+1)/1 × 5.6 = 4 × 5.6 = 22.4 V</div>
+
+<p><strong>第二步：最小输出</strong>（<code>R_W′ = R_W总</code>）</p>
+<div class="math">U_omin = (R₁ + R₂ + R_W总)/(R₂ + R_W总) × U_Z = 4/2 × 5.6 = 11.2 V</div>
+
+<p>所以调节范围是 <strong>11.2 V ~ 22.4 V</strong>。</p>
+
+<p><strong>第三步：调整管功耗</strong></p>
+<div class="math">P_T1 = (U_I − U_o) · I_o = (28 − 11.2) × 0.5 = 16.8 × 0.5 = 8.4 W</div>
+
+<p>
+  输出最低时功耗最大（<strong>不是输出最高时</strong>，这是常错点）。8.4 W 必须用大功率管加散热器。
+</p>
+
+<p><strong>第四步：校验调整管是否在放大区</strong>：输出最高 22.4 V 时 <code>U_CE = 28 − 22.4 = 5.6 V &gt; 3 V</code> ✅，
+输入掉到 24 V 时仍有 <code>1.6 V</code>，勉强够用——所以 <code>U_I</code> 不能取太接近 <code>U_omax</code>。
+</p>
+
+<h3>例 3：78xx 选型与散热</h3>
+
+<p>
+  需要 <code>+12 V / 0.5 A</code> 的稳压电源，输入由前级滤波得到约 24 V。选什么型号？输入电压合适吗？功耗多少？
+</p>
+
+<p><strong>第一步：选型</strong>。<code>+12 V</code> → <strong>7812</strong>（输出 +12 V，最大 1.5 A）。</p>
+
+<p><strong>第二步：压差校验</strong>。<code>24 − 12 = 12 V ≫ 3 V</code>，压差足够，稳压没问题。</p>
+
+<p><strong>第三步：功耗</strong></p>
+<div class="math">P = (U_I − U_o) · I_o = (24 − 12) × 0.5 = 6 W</div>
+
+<p>
+  6 W 远超塑封 78xx 不加散热时的 1~2 W 能力，<strong>必须加散热片</strong>。
+  更好的做法是把变压器副边降到 15~16 V（滤波后约 18~19 V），功耗立刻降到 3~3.5 W。
+</p>
+
+<div class="tip">
+  <span class="tip-label">三端稳压器的"两条边界"</span>
+  下边界：<code>U_I − U_o ≥ 2~3 V</code>（否则失去稳压）；<br>
+  上边界：<code>(U_I − U_o)·I_o ≤ P_max</code>（否则过热保护或烧毁）。<br>
+  设计时<strong>两条都要算</strong>，只算一条是常见失分点。
+</div>
+
+<h3>例 4：LM317 求可调电阻</h3>
+
+<p>
+  LM317 电路，<code>R₁ = 240 Ω</code>。要得到 <code>U_o = 9 V</code>，<code>R₂</code> 应取多大？
+  若 <code>R₂</code> 用 0~2.7 kΩ 的电位器，输出范围是多少？
+</p>
+
+<p><strong>第一步：由公式反解</strong></p>
+<div class="math">9 = 1.25 × (1 + R₂/240)　⟹　1 + R₂/240 = 7.2　⟹　R₂ = 240 × 6.2 = 1488 Ω</div>
+
+<p>取标称值 <code>1.5 kΩ</code>，此时</p>
+<div class="math">U_o = 1.25 × (1 + 1500/240) = 1.25 × 7.25 = 9.06 V</div>
+
+<p><strong>第二步：范围</strong></p>
+<div class="math">R₂ = 0 → U_o = 1.25 V　；　R₂ = 2.7 kΩ → U_o = 1.25 × (1 + 11.25) = 15.3 V</div>
+
+<p>
+  所以范围是 <strong>1.25 V ~ 15.3 V</strong>。注意 1.25 V 是 LM317 的下限，不可能调到 0 V——
+  这是它和"可调到 0"的稳压电路的本质区别。
+</p>
+
+<h2>八、易错点与速查表</h2>
+
+<h3>六个高频错误</h3>
+<ol>
+  <li><strong>限流电阻的上下限记反</strong>。分母大 → <code>R</code> 小，所以 <code>I_Zmax + I_Lmin</code> 对应<strong>下限</strong>。</li>
+  <li><strong>忽略 <code>U_I</code> 波动</strong>。题目给了 ±10%，就必须用 <code>U_Imax</code> 算下限、<code>U_Imin</code> 算上限。</li>
+  <li><strong>串联型的输出电压公式把取样比弄反</strong>。<code>U_o = U_Z / k</code>，取样比 <code>k</code> 越小，输出越大。</li>
+  <li><strong>认为调整管在输出最高时功耗最大</strong>。恰恰相反，<code>P = (U_I − U_o)I_o</code>，输出<strong>最低</strong>时功耗最大。</li>
+  <li><strong>78xx 输入电压给得太低</strong>。压差不足 2~3 V，输出跟着输入波动，纹波直接传过去。</li>
+  <li><strong>LM317 的 <code>R₁</code> 取太大</strong>。空载时 <code>I_ADJ</code> 不能忽略，输出会明显偏高。</li>
+</ol>
+
+<h3>速查表</h3>
+
+<table>
+  <tr><th>项目</th><th>公式 / 数值</th><th>要点</th></tr>
+  <tr><td>稳压管 <code>R</code> 下限</td><td><code>(U_Imax − U_Z)/(I_Zmax + I_Lmin)</code></td><td>对应"最容易烧管"</td></tr>
+  <tr><td>稳压管 <code>R</code> 上限</td><td><code>(U_Imin − U_Z)/(I_Zmin + I_Lmax)</code></td><td>对应"最容易失效"</td></tr>
+  <tr><td>串联型输出</td><td><code>U_o = (R₁+R₂+R_W)/(R₂+R_W′) · U_Z</code></td><td><code>R_W′</code> 为电位器下段</td></tr>
+  <tr><td>调整管压降</td><td><code>U_CE = U_I − U_o ≥ 2~3 V</code></td><td>低于此值失去调整能力</td></tr>
+  <tr><td>调整管功耗</td><td><code>P = (U_I − U_o) · I_o</code></td><td>输出<strong>最低</strong>时最大</td></tr>
+  <tr><td>稳压系数</td><td><code>S_r = (ΔU_o/U_o)/(ΔU_I/U_I)</code></td><td>越小越好，<code>10⁻³~10⁻⁵</code></td></tr>
+  <tr><td>输出电阻</td><td><code>r_o = ΔU_o/ΔI_L</code></td><td>越小越好，mΩ 级</td></tr>
+  <tr><td>78xx</td><td><code>U_o = xx V</code>，<code>U_I − U_o ≥ 2~3 V</code></td><td>0.33 μF 入、0.1 μF 出</td></tr>
+  <tr><td>LM317</td><td><code>U_o = 1.25(1 + R₂/R₁)</code></td><td><code>R₁ = 240 Ω</code> 起调</td></tr>
+</table>
+
+<h2>九、Quiz — 考研风格题</h2>
+
+<p>四道题覆盖限流电阻、串联型公式、三端稳压与 LM317，选完立刻看解析。</p>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>稳压的本质是负反馈</strong>：取样 → 比较 → 放大 → 调压，四环缺一不可。</li>
+  <li><strong>稳压管电路靠"电流再分配"</strong>，限流电阻必须让 <code>I_Z</code> 始终落在 <code>[I_Zmin, I_Zmax]</code> 窗口内。</li>
+  <li><strong>串联型靠"调压降"</strong>：<code>U_o</code> 由基准和取样比决定，调整管吃掉全部多余电压，所以效率受限。</li>
+  <li><strong>三端稳压器</strong>把上面这些全集成好了：78xx 固定正、79xx 固定负、LM317 可调，只要记住压差与功耗两条边界。</li>
+</ol>
+
+<p>
+  下一课（<strong>Lesson 0035</strong>）解决本课遗留的效率问题：串联型稳压的调整管在输出 5 V、输入 24 V 时，
+  有 79% 的能量变成了热。开关电源用"通断"代替"降压"，效率能做到 90% 以上——
+  最后一课还会把全书 11 章串成一张知识地图。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第十章 §10.4「稳压电路」、
+  §10.5「集成稳压器」、§10.6「开关型稳压电路」（概述部分）。
+</div>
+
+<div class="ask-agent">
+  限流电阻的窗口总是算错？串联型的取样比搞不清谁除谁？<br>
+  <strong>直接问我</strong>——把 <code>U_I、U_Z、I_L</code> 三个数发我，一起把窗口画出来。
+</div>
+
+<div class="footer-nav">
+  <a href="./0033-rectifier-and-filter.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0034 / 0035</span>
+  <a href="./0035-switching-regulator-and-capstone.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "稳压管稳压电路，U_I = 20 V，U_Z = 10 V，I_Zmin = 5 mA，I_Zmax = 40 mA，负载电流 I_L = 0~20 mA。限流电阻 R 的取值范围是？",
+    options: [
+      "200 Ω ≤ R ≤ 500 Ω",
+      "250 Ω ≤ R ≤ 400 Ω",
+      "400 Ω ≤ R ≤ 250 Ω（无解）",
+      "250 Ω ≤ R ≤ 500 Ω"
+    ],
+    correct: 1,
+    explain: "下限由「I_L = 0 时 I_Z 最大」决定：R ≥ (20−10)/40mA = 250 Ω。上限由「I_L = 20 mA 时 I_Z 最小」决定：R ≤ (20−10)/(5+20)mA = 400 Ω。取 300 Ω 验算：空载 I_Z = 33.3 mA &lt; 40 mA，满载 I_Z = 13.3 mA &gt; 5 mA，两头都满足。"
+  },
+  {
+    q: "串联型稳压电路，U_Z = 5.6 V，R₁ = 2 kΩ，R₂ = 1 kΩ，电位器总阻 R_W = 1 kΩ。输出电压的调节范围是？",
+    options: [
+      "11.2 V ~ 22.4 V",
+      "5.6 V ~ 22.4 V",
+      "11.2 V ~ 16.8 V",
+      "16.8 V ~ 22.4 V"
+    ],
+    correct: 0,
+    explain: "U_o = (R₁+R₂+R_W)/(R₂+R_W′)·U_Z，其中 R_W′ 是电位器下段。R_W′ = 0 时取样比最小、输出最大：(2+1+1)/1 × 5.6 = 22.4 V；R_W′ = 1 kΩ 时输出最小：(2+1+1)/(1+1) × 5.6 = 11.2 V。选 16.8 V 是忘了把电位器总阻算进分子。"
+  },
+  {
+    q: "用 7812 组成 +12 V 稳压电源，负载电流 0.5 A。下列关于输入电压的说法，正确的是？",
+    options: [
+      "输入 12 V 即可，三端稳压器不需要压差",
+      "输入至少 15 V；若取 24 V，则功耗 6 W，必须加散热片",
+      "输入越高越好，效率与输入无关",
+      "输入 13 V 最合适，功耗最小且稳压可靠"
+    ],
+    correct: 1,
+    explain: "78xx 要求 U_I − U_o ≥ 2~3 V，所以 12 V 输出至少给 15 V；13 V 只有 1 V 压差，调整管进饱和，稳压失效、纹波直接传过去。取 24 V 时压差 12 V，P = (24−12)×0.5 = 6 W，超过塑封件不加散热的能力。输入越高，效率 η = U_o/U_I 越低，所以不是越高越好。"
+  },
+  {
+    q: "LM317 可调稳压电路，R₁ = 240 Ω，要求输出 9 V，R₂ 应取多少？",
+    options: [
+      "约 240 Ω",
+      "约 2.7 kΩ",
+      "约 1.5 kΩ",
+      "约 1.25 kΩ"
+    ],
+    correct: 2,
+    explain: "U_o = 1.25(1 + R₂/R₁) → 9 = 1.25(1 + R₂/240) → 1 + R₂/240 = 7.2 → R₂ = 240 × 6.2 = 1488 Ω，取标称 1.5 kΩ，实际输出 1.25 × 7.25 = 9.06 V。2.7 kΩ 对应约 15.3 V，是电位器调到最大时的输出。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！稳压管窗口、串联型公式、三端选型都拿下了，可以进开关电源。' :
+        right >= 2 ? '👍 基本掌握。重点回看限流电阻上下限的分母，以及调整管功耗最大的工况。' :
+        '📚 先把窗口公式和 U_o = (R₁+R₂+R_W)/(R₂+R_W′)·U_Z 各推一遍，再重做 quiz。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0030 — 电压比较器</title>
+<link rel="stylesheet" href="../assets/teach.css">
+<style>
+/* 720 宽视图下的字号补偿，保证手机端可读 */
+.schematic text { font-size: 20px; }
+.schematic .lbl { font-size: 17px; }
+</style>
+</head>
+<body>
+
+<h1>Lesson 0030 — 电压比较器</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0030 / 0035 · 约 50 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  需要 <a href="./0019-opamp-basics.html">Lesson 0019（运放基础与虚短虚断）</a> 和
+  <a href="./0020-opamp-applications-and-oscillators.html">Lesson 0020（运放应用与正弦波振荡）</a>。
+  0020 里已经出现过比较器和滞回比较器的影子，这一课把它们讲透：
+  <strong>虚短什么时候失效、门限怎么定、回差怎么算、波形怎么画。</strong>
+</div>
+
+<p>
+  前面二十几课，运放几乎都待在<strong>负反馈</strong>里：虚短、虚断、线性放大。
+  从这一课开始，我们故意把负反馈拆掉，让运放去干一件更粗糙也更常用的事——
+  <strong>比较两个电压谁大</strong>。
+</p>
+<p>
+  比较器的输出只有两个状态：高电平或低电平。它不放大、不保真、不允许中间态，
+  本质是一个"1 位 ADC"。示波器触发、电源过压保护、方波发生、模数转换的前端，
+  全都要靠它。
+</p>
+<p>路线：本质 → 单限 → 限幅 → 滞回 → 窗口 → 集成器件。</p>
+
+<h2>一、比较器的本质：只回答"谁大"</h2>
+
+<p>
+  把运放的两个输入端当成两个"秤盘"：<code>u_+ &gt; u_−</code> 时输出冲向正饱和，
+  <code>u_+ &lt; u_−</code> 时输出冲向负饱和。因为开环增益 <code>A_od</code> 有十万倍，
+  输入端只要差几十微伏，输出就已经撞到电源轨了。所以：
+</p>
+
+<div class="math">
+  u_+ − u_− &gt; 0　⟹　u_o = +U_OM　；　u_+ − u_− &lt; 0　⟹　u_o = −U_OM
+</div>
+
+<ul>
+  <li>输出<strong>只有两态</strong>，<code>+U_OM</code> 与 <code>−U_OM</code> 通常比电源低 1~2 V；
+      若输出加稳压管限幅，则变成干净的 <code>±U_Z</code>。</li>
+  <li><strong>虚短失效</strong>：两个输入端不再等电位，差模电压可以很大（毫伏到伏级）。</li>
+  <li><strong>虚断仍成立</strong>：输入端几乎不取电流，列节点方程时照样可以当开路。</li>
+  <li>翻转发生在 <code>u_+ = u_−</code> 的那一瞬间，这个输入电压就叫<strong>门限（阈值）<code>U_T</code></strong>。</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">一条判据分清"放大器"还是"比较器"</span>
+  看<strong>反馈极性</strong>：输出经电阻回到<strong>反相端</strong>是负反馈 → 线性放大（虚短成立）；
+  回到<strong>同相端</strong>是正反馈 → 滞回比较器（虚短失效）；
+  <strong>什么都不接</strong>是开环 → 单限比较器（虚短失效）。
+</div>
+
+<h3>1.1 比较器与运放的四个区别</h3>
+
+<table>
+  <tr><th>项目</th><th>集成运放</th><th>集成比较器（LM339/LM311）</th></tr>
+  <tr><td>工作状态</td><td>闭环负反馈，线性区</td><td>开环或正反馈，饱和区</td></tr>
+  <tr><td>相位补偿</td><td>内部已补偿，为稳定牺牲带宽</td><td><strong>不补偿</strong>，全带宽跑，速度优先</td></tr>
+  <tr><td>响应速度</td><td>压摆率受限，几 V/μs</td><td>传输延迟 ns~μs 级（LM311 约 200 ns）</td></tr>
+  <tr><td>输出级</td><td>互补推挽，输出接近电源轨</td><td>多为<strong>集电极开路（OC）</strong>，必须外接上拉电阻</td></tr>
+</table>
+
+<p>
+  最后一行最容易考：OC 输出<strong>只能拉低、不能拉高</strong>，
+  所以电路图上一定有一个从输出接到 <code>+V</code> 的上拉电阻 <code>R</code>。
+  把它接到 <code>+5 V</code> 而器件用 <code>±15 V</code> 供电，输出就是 0/5 V 的逻辑电平——
+  这就是比较器能直接驱动数字电路的原因。
+</p>
+
+<h2>二、单限比较器：一个门限</h2>
+
+<h3>2.1 过零比较器</h3>
+
+<p>
+  最简单的接法：同相端接地，输入接反相端。门限就是 0 V。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" width="100%" height="auto" role="img" aria-label="过零比较器电路：输入接反相端，同相端接地，输出经双向稳压管限幅">
+    <polygon points="300,70 300,190 410,130" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="316" y="96" class="lbl">−</text>
+    <text x="316" y="172" class="lbl">+</text>
+    <text x="360" y="136" text-anchor="middle" class="lbl">A</text>
+
+    <circle cx="60" cy="96" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="50" y="84" text-anchor="end" class="lbl">u_i</text>
+    <line class="wire" x1="60" y1="96" x2="300" y2="96"/>
+
+    <line class="wire" x1="300" y1="164" x2="230" y2="164"/>
+    <line class="wire" x1="230" y1="164" x2="230" y2="215"/>
+    <line class="wire" x1="205" y1="215" x2="255" y2="215"/>
+    <line class="wire" x1="214" y1="224" x2="246" y2="224"/>
+    <line class="wire" x1="223" y1="233" x2="237" y2="233"/>
+
+    <line class="wire" x1="410" y1="130" x2="660" y2="130"/>
+    <circle class="dot" cx="560" cy="130" r="4"/>
+    <circle cx="660" cy="130" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="654" y="116" text-anchor="end" class="lbl">u_o</text>
+
+    <line class="wire" x1="560" y1="130" x2="560" y2="152"/>
+    <polygon points="548,152 572,152 560,170" fill="#fff" stroke="#1a1a1a" stroke-width="2.2"/>
+    <polyline points="546,174 546,170 574,170 574,166" fill="none" stroke="#1a1a1a" stroke-width="2.2"/>
+    <line class="wire" x1="560" y1="170" x2="560" y2="196"/>
+    <polygon points="548,228 572,228 560,210" fill="#fff" stroke="#1a1a1a" stroke-width="2.2"/>
+    <polyline points="546,206 546,210 574,210 574,214" fill="none" stroke="#1a1a1a" stroke-width="2.2"/>
+    <line class="wire" x1="560" y1="228" x2="560" y2="255"/>
+    <line class="wire" x1="535" y1="255" x2="585" y2="255"/>
+    <line class="wire" x1="544" y1="264" x2="576" y2="264"/>
+    <line class="wire" x1="553" y1="273" x2="567" y2="273"/>
+    <text x="590" y="196" class="lbl">D_Z</text>
+
+    <text x="360" y="290" text-anchor="middle" class="lbl">图 30-1　过零比较器：同相端接地，门限 U_T = 0</text>
+  </svg>
+</div>
+
+<p>
+  输入接<strong>反相端</strong>，所以结论是"反"的：
+</p>
+
+<div class="math">
+  u_i &gt; 0　⟹　u_o = −U_Z　；　u_i &lt; 0　⟹　u_o = +U_Z
+</div>
+
+<p>
+  输入是正弦，输出就是与它<strong>反相</strong>的方波，过零点处翻转。
+  如果把输入改接同相端、反相端接地，输出就与输入<strong>同相</strong>。
+  这一点在画波形题里是头号失分点，务必先看清输入接的是哪个端。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" width="100%" height="auto" role="img" aria-label="过零比较器的输入正弦波与输出方波对照：输入为正时输出负饱和，两者反相">
+    <text x="30" y="26" class="lbl">u_i / V</text>
+    <line class="wire thin" x1="70" y1="115" x2="660" y2="115"/>
+    <line class="wire thin ideal" x1="70" y1="40" x2="70" y2="190"/>
+    <text x="62" y="48" text-anchor="end" class="lbl">+3</text>
+    <text x="62" y="190" text-anchor="end" class="lbl">−3</text>
+    <path d="M70,115 Q110,25 150,115 Q190,205 230,115 Q270,25 310,115 Q350,205 390,115 Q430,25 470,115 Q510,205 550,115 Q590,25 630,115"
+          fill="none" style="stroke:var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+
+    <text x="30" y="228" class="lbl">u_o / V</text>
+    <line class="wire thin" x1="70" y1="270" x2="660" y2="270"/>
+    <line class="wire thin ideal" x1="70" y1="200" x2="70" y2="330"/>
+    <text x="62" y="208" text-anchor="end" class="lbl">+6</text>
+    <text x="62" y="334" text-anchor="end" class="lbl">−6</text>
+
+    <polyline points="70,310 150,310 150,205 230,205 230,310 310,310 310,205 390,205 390,310 470,310 470,205 550,205 550,310 630,310"
+              fill="none" style="stroke:var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>
+
+    <line class="wire thin ideal" x1="150" y1="115" x2="150" y2="310"/>
+    <line class="wire thin ideal" x1="310" y1="115" x2="310" y2="310"/>
+    <line class="wire thin ideal" x1="470" y1="115" x2="470" y2="310"/>
+
+    <text x="360" y="352" text-anchor="middle" class="lbl">图 30-2　输入接反相端：u_i 过零时翻转，输出与输入反相</text>
+  </svg>
+</div>
+
+<h3>2.2 任意门限比较器</h3>
+
+<p>
+  实际电路很少需要"过零"，更多是"到 3.2 V 就报警"。做法是在反相端用两个电阻
+  把 <code>u_i</code> 和参考电压 <code>U_REF</code> 加起来，同相端接地。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" width="100%" height="auto" role="img" aria-label="任意门限单限比较器：输入经R1、参考电压经R2同时加到反相端，同相端接地">
+    <polygon points="320,70 320,190 430,130" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="336" y="96" class="lbl">−</text>
+    <text x="336" y="172" class="lbl">+</text>
+    <text x="380" y="136" text-anchor="middle" class="lbl">A</text>
+
+    <circle cx="55" cy="96" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="46" y="84" text-anchor="end" class="lbl">u_i</text>
+    <line class="wire" x1="55" y1="96" x2="105" y2="96"/>
+    <rect class="area" x="105" y="81" width="60" height="30" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="135" y="73" text-anchor="middle" class="lbl">R_1</text>
+    <line class="wire" x1="165" y1="96" x2="320" y2="96"/>
+    <circle class="dot" cx="240" cy="96" r="4"/>
+
+    <text x="240" y="24" text-anchor="middle" class="lbl">U_REF</text>
+    <line class="wire" x1="240" y1="30" x2="240" y2="55"/>
+    <rect class="area" x="225" y="55" width="30" height="41" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="205" y="80" text-anchor="end" class="lbl">R_2</text>
+
+    <line class="wire" x1="320" y1="164" x2="250" y2="164"/>
+    <line class="wire" x1="250" y1="164" x2="250" y2="215"/>
+    <line class="wire" x1="225" y1="215" x2="275" y2="215"/>
+    <line class="wire" x1="234" y1="224" x2="266" y2="224"/>
+    <line class="wire" x1="243" y1="233" x2="257" y2="233"/>
+
+    <line class="wire" x1="430" y1="130" x2="600" y2="130"/>
+    <circle cx="600" cy="130" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="594" y="116" text-anchor="end" class="lbl">u_o</text>
+    <text x="512" y="118" text-anchor="middle" class="lbl">±U_Z</text>
+
+    <text x="360" y="286" text-anchor="middle" class="lbl">图 30-3　任意门限单限比较器：反相端做"电流求和"</text>
+  </svg>
+</div>
+
+<p>
+  设反相端节点电压为 <code>u_−</code>，对节点列 KCL（虚断，流入运放的电流为零）：
+</p>
+
+<div class="math">
+  (u_i − u_−)/R_1 + (U_REF − u_−)/R_2 = 0
+</div>
+
+<p>
+  翻转发生在 <code>u_− = u_+ = 0</code> 的时刻，代入 <code>u_− = 0</code>：
+</p>
+
+<div class="math">
+  u_i/R_1 + U_REF/R_2 = 0　⟹　U_T = −(R_1 / R_2) · U_REF
+</div>
+
+<p>
+  这个式子的读法是：<strong>门限 = 参考电压被两个电阻"反向缩放"</strong>。
+  负号来自"参考电压加在反相端"——<code>U_REF</code> 为正时，门限反而是负的。
+  想把门限调正，要么把 <code>U_REF</code> 取负，要么把参考电压改接同相端。
+</p>
+
+<div class="tip">
+  <span class="tip-label">另一种常见接法（分压型）</span>
+  若把 <code>R_2</code> 从 <code>U_REF</code> 接到<strong>同相端</strong>、<code>R_1</code> 从同相端接地、
+  输入仍接反相端，则 <code>u_+ = U_REF · R_1/(R_1+R_2)</code>，门限为
+  <code>U_T = +U_REF · R_1/(R_1+R_2)</code>。两种接法都考，认准<strong>门限就是让 <code>u_+ = u_−</code> 的那个 <code>u_i</code></strong>，
+  现场列方程最稳，不要背结论。
+</div>
+
+<h3>【例 1】任意门限比较器求门限与占空比</h3>
+
+<p>
+  <strong>题</strong>：图 30-3 中 <code>R_1 = 10 kΩ，R_2 = 20 kΩ，U_REF = −3 V</code>，
+  输出限幅 <code>±U_Z = ±6 V</code>。输入 <code>u_i = 4 sin ωt (V)</code>。
+  求门限 <code>U_T</code>，并估算输出高电平的占空比。
+</p>
+
+<p><strong>第一步：求门限</strong></p>
+<div class="math">U_T = −(R_1/R_2)·U_REF = −(10/20)×(−3 V) = +1.5 V</div>
+
+<p><strong>第二步：判断输出极性</strong>。输入接反相端，故 <code>u_i &lt; 1.5 V</code> 时
+<code>u_o = +6 V</code>，<code>u_i &gt; 1.5 V</code> 时 <code>u_o = −6 V</code>。</p>
+
+<p><strong>第三步：占空比</strong>。正弦超过 1.5 V 的角度区间由
+<code>sin θ = 1.5/4 = 0.375</code> 给出，<code>θ_1 = 22.0°</code>，
+超过门限的区间为 <code>22.0° ~ 158.0°</code>，占 136°/360° ≈ <strong>37.8%</strong>。
+但这段区间输出是<strong>低</strong>电平，所以高电平占空比为
+</p>
+<div class="math">1 − 37.8% ≈ 62.2%</div>
+
+<div class="tip">
+  <span class="tip-label">为什么要算占空比</span>
+  单限比较器把正弦变成方波时，<strong>门限决定占空比</strong>。
+  门限取 0 才是 50%；门限偏离 0，方波就"偏"。
+  这个结论在 0031 的方波发生器里会反过来用：想让占空比可调，就改门限或改充放电时间常数。
+</div>
+
+<h2>三、输出限幅：把两态变成干净的 ±U_Z</h2>
+
+<p>
+  运放输出的 <code>±U_OM</code> 随电源和负载变化，不是一个可靠的电平。工程上在输出端
+  并一只<strong>双向稳压管</strong>（两只稳压管背靠背，或一只稳压管串一只普通二极管），
+  把输出钳在 <code>±U_Z</code>：
+</p>
+
+<ul>
+  <li>输出为正时，一只稳压管反向击穿，电压被钳在 <code>+U_Z</code>；</li>
+  <li>输出为负时，另一只（或同一只反向）击穿，钳在 <code>−U_Z</code>；</li>
+  <li>必须串<strong>限流电阻</strong>（图 30-1 中省略了，实际应串在运放输出与稳压管之间），
+      否则运放输出电流会超过稳压管的功耗极限；</li>
+  <li><code>U_Z</code> 必须小于 <code>U_OM</code>，否则稳压管不起作用——这一步要验算。</li>
+</ul>
+
+<div class="math">
+  |U_Z| &lt; U_OM　（否则限幅失效，输出仍是 ±U_OM）
+</div>
+
+<p>
+  限幅之后，比较器的输出电平就是"设计值"了：<code>±6 V</code>、<code>±5 V</code>、
+  甚至 <code>0/5 V</code>（配合 OC 输出上拉）。后面所有门限公式里的 <code>U_Z</code>
+  都指这个限幅值，不再提 <code>U_OM</code>。
+</p>
+
+<h2>四、滞回比较器：把"抖"变成"稳"</h2>
+
+<p>
+  单限比较器有个致命弱点：输入在门限附近有噪声时，输出会跟着噪声来回翻转多次。
+  解决办法是引入<strong>正反馈</strong>，让门限"跟着输出走"——输出翻上去，门限也跟着抬高；
+  想翻回来，输入必须降得更多。这就是<strong>滞回比较器</strong>，也叫<strong>施密特触发器</strong>。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" width="100%" height="auto" role="img" aria-label="滞回比较器电路：输出经R2正反馈到同相端，同相端经R1接地，输入接反相端，输出经双向稳压管限幅">
+    <polygon points="300,70 300,190 410,130" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="316" y="96" class="lbl">−</text>
+    <text x="316" y="172" class="lbl">+</text>
+    <text x="360" y="136" text-anchor="middle" class="lbl">A</text>
+
+    <circle cx="55" cy="96" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="46" y="84" text-anchor="end" class="lbl">u_i</text>
+    <line class="wire" x1="55" y1="96" x2="300" y2="96"/>
+
+    <line class="wire" x1="300" y1="164" x2="225" y2="164"/>
+    <circle class="dot" cx="225" cy="164" r="4"/>
+    <line class="wire" x1="225" y1="164" x2="225" y2="205"/>
+    <rect class="area" x="210" y="205" width="30" height="45" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="200" y="232" text-anchor="end" class="lbl">R_1</text>
+    <line class="wire" x1="225" y1="250" x2="225" y2="272"/>
+    <line class="wire" x1="200" y1="272" x2="250" y2="272"/>
+    <line class="wire" x1="209" y1="281" x2="241" y2="281"/>
+    <line class="wire" x1="218" y1="290" x2="232" y2="290"/>
+
+    <polyline class="wire" points="225,164 225,45 330,45"/>
+    <rect class="area" x="330" y="31" width="65" height="28" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="362" y="24" text-anchor="middle" class="lbl">R_2</text>
+    <polyline class="wire" points="395,45 520,45 520,130"/>
+    <circle class="dot" cx="520" cy="130" r="4"/>
+
+    <line class="wire" x1="410" y1="130" x2="670" y2="130"/>
+    <circle cx="670" cy="130" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="664" y="116" text-anchor="end" class="lbl">u_o</text>
+
+    <line class="wire" x1="600" y1="130" x2="600" y2="152"/>
+    <polygon points="588,152 612,152 600,170" fill="#fff" stroke="#1a1a1a" stroke-width="2.2"/>
+    <polyline points="586,174 586,170 614,170 614,166" fill="none" stroke="#1a1a1a" stroke-width="2.2"/>
+    <line class="wire" x1="600" y1="170" x2="600" y2="196"/>
+    <polygon points="588,228 612,228 600,210" fill="#fff" stroke="#1a1a1a" stroke-width="2.2"/>
+    <polyline points="586,206 586,210 614,210 614,214" fill="none" stroke="#1a1a1a" stroke-width="2.2"/>
+    <line class="wire" x1="600" y1="228" x2="600" y2="255"/>
+    <line class="wire" x1="575" y1="255" x2="625" y2="255"/>
+    <line class="wire" x1="584" y1="264" x2="616" y2="264"/>
+    <line class="wire" x1="593" y1="273" x2="607" y2="273"/>
+    <text x="630" y="196" class="lbl">D_Z</text>
+
+    <text x="360" y="308" text-anchor="middle" class="lbl">图 30-4　滞回比较器：R_2 把输出正反馈到同相端，R_1 接地分压</text>
+  </svg>
+</div>
+
+<h3>4.1 两个门限怎么算</h3>
+
+<p>
+  先看同相端：<code>R_2</code> 接输出、<code>R_1</code> 接地，两个电阻串联在 <code>u_o</code>
+  与地之间，同相端取分压。虚断，所以 <code>u_+</code> 直接由分压公式给出：
+</p>
+
+<div class="math">
+  u_+ = u_o · R_1 / (R_1 + R_2)
+</div>
+
+<p>
+  输出只有 <code>±U_Z</code> 两态，于是同相端也只有两个值，这就是两个门限：
+</p>
+
+<div class="math">
+  U_T+ = +U_Z · R_1/(R_1+R_2)　　U_T− = −U_Z · R_1/(R_1+R_2)
+</div>
+<div class="math">
+  ΔU = U_T+ − U_T− = 2 · U_Z · R_1/(R_1+R_2)
+</div>
+
+<p>
+  <code>ΔU</code> 叫<strong>回差</strong>（滞回宽度）。翻转条件仍然是 <code>u_i = u_+</code>，
+  但 <code>u_+</code> 自己会随输出变化，所以"上升时的门限"和"下降时的门限"不是同一个值。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" width="100%" height="auto" role="img" aria-label="滞回比较器电压传输特性：上门限与下门限之间形成回差，箭头标出翻转方向">
+    <line class="wire thin" x1="120" y1="250" x2="120" y2="40"/>
+    <polygon points="114,40 126,40 120,26" fill="#1a1a1a"/>
+    <line class="wire thin" x1="110" y1="145" x2="660" y2="145"/>
+    <polygon points="660,139 660,151 674,145" fill="#1a1a1a"/>
+    <text x="108" y="34" text-anchor="end" class="lbl">u_o</text>
+    <text x="668" y="134" text-anchor="end" class="lbl">u_i</text>
+    <text x="108" y="150" text-anchor="end" class="lbl">0</text>
+
+    <line class="wire thin ideal" x1="120" y1="70" x2="250" y2="70"/>
+    <line class="wire thin ideal" x1="120" y1="220" x2="250" y2="220"/>
+    <line class="wire thin ideal" x1="250" y1="145" x2="250" y2="240"/>
+    <line class="wire thin ideal" x1="430" y1="145" x2="430" y2="240"/>
+
+    <text x="108" y="75" text-anchor="end" class="lbl">+U_Z</text>
+    <text x="108" y="225" text-anchor="end" class="lbl">−U_Z</text>
+    <text x="244" y="264" text-anchor="middle" class="lbl">U_T−</text>
+    <text x="436" y="264" text-anchor="middle" class="lbl">U_T+</text>
+
+    <polyline points="130,220 430,220 430,70 640,70" fill="none" style="stroke:var(--accent)" stroke-width="2.5"/>
+    <polygon points="400,214 400,226 414,220" fill="#2b6cb0"/>
+    <polygon points="418,82 430,70 442,82" fill="#2b6cb0"/>
+    <polygon points="580,64 580,76 594,70" fill="#2b6cb0"/>
+
+    <line class="wire thin" x1="250" y1="288" x2="430" y2="288"/>
+    <polygon points="250,285 250,291 262,288" fill="#1a1a1a"/>
+    <polygon points="430,285 430,291 418,288" fill="#1a1a1a"/>
+    <text x="340" y="310" text-anchor="middle" class="lbl">回差 ΔU</text>
+
+    <text x="360" y="26" text-anchor="middle" class="lbl">图 30-5　滞回比较器的电压传输特性（箭头 = u_i 增大的方向）</text>
+  </svg>
+</div>
+
+<p>
+  读图的顺序必须记死：
+</p>
+<ol>
+  <li>当前输出为 <code>−U_Z</code>（下方支路），<code>u_i</code> 一路<strong>升高</strong>，
+      直到 <code>u_i = U_T+</code> 才跳到 <code>+U_Z</code>；</li>
+  <li>跳上去以后门限立刻变成 <code>U_T−</code>，<code>u_i</code> 必须<strong>降回</strong>
+      <code>U_T−</code> 才跳回 <code>−U_Z</code>。</li>
+</ol>
+
+<div class="tip">
+  <span class="tip-label">方向别画反（阅卷必看）</span>
+  传输特性是一条<strong>顺时针走的矩形环</strong>：下方支路从左边走到 <code>U_T+</code>，
+  竖直<strong>向上</strong>跳；上方支路从 <code>U_T+</code> 向右延伸。
+  箭头一定画在"上升沿向上、下降沿向下"的方向上。写错方向，整道题的波形就全反了。
+</div>
+
+<h3>【例 2】滞回比较器的门限、回差与输出波形</h3>
+
+<p>
+  <strong>题</strong>：图 30-4 中 <code>R_1 = 10 kΩ，R_2 = 20 kΩ，U_Z = 6 V</code>，
+  <code>u_i = 3 sin ωt (V)</code>，设 <code>t = 0</code> 时输出为 <code>+6 V</code>。
+  求两个门限、回差，并说明输出在什么相位翻转。
+</p>
+
+<p><strong>第一步：门限</strong></p>
+<div class="math">R_1/(R_1+R_2) = 10/30 = 1/3</div>
+<div class="math">U_T+ = +6 × 1/3 = +2 V　　U_T− = −6 × 1/3 = −2 V</div>
+
+<p><strong>第二步：回差</strong></p>
+<div class="math">ΔU = 2 − (−2) = 4 V</div>
+
+<p><strong>第三步：翻转时刻</strong>。<code>t = 0</code> 时输出 <code>+6 V</code>，门限为 <code>U_T− = −2 V</code>，
+输入从 0 开始上升，还不到门限，输出保持 <code>+6 V</code>；</p>
+<ul>
+  <li><code>u_i</code> 升到 <strong>+2 V</strong> 时（<code>θ = arcsin(2/3) = 41.8°</code>）跳到 <code>−6 V</code>；</li>
+  <li>跳变后门限变成 <code>−2 V</code>，<code>u_i</code> 回落到 <strong>−2 V</strong> 时
+      （<code>θ = 180° + 41.8° = 221.8°</code>）跳回 <code>+6 V</code>。</li>
+</ul>
+
+<p>
+  所以输出是一个<strong>正半周短、负半周长</strong>的方波：高电平只占
+  <code>180° − 2×41.8° = 96.4°</code>，占空比约 <strong>26.8%</strong>。
+  这正是"回差把占空比掰歪"的直观结果——只有当 <code>u_i</code> 的幅度远大于门限时，
+  方波才接近对称。
+</p>
+
+<div class="tip">
+  <span class="tip-label">验算小技巧</span>
+  门限必须满足 <code>|U_T| &lt; U_im</code>（输入峰值），否则输入根本够不到门限，输出永不翻转。
+  本例 <code>2 V &lt; 3 V</code> ✅。如果题目给 <code>u_i = 1.5 sin ωt</code>，输出就一直是 <code>+6 V</code>，
+  这是"电路不翻转"的常见考法。
+</div>
+
+<h2>五、窗口比较器：判断"在不在区间里"</h2>
+
+<p>
+  有些场合要判断的不是"大于某个值"，而是"<strong>是否落在 [U_RL, U_RH] 之间</strong>"，
+  比如电池电压正常区间检测。用两只比较器 + 两只二极管构成"或"逻辑：
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" width="100%" height="auto" role="img" aria-label="窗口比较器电路：两只比较器分别检测上限和下限，输出经二极管或门合成为一路信号">
+    <polygon points="190,60 190,140 270,100" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="203" y="80" class="lbl">+</text>
+    <text x="203" y="130" class="lbl">−</text>
+    <text x="228" y="106" text-anchor="middle" class="lbl">A_1</text>
+
+    <polygon points="190,210 190,290 270,250" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="203" y="230" class="lbl">−</text>
+    <text x="203" y="280" class="lbl">+</text>
+    <text x="228" y="256" text-anchor="middle" class="lbl">A_2</text>
+
+    <circle cx="50" cy="175" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="42" y="163" text-anchor="end" class="lbl">u_i</text>
+    <line class="wire" x1="50" y1="175" x2="90" y2="175"/>
+    <circle class="dot" cx="90" cy="175" r="4"/>
+    <polyline class="wire" points="90,175 90,80 190,80"/>
+    <polyline class="wire" points="90,175 90,270 190,270"/>
+
+    <text x="150" y="34" text-anchor="middle" class="lbl">U_RH</text>
+    <line class="wire" x1="150" y1="40" x2="150" y2="120"/>
+    <line class="wire" x1="150" y1="120" x2="190" y2="120"/>
+    <text x="150" y="330" text-anchor="middle" class="lbl">U_RL</text>
+    <line class="wire" x1="150" y1="300" x2="150" y2="230"/>
+    <line class="wire" x1="150" y1="230" x2="190" y2="230"/>
+
+    <line class="wire" x1="270" y1="100" x2="380" y2="100"/>
+    <polygon points="380,86 380,114 404,100" fill="#fff" stroke="#1a1a1a" stroke-width="2.2"/>
+    <line class="wire" x1="404" y1="100" x2="470" y2="100"/>
+    <line class="wire" x1="470" y1="100" x2="470" y2="160"/>
+    <circle class="dot" cx="470" cy="160" r="4"/>
+    <text x="392" y="76" text-anchor="middle" class="lbl">D_1</text>
+
+    <line class="wire" x1="270" y1="250" x2="380" y2="250"/>
+    <polygon points="380,236 380,264 404,250" fill="#fff" stroke="#1a1a1a" stroke-width="2.2"/>
+    <line class="wire" x1="404" y1="250" x2="470" y2="250"/>
+    <line class="wire" x1="470" y1="250" x2="470" y2="160"/>
+    <text x="392" y="226" text-anchor="middle" class="lbl">D_2</text>
+
+    <line class="wire" x1="470" y1="160" x2="620" y2="160"/>
+    <circle cx="620" cy="160" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="614" y="146" text-anchor="end" class="lbl">u_o</text>
+
+    <line class="wire" x1="520" y1="160" x2="520" y2="120"/>
+    <line class="wire" x1="520" y1="120" x2="520" y2="100"/>
+    <rect class="area" x="505" y="100" width="30" height="20" rx="3" stroke="#1a1a1a" stroke-width="2.2"/>
+    <line class="wire" x1="520" y1="100" x2="520" y2="72"/>
+    <text x="546" y="92" class="lbl">R</text>
+    <text x="520" y="62" text-anchor="middle" class="lbl">+V</text>
+    <circle class="dot" cx="520" cy="160" r="4"/>
+
+    <text x="360" y="334" text-anchor="middle" class="lbl">图 30-6　窗口比较器：D_1、D_2 与上拉电阻构成"或"逻辑</text>
+  </svg>
+</div>
+
+<p>
+  <code>A_1</code> 检测上限：<code>u_i</code> 接同相端、<code>U_RH</code> 接反相端，
+  <code>u_i &gt; U_RH</code> 时输出高。<code>A_2</code> 检测下限：<code>u_i</code> 接反相端、
+  <code>U_RL</code> 接同相端，<code>u_i &lt; U_RL</code> 时输出高。
+  两只二极管阳极接公共点、阴极接各比较器输出，公共点经 <code>R</code> 上拉到 <code>+V</code>：
+</p>
+
+<table>
+  <tr><th>输入范围</th><th>A_1 输出</th><th>A_2 输出</th><th>二极管</th><th>u_o</th></tr>
+  <tr><td>u_i &gt; U_RH</td><td>高</td><td>低</td><td>D_2 导通，公共点被拉低</td><td><strong>低</strong></td></tr>
+  <tr><td>U_RL &lt; u_i &lt; U_RH</td><td>低</td><td>低</td><td>都截止</td><td><strong>高</strong>（上拉）</td></tr>
+  <tr><td>u_i &lt; U_RL</td><td>低</td><td>高</td><td>D_1 导通，公共点被拉低</td><td><strong>低</strong></td></tr>
+</table>
+
+<p>
+  所以<strong>窗口内输出高、窗口外输出低</strong>，这就是"区间判别器"。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" width="100%" height="auto" role="img" aria-label="窗口比较器的电压传输特性：在上下门限之间输出高电平，之外输出低电平">
+    <line class="wire thin" x1="110" y1="240" x2="110" y2="40"/>
+    <polygon points="104,40 116,40 110,26" fill="#1a1a1a"/>
+    <line class="wire thin" x1="100" y1="230" x2="660" y2="230"/>
+    <polygon points="660,224 660,236 674,230" fill="#1a1a1a"/>
+    <text x="98" y="34" text-anchor="end" class="lbl">u_o</text>
+    <text x="668" y="220" text-anchor="end" class="lbl">u_i</text>
+
+    <line class="wire thin ideal" x1="110" y1="70" x2="280" y2="70"/>
+    <line class="wire thin ideal" x1="280" y1="70" x2="280" y2="230"/>
+    <line class="wire thin ideal" x1="460" y1="70" x2="460" y2="230"/>
+    <line class="wire thin ideal" x1="110" y1="230" x2="280" y2="230"/>
+
+    <text x="98" y="75" text-anchor="end" class="lbl">U_OH</text>
+    <text x="98" y="235" text-anchor="end" class="lbl">U_OL</text>
+    <text x="274" y="254" text-anchor="middle" class="lbl">U_RL</text>
+    <text x="466" y="254" text-anchor="middle" class="lbl">U_RH</text>
+
+    <polyline points="120,230 280,230 280,70 460,70 460,230 640,230" fill="none" style="stroke:var(--accent)" stroke-width="2.5"/>
+    <circle cx="280" cy="70" r="4" fill="#2b6cb0"/>
+    <circle cx="460" cy="70" r="4" fill="#2b6cb0"/>
+    <text x="370" y="58" text-anchor="middle" class="lbl">窗口内</text>
+    <text x="180" y="270" class="lbl">窗口外</text>
+    <text x="560" y="270" class="lbl">窗口外</text>
+
+    <text x="360" y="290" text-anchor="middle" class="lbl">图 30-7　窗口比较器的传输特性：中间高、两边低</text>
+  </svg>
+</div>
+
+<h3>【例 3】窗口比较器判别</h3>
+
+<p>
+  <strong>题</strong>：图 30-6 中 <code>U_RH = 4 V，U_RL = 1 V</code>，比较器输出高电平
+  <code>+5 V</code>、低电平 <code>0 V</code>。分别求 <code>u_i = 2.5 V、5 V、0.5 V</code> 时的输出。
+</p>
+
+<ol>
+  <li><code>u_i = 2.5 V</code>：<code>1 &lt; 2.5 &lt; 4</code>，落在窗口内。
+      <code>A_1</code> 输出低（2.5 &lt; 4），<code>A_2</code> 输出低（2.5 &gt; 1），
+      两只二极管都截止，<code>u_o</code> 被 <code>R</code> 上拉到 <strong>+5 V</strong>。</li>
+  <li><code>u_i = 5 V</code>：<code>5 &gt; 4</code>，<code>A_1</code> 输出高，
+      <code>D_1</code> 导通把公共点拉低，<code>u_o = 0 V</code>。</li>
+  <li><code>u_i = 0.5 V</code>：<code>0.5 &lt; 1</code>，<code>A_2</code> 输出高，
+      <code>D_2</code> 导通，<code>u_o = 0 V</code>。</li>
+</ol>
+
+<p>
+  注意二极管在这里<strong>不是整流，而是"线与"逻辑门</strong>：任一比较器输出低，
+  就能把公共点拉低。若把两只二极管反过来接，逻辑就变成"窗口内低、窗口外高"，
+  读题时务必看清二极管方向。
+</p>
+
+<h2>六、集成比较器：LM339 与 LM311</h2>
+
+<p>
+  <strong>LM339</strong> 是四比较器（一片四个），<strong>LM311</strong> 是单比较器。
+  两者的共同点：集电极开路输出、无需相位补偿、响应快、可单电源工作。
+</p>
+
+<table>
+  <tr><th>参数</th><th>LM339</th><th>LM311</th></tr>
+  <tr><td>比较器数量</td><td>4</td><td>1</td></tr>
+  <tr><td>输出级</td><td>集电极开路（OC）</td><td>集电极开路 / 发射极开路可选</td></tr>
+  <tr><td>响应时间</td><td>约 1.3 μs</td><td>约 200 ns</td></tr>
+  <tr><td>电源</td><td>单电源 2~36 V 或双电源 ±18 V</td><td>单电源 5~30 V 或双电源 ±15 V</td></tr>
+  <tr><td>典型用途</td><td>电平检测、窗口判别、多路报警</td><td>高速触发、脉冲整形</td></tr>
+</table>
+
+<ul>
+  <li><strong>OC 输出必须上拉</strong>：<code>R</code> 取 1~10 kΩ。阻值越大越省电，但上升沿越慢
+      （<code>t_r ≈ 2.2RC</code>，<code>C</code> 含分布电容）。</li>
+  <li><strong>输出电平可独立设定</strong>：上拉接到 <code>+5 V</code>，即使器件由 <code>±15 V</code> 供电，
+      输出也是 0/5 V，能直接接 TTL/CMOS。</li>
+  <li><strong>输出可以并联</strong>：多个 OC 输出直接连在一起就是"线与"，
+      任一为低则整条线为低——这就是"报警汇总"的硬件实现。</li>
+  <li><strong>输入共模范围</strong>含地（LM339 可低到 0 V），所以单电源下检测接近 0 V 的信号没问题；
+      但输入电压不能超过电源范围，否则会损坏。</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">为什么比较器不接负反馈</span>
+  一旦接了负反馈，虚短成立，输出就被"拉"到线性区，跟着输入连续变化——那就不再是比较器了。
+  比较器要的就是"要么撞上轨、要么撞下轨"的两态，所以<strong>只接开环或正反馈</strong>。
+  另外，比较器内部不做相位补偿，接成负反馈极易自激。
+</div>
+
+<h2>七、判断与画波形的通用流程</h2>
+
+<p>考场上遇到比较器题，固定按这四步走，几乎不会错：</p>
+
+<ol>
+  <li><strong>定门限</strong>：找出"使 <code>u_+ = u_−</code>"的 <code>u_i</code>。
+      单限比较器是一个值，滞回是两个值，窗口也是两个值。</li>
+  <li><strong>定极性</strong>：<code>u_i</code> 接反相端则输出与"输入高于门限"反相；
+      接同相端则同相。这一步决定波形是"正着"还是"反着"。</li>
+  <li><strong>定初始状态</strong>：画波形前先问"<code>t = 0</code> 时输出是什么"。
+      滞回比较器必须知道初始态才能确定用哪个门限。</li>
+  <li><strong>逐段画</strong>：输入穿过门限就跳变，其余时间输出保持。跳变是<strong>竖直</strong>的，
+      不允许画成斜线。</li>
+</ol>
+
+<h3>【例 4】给定输入波形，画滞回比较器的输出</h3>
+
+<p>
+  <strong>题</strong>：滞回比较器 <code>U_T+ = +2 V，U_T− = −2 V，U_Z = ±6 V</code>，
+  输入为三角波：<code>0 → +4 V → −4 V → 0</code> 线性变化。设初始输出为 <code>+6 V</code>。
+  画出输出波形并说明各段电平。
+</p>
+
+<p><strong>解</strong>：按"初始态 → 用对应门限 → 穿越才翻转"的顺序逐段推。</p>
+
+<table>
+  <tr><th>输入段</th><th>当前输出</th><th>有效门限</th><th>是否穿越</th><th>输出变化</th></tr>
+  <tr><td>0 → +4 V（上升）</td><td>+6 V</td><td>U_T+ = +2 V</td><td>在 +2 V 处穿越</td><td>+6 V → −6 V</td></tr>
+  <tr><td>+4 V → −4 V（下降）</td><td>−6 V</td><td>U_T− = −2 V</td><td>在 −2 V 处穿越</td><td>−6 V → +6 V</td></tr>
+  <tr><td>−4 V → 0（上升）</td><td>+6 V</td><td>U_T+ = +2 V</td><td>未到 +2 V</td><td>保持 +6 V</td></tr>
+</table>
+
+<p>
+  输出是一个"高—低—高"的矩形波：<strong>在输入第一次升到 +2 V 时下降，降到 −2 V 时上升</strong>，
+  最后一段因为输入最高只回到 0 V，够不到 +2 V，所以输出停在高电平不再翻转。
+  这个"回差导致末段不翻转"的细节，是区分"真懂"和"背公式"的关键。
+</p>
+
+<h2>八、易错点与速查表</h2>
+
+<h3>六个高频错误</h3>
+<ol>
+  <li><strong>把输入接的端看反</strong>。反相端输入 → 输出与"高于门限"相反。画波形前先在图上标 <code>+ / −</code>。</li>
+  <li><strong>滞回比较器只记一个门限</strong>。它是两个门限，且"用哪个"由当前输出决定，必须跟踪状态。</li>
+  <li><strong>回差算成 <code>U_Z·R_1/(R_1+R_2)</code></strong>。那是单边门限，回差要乘 2。</li>
+  <li><strong>忘记验算限幅是否有效</strong>。<code>U_Z &gt; U_OM</code> 时稳压管不起作用，输出仍是 <code>±U_OM</code>。</li>
+  <li><strong>给比较器加负反馈</strong>。加了就不是比较器；判断"能否工作"的题常在这里设坑。</li>
+  <li><strong>OC 输出忘记上拉</strong>。没有上拉电阻，输出高电平是"悬空"，不是高电平。</li>
+</ol>
+
+<h3>速查表</h3>
+
+<table>
+  <tr><th>电路</th><th>门限 / 关键式</th><th>要点</th></tr>
+  <tr><td>过零比较器</td><td>U_T = 0</td><td>输入接反相端则输出反相</td></tr>
+  <tr><td>任意门限（反相求和）</td><td>U_T = −(R_1/R_2)·U_REF</td><td>参考电压加在反相端，符号为负</td></tr>
+  <tr><td>任意门限（同相分压）</td><td>U_T = U_REF·R_1/(R_1+R_2)</td><td>门限与 U_REF 同号</td></tr>
+  <tr><td>输出限幅</td><td>|U_Z| &lt; U_OM</td><td>需串限流电阻</td></tr>
+  <tr><td>滞回比较器</td><td>U_T± = ±U_Z·R_1/(R_1+R_2)</td><td>正反馈接同相端</td></tr>
+  <tr><td>回差</td><td>ΔU = 2U_Z·R_1/(R_1+R_2)</td><td>回差越大抗干扰越强、精度越低</td></tr>
+  <tr><td>窗口比较器</td><td>U_RL、U_RH 两个门限</td><td>二极管或门 + 上拉</td></tr>
+  <tr><td>LM339 / LM311</td><td>OC 输出，外接上拉</td><td>不补偿、速度快、可线与</td></tr>
+</table>
+
+<h2>九、Quiz — 考研风格题</h2>
+
+<p>4 道题覆盖本质、门限、回差与集成器件。先算再点，解析会告诉你错在哪一步。</p>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>比较器 = 开环或正反馈的运放</strong>：输出两态，虚短失效、虚断仍成立。</li>
+  <li><strong>门限就是 <code>u_+ = u_−</code> 的那个 <code>u_i</code></strong>：现场列 KCL 比背公式可靠，
+      <code>U_T = −(R_1/R_2)U_REF</code> 只是一个特例。</li>
+  <li><strong>限幅让电平可控</strong>：双向稳压管把 <code>±U_OM</code> 变成 <code>±U_Z</code>，前提是 <code>U_Z &lt; U_OM</code>。</li>
+  <li><strong>正反馈产生回差</strong>：<code>U_T± = ±U_Z R_1/(R_1+R_2)</code>，回差 <code>ΔU</code> 换取抗干扰能力。</li>
+  <li><strong>窗口比较器 = 两个单限 + 或门</strong>：判断"在不在区间内"，输出是高/低两态之一。</li>
+</ol>
+
+<p>
+  下一课（<strong>Lesson 0031</strong>）把这套东西用起来：在滞回比较器的反相端接一个 RC，
+  让电容电压自己来回撞门限，就不再需要外部输入了——那是<strong>方波发生器</strong>。
+  本课的两个门限公式，正是下一课周期公式的分子。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第八章 §8.1「电压比较器」，
+  含单限比较器、滞回比较器、窗口比较器与集成比较器。
+</div>
+
+<div class="ask-agent">
+  门限算出来是负的，不确定极性？画波形总觉得反了？<br>
+  <strong>直接问我</strong>——把电阻值和输入波形发我，我陪你把传输特性先画出来。
+</div>
+
+<div class="footer-nav">
+  <a href="./0029-lc-and-crystal-oscillators.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0030 / 0035</span>
+  <a href="./0031-nonsinusoidal-waveform-generators.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "关于电压比较器，下列说法正确的是？",
+    options: [
+      "比较器必须接负反馈才能稳定工作",
+      "比较器工作在开环或正反馈状态，输出只有高、低两个电平",
+      "比较器工作时虚短仍然成立，可以直接用 u_+ = u_− 求输出",
+      "比较器的输出是输入的线性放大，只是增益更大"
+    ],
+    correct: 1,
+    explain: "比较器故意不接负反馈（或接正反馈），输出撞到 ±U_OM 或 ±U_Z 两个电平。虚短只在负反馈且未饱和时成立，比较器里虚短失效、虚断仍成立。接负反馈就变回线性放大器，不再是比较器。"
+  },
+  {
+    q: "单限比较器中，u_i 经 R_1 = 10 kΩ 接反相端，U_REF 经 R_2 = 20 kΩ 也接反相端，同相端接地，U_REF = −3 V。门限 U_T 为？",
+    options: [
+      "−1.5 V",
+      "+1.5 V",
+      "+6 V",
+      "−6 V"
+    ],
+    correct: 1,
+    explain: "反相端 KCL：u_i/R_1 + U_REF/R_2 = 0，所以 U_T = −(R_1/R_2)U_REF = −(10/20)×(−3) = +1.5 V。负号来自参考电压加在反相端，负负得正。"
+  },
+  {
+    q: "滞回比较器 U_Z = 5 V，R_1 = 20 kΩ，R_2 = 80 kΩ。两个门限与回差分别是？",
+    options: [
+      "±5 V，回差 10 V",
+      "±1 V，回差 2 V",
+      "±0.8 V，回差 1.6 V",
+      "±2.5 V，回差 5 V"
+    ],
+    correct: 1,
+    explain: "分压比 R_1/(R_1+R_2) = 20/100 = 0.2，门限 ±5×0.2 = ±1 V，回差 ΔU = 2×1 = 2 V。回差是两门限之差，不是单边门限。"
+  },
+  {
+    q: "用 LM339 构成比较器，输出不接上拉电阻，会出现什么现象？",
+    options: [
+      "输出高电平正常，低电平被抬高",
+      "输出变成正弦波",
+      "输出高电平无法建立（悬空），只有拉低能力",
+      "比较器立刻损坏"
+    ],
+    correct: 2,
+    explain: "LM339 是集电极开路（OC）输出，只能把输出拉低，不能主动拉高。必须外接 1~10 kΩ 上拉电阻到 +V，高电平才建立得起来；上拉电压还可以独立于器件电源，用来匹配逻辑电平。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！门限、回差、极性都拿下了，可以进 0031 的方波发生器了。' :
+        right >= 2 ? '👍 基本掌握。建议回看第二节的门限推导和第四节的传输特性方向。' :
+        '📚 先把"门限就是 u_+ = u_− 的那个 u_i"写三遍，再重做这一组题。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

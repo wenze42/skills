@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0033 — 直流电源：整流与滤波</title>
+<link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+
+<h1>Lesson 0033 — 直流电源：整流与滤波</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0033 / 0035 · 约 55 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  必须掌握 <a href="./0003-diode-and-circuits.html">Lesson 0003（二极管与二极管电路）</a>：
+  二极管的单向导电性、正向压降 0.7 V、反向截止。
+  还要熟悉正弦量的<strong>有效值</strong>与<strong>峰值</strong>的关系：<code>U_m = √2 · U_2</code>。
+  这一课开始讲第 10 章：<strong>把 220 V / 50 Hz 的交流电，变成干净的直流电</strong>。
+</div>
+
+<p>
+  前面 30 多课，我们一直在"用"直流电源——<code>+V_CC</code> 随手就画出来了。
+  但真实的直流电源不是天上掉下来的：墙上只有 220 V 交流，而放大电路要的是几伏到几十伏、
+  纹波极小的直流。中间这一整套转换，就是<strong>直流稳压电源</strong>。
+</p>
+<p>
+  它由四个环节串联而成，缺一不可：
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 210" width="100%" height="auto" role="img" aria-label="直流电源的四个环节：电源变压器、整流电路、滤波电路、稳压电路，最后送到负载">
+    <rect class="area" x="26" y="60" width="108" height="58" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="80" y="86" text-anchor="middle" style="font-size:16px">电源</text>
+    <text x="80" y="106" text-anchor="middle" style="font-size:16px">变压器</text>
+
+    <line class="wire" x1="134" y1="89" x2="176" y2="89"/>
+    <polygon points="176,83 176,95 188,89" fill="#1a1a1a"/>
+
+    <rect class="area" x="188" y="60" width="108" height="58" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="242" y="86" text-anchor="middle" style="font-size:16px">整流</text>
+    <text x="242" y="106" text-anchor="middle" style="font-size:16px">电路</text>
+
+    <line class="wire" x1="296" y1="89" x2="338" y2="89"/>
+    <polygon points="338,83 338,95 350,89" fill="#1a1a1a"/>
+
+    <rect class="area" x="350" y="60" width="108" height="58" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="404" y="86" text-anchor="middle" style="font-size:16px">滤波</text>
+    <text x="404" y="106" text-anchor="middle" style="font-size:16px">电路</text>
+
+    <line class="wire" x1="458" y1="89" x2="500" y2="89"/>
+    <polygon points="500,83 500,95 512,89" fill="#1a1a1a"/>
+
+    <rect class="area" x="512" y="60" width="108" height="58" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="566" y="86" text-anchor="middle" style="font-size:16px">稳压</text>
+    <text x="566" y="106" text-anchor="middle" style="font-size:16px">电路</text>
+
+    <line class="wire" x1="620" y1="89" x2="662" y2="89"/>
+    <polygon points="662,83 662,95 674,89" fill="#1a1a1a"/>
+
+    <line class="wire thin" x1="26" y1="89" x2="4" y2="89"/>
+    <text x="30" y="144" class="lbl">220 V / 50 Hz</text>
+    <text x="176" y="144" class="lbl">u₂（几十伏）</text>
+    <text x="316" y="144" class="lbl">脉动直流</text>
+    <text x="470" y="144" class="lbl">较平滑</text>
+    <text x="618" y="144" class="lbl">U_o 恒定</text>
+
+    <text x="360" y="30" text-anchor="middle" class="lbl">四个环节：降压 → 整流 → 滤波 → 稳压</text>
+    <text x="360" y="186" text-anchor="middle" class="lbl">本课讲前三步（变压器、整流、滤波），下一课讲稳压</text>
+  </svg>
+</div>
+
+<p>
+  一句话概括每一环的任务：
+</p>
+<ul>
+  <li><strong>变压器</strong>：把 220 V 降到合适的副边电压 <code>u_2</code>（隔离、降压，不做波形变换）；</li>
+  <li><strong>整流</strong>：把双向的交流变成<strong>单向</strong>的脉动直流（波形只保留一个方向）；</li>
+  <li><strong>滤波</strong>：用电容把脉动"填平"，减小纹波；</li>
+  <li><strong>稳压</strong>：输入电压或负载变化时，输出仍然纹丝不动。</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">贯穿全课的四个量</span>
+  <code>U_2</code>：变压器副边电压<strong>有效值</strong>；<br>
+  <code>U_m = √2 U_2</code>：副边电压<strong>峰值</strong>；<br>
+  <code>U_o(AV)</code>：输出直流的<strong>平均值</strong>（万用表直流档读到的值）；<br>
+  <code>ΔU</code>：纹波峰峰值，越小越好。
+</div>
+
+<h2>一、半波整流：最简单，也最糟糕</h2>
+
+<p>
+  只用一只二极管，正半周导通、负半周截止。电路只有四个元件：副边电源、二极管 D、负载 <code>R_L</code>，以及回路。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 430" width="100%" height="auto" role="img" aria-label="半波整流电路与输出波形：正半周二极管导通，负半周截止，输出只有半个正弦波">
+    <circle class="wire" cx="110" cy="160" r="24"/>
+    <path class="wire thin" d="M100,170 Q105,152 110,160 Q115,168 120,150" style="stroke:var(--accent)"/>
+    <line class="wire" x1="110" y1="136" x2="110" y2="96"/>
+    <line class="wire" x1="110" y1="184" x2="110" y2="252"/>
+    <line class="wire" x1="110" y1="96" x2="252" y2="96"/>
+
+    <polygon points="252,84 252,108 290,96" fill="#1a1a1a"/>
+    <line class="wire" x1="290" y1="84" x2="290" y2="108"/>
+    <line class="wire" x1="290" y1="96" x2="470" y2="96"/>
+    <text x="270" y="72" text-anchor="middle" class="lbl">D</text>
+
+    <line class="wire" x1="470" y1="96" x2="470" y2="128"/>
+    <rect class="area" x="456" y="128" width="28" height="62" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="470" y1="190" x2="470" y2="252"/>
+    <text x="496" y="166" class="lbl">R_L</text>
+
+    <line class="wire" x1="110" y1="252" x2="470" y2="252"/>
+    <text x="84" y="164" text-anchor="end" class="lbl">u₂</text>
+    <text x="500" y="118" class="lbl">u_o</text>
+
+    <line class="wire thin ideal" x1="60" y1="352" x2="690" y2="352"/>
+    <line class="wire thin" x1="60" y1="352" x2="60" y2="282"/>
+    <text x="52" y="278" text-anchor="end" class="lbl">u_o</text>
+    <text x="52" y="368" text-anchor="end" class="lbl">0</text>
+
+    <path class="wire" style="stroke:var(--accent);stroke-width:2.5"
+          d="M60,352 C78,267 102,267 120,352 L180,352
+             C198,267 222,267 240,352 L300,352
+             C318,267 342,267 360,352 L420,352
+             C438,267 462,267 480,352 L540,352
+             C558,267 582,267 600,352 L660,352"/>
+
+    <line class="wire thin ideal" x1="60" y1="292" x2="690" y2="292"/>
+    <text x="668" y="286" text-anchor="end" class="lbl">√2U₂</text>
+
+    <line class="wire thin" x1="120" y1="352" x2="120" y2="360"/>
+    <text x="120" y="378" text-anchor="middle" class="lbl">π</text>
+    <line class="wire thin" x1="240" y1="352" x2="240" y2="360"/>
+    <text x="240" y="378" text-anchor="middle" class="lbl">2π</text>
+    <line class="wire thin" x1="360" y1="352" x2="360" y2="360"/>
+    <text x="360" y="378" text-anchor="middle" class="lbl">3π</text>
+
+    <path class="wire thin" d="M60,404 L60,400" style="stroke:var(--text-light)"/>
+    <text x="60" y="420" class="lbl">负半周被削掉，输出只有一半的波形（脉动系数 1.57）</text>
+  </svg>
+</div>
+
+<p>
+  设副边电压 <code>u_2 = √2 U_2 sin ωt</code>，则输出平均值就是对<strong>半个</strong>正弦波求平均：
+</p>
+
+<div class="math">U_o(AV) = (1/2π) ∫₀^π √2 U_2 sinωt d(ωt) = √2 U_2 / π ≈ 0.45 U_2</div>
+
+<p>
+  换句话说，<strong>半波整流的输出只有输入有效值的 45%</strong>。副边 20 V 的变压器，输出只有 9 V。
+  这个系数 <code>0.45</code> 是半波整流的身份证，考卷上见到它就要立刻想到"只有一只二极管"。
+</p>
+
+<h3>半波整流的两个致命缺点</h3>
+
+<table>
+  <tr><th>指标</th><th>数值 / 表现</th><th>后果</th></tr>
+  <tr>
+    <td>脉动系数 <code>S</code></td>
+    <td><code>S = 1.57</code>（基波幅值与平均值之比）</td>
+    <td>交流成分比直流成分还大，滤波压力极大</td>
+  </tr>
+  <tr>
+    <td>变压器利用率</td>
+    <td>副边只有半个周期有电流</td>
+    <td>同样的功率，变压器要做得更大；且直流磁化易使铁芯饱和</td>
+  </tr>
+  <tr>
+    <td>输出电压</td>
+    <td><code>0.45U_2</code></td>
+    <td>只有全波的一半</td>
+  </tr>
+</table>
+
+<p>
+  所以除了"几毫安、几块钱"的极低端场合，半波整流基本被淘汰。真正的主角是桥式整流。
+</p>
+
+<h2>二、全波整流：把负半周也翻上来</h2>
+
+<p>
+  要让<strong>每一个半周都有输出</strong>，思路有两条：
+</p>
+<ol>
+  <li><strong>中心抽头式</strong>：变压器副边中间抽头接地，两只二极管分别从两端取电，正负半周各导通一只。<strong>输出电压 <code>0.9U_2′</code></strong>（<code>U_2′</code> 是<strong>半个</strong>副边的有效值），二极管承受的反向电压是 <code>2√2U_2′</code>——因为它截止时两端跨着<strong>整个</strong>副边。</li>
+  <li><strong>桥式</strong>：四只二极管接成电桥，不需要中心抽头。<strong>输出电压 <code>0.9U_2</code></strong>（<code>U_2</code> 是整个副边的有效值），二极管承受 <code>√2 U_2</code>。</li>
+</ol>
+
+<div class="tip">
+  <span class="tip-label">关于 2√2U₂ 这个数字（考试高频陷阱）</span>
+  <strong>中心抽头全波电路</strong>：一只二极管截止时，它两端承受的是"上半个副边 + 下半个副边"串联的峰值，
+  即 <code>2√2 U_2′</code>。<br>
+  <strong>桥式电路</strong>：截止的两只二极管各承受<strong>一个</strong>副边的峰值，即 <code>√2 U_2</code>。<br>
+  两者相差一倍。做题时先看电路——<strong>有没有中心抽头</strong>，再决定乘不乘 2。
+  工程选型时习惯再留一倍裕量，所以常按 <code>2√2U_2</code> 选管，这是"裕量"而不是"理论值"。
+</div>
+
+<h2>三、桥式整流：四只二极管的正经玩法</h2>
+
+<h3>3.1 四种画法，一个道理</h3>
+
+<p>
+  教材上桥式整流至少有四种画法，很多人被画法绕晕。其实只要抓住一句口诀：
+  <strong>两个对角接交流，另两个对角出直流；二极管箭头都指向"正"端。</strong>
+</p>
+
+<table>
+  <tr><th>画法</th><th>长相</th><th>怎么看</th></tr>
+  <tr>
+    <td>① 菱形画法</td>
+    <td>四只二极管首尾相接围成一个菱形</td>
+    <td>左右两个顶点接 <code>u_2</code>，上下两个顶点出 <code>+ / −</code></td>
+  </tr>
+  <tr>
+    <td>② 方形画法</td>
+    <td>上下两条横线是直流母线，四只管子分列左右两条竖支路</td>
+    <td>上母线是 <code>+</code>，下母线是 <code>−</code>，左右支路中点接交流</td>
+  </tr>
+  <tr>
+    <td>③ 电桥画法</td>
+    <td>画成惠斯通电桥的样子，四个臂各一只二极管</td>
+    <td>与菱形完全等价，只是把节点标成 A/B/C/D 方便分析</td>
+  </tr>
+  <tr>
+    <td>④ 桥堆画法</td>
+    <td>一个方框，四个引脚标 <code>~ ~ + −</code></td>
+    <td>内部就是前三种之一，工程图上最常见</td>
+  </tr>
+</table>
+
+<p>
+  四种画法的拓扑<strong>完全一样</strong>，转换时只需数节点，不需要重新推导。
+  下面用方形画法画出电路——它最容易看清"两条支路、四个管子"的对称结构。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 470" width="100%" height="auto" role="img" aria-label="桥式整流电路：四只二极管接成电桥，交流输入接左右两个节点，上下两条母线输出直流">
+    <line class="wire" x1="250" y1="130" x2="430" y2="130"/>
+    <line class="wire" x1="250" y1="330" x2="430" y2="330"/>
+
+    <line class="wire" x1="250" y1="130" x2="250" y2="168"/>
+    <polygon points="236,206 264,206 250,168" fill="#1a1a1a"/>
+    <line class="wire" x1="236" y1="168" x2="264" y2="168"/>
+    <line class="wire" x1="250" y1="206" x2="250" y2="246"/>
+
+    <line class="wire" x1="250" y1="292" x2="250" y2="330"/>
+    <polygon points="236,290 264,290 250,252" fill="#1a1a1a"/>
+    <line class="wire" x1="236" y1="252" x2="264" y2="252"/>
+    <line class="wire" x1="250" y1="246" x2="250" y2="252"/>
+
+    <line class="wire" x1="430" y1="130" x2="430" y2="168"/>
+    <polygon points="416,206 444,206 430,168" fill="#1a1a1a"/>
+    <line class="wire" x1="416" y1="168" x2="444" y2="168"/>
+    <line class="wire" x1="430" y1="206" x2="430" y2="246"/>
+
+    <line class="wire" x1="430" y1="292" x2="430" y2="330"/>
+    <polygon points="416,290 444,290 430,252" fill="#1a1a1a"/>
+    <line class="wire" x1="416" y1="252" x2="444" y2="252"/>
+    <line class="wire" x1="430" y1="246" x2="430" y2="252"/>
+
+    <circle class="dot" cx="250" cy="226" r="5"/>
+    <circle class="dot" cx="430" cy="226" r="5"/>
+    <line class="wire" x1="272" y1="226" x2="318" y2="226"/>
+    <line class="wire" x1="362" y1="226" x2="408" y2="226"/>
+    <circle class="wire" cx="340" cy="226" r="22"/>
+    <path class="wire thin" d="M330,238 Q336,214 341,226 Q346,238 351,214" style="stroke:var(--accent)"/>
+
+    <line class="wire" x1="430" y1="130" x2="560" y2="130"/>
+    <line class="wire" x1="560" y1="130" x2="560" y2="180"/>
+    <rect class="area" x="546" y="180" width="28" height="70" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="560" y1="250" x2="560" y2="392"/>
+    <line class="wire" x1="340" y1="392" x2="560" y2="392"/>
+    <line class="wire" x1="340" y1="330" x2="340" y2="392"/>
+
+    <text x="214" y="192" text-anchor="end" class="lbl">D₁</text>
+    <text x="466" y="192" class="lbl">D₂</text>
+    <text x="214" y="284" text-anchor="end" class="lbl">D₃</text>
+    <text x="466" y="284" class="lbl">D₄</text>
+
+    <text x="250" y="116" text-anchor="middle" style="font-size:19px;fill:var(--accent)">＋</text>
+    <text x="250" y="356" text-anchor="middle" style="font-size:19px;fill:var(--accent)">－</text>
+    <text x="340" y="272" text-anchor="middle" class="lbl">u₂</text>
+    <text x="588" y="206" class="lbl">R_L</text>
+    <text x="590" y="128" class="lbl">＋</text>
+    <text x="590" y="306" class="lbl">－</text>
+    <text x="646" y="222" class="lbl">U_o</text>
+
+    <text x="360" y="440" text-anchor="middle" class="lbl">方形画法：上下母线出直流，左右中点接交流；四只管子箭头一律朝上（指向正母线）</text>
+  </svg>
+</div>
+
+<h3>3.2 导通路径：每个半周只有两只管子干活</h3>
+
+<p>
+  分析整流电路唯一要做的推理是：<strong>哪个节点电位高，电流就从哪只二极管的正极进、负极出</strong>。
+  设副边上端为正（<code>u_2 &gt; 0</code>）：
+</p>
+
+<ul>
+  <li>左节点（接副边上端）电位高于右节点 → <strong>D₁</strong> 正偏（电流从左节点经 D₁ 流向正母线），<strong>D₃</strong> 反偏截止；</li>
+  <li>电流经负载 <code>R_L</code> 从 <code>+</code> 流到 <code>−</code>，再经 <strong>D₄</strong> 回到右节点（D₄ 正偏），<strong>D₂</strong> 截止；</li>
+  <li>所以正半周通路是：<code>u_2 → D₁ → R_L → D₄ → 回到 u_2</code>。</li>
+</ul>
+
+<p>
+  负半周（右节点电位高）时全部反过来：<code>D₂、D₃</code> 导通，通路是 <code>u_2 → D₂ → R_L → D₃ → 回到 u_2</code>。
+  <strong>关键结论：无论正负半周，流过负载的电流方向始终相同</strong>——这就是"整流"。
+</p>
+
+<div class="tip">
+  <span class="tip-label">三条必记结论</span>
+  ① 每只二极管<strong>只导通半个周期</strong>，导通角 180°；<br>
+  ② 每只二极管的平均电流 = <strong>负载电流的一半</strong>：<code>I_D = I_o / 2</code>；<br>
+  ③ 每只二极管承受的最高反向电压 = <strong>副边峰值</strong>：<code>U_RM = √2 U_2</code>。
+</div>
+
+<h3>3.3 输出平均值 0.9U₂ 从哪来</h3>
+
+<p>
+  全波整流把负半周"翻"了上来，所以输出是 <code>|√2U_2 sinωt|</code>，一个周期内有<strong>两个</strong>波峰。
+  平均值是半波的两倍：
+</p>
+
+<div class="math">U_o(AV) = (2/π) · √2 U_2 ≈ 0.9 U_2</div>
+<div class="math">I_o = U_o(AV) / R_L　，　I_D(AV) = I_o / 2</div>
+
+<p>
+  顺带记住变压器副边的<strong>有效值电流</strong>：由于每半周都有电流，
+  <code>I_2 ≈ 1.11 I_o</code>（桥式），变压器利用率比半波高得多。
+</p>
+
+<h2>四、三种整流的波形对比</h2>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 520" width="100%" height="auto" role="img" aria-label="半波、中心抽头全波、桥式整流三种输出波形对比：半波每周期一个波峰，全波与桥式每周期两个波峰">
+    <text x="24" y="30" class="lbl">① 半波整流：每周期只剩一个波峰，U_o ≈ 0.45U₂</text>
+    <line class="wire thin ideal" x1="70" y1="150" x2="700" y2="150"/>
+    <line class="wire thin" x1="70" y1="150" x2="70" y2="70"/>
+    <text x="62" y="66" text-anchor="end" class="lbl">u_o</text>
+    <path class="wire" style="stroke:var(--accent);stroke-width:2.5"
+          d="M70,150 C88,72 112,72 130,150 L200,150
+             C218,72 242,72 260,150 L330,150
+             C348,72 372,72 390,150 L460,150
+             C478,72 502,72 520,150 L590,150
+             C608,72 632,72 650,150 L700,150"/>
+    <text x="700" y="172" text-anchor="end" class="lbl">导通角 180°，一半时间空着</text>
+
+    <text x="24" y="206" class="lbl">② 中心抽头全波：每周期两个波峰，U_o ≈ 0.9U₂′（U₂′ 为半个副边）</text>
+    <line class="wire thin ideal" x1="70" y1="326" x2="700" y2="326"/>
+    <line class="wire thin" x1="70" y1="326" x2="70" y2="246"/>
+    <text x="62" y="242" text-anchor="end" class="lbl">u_o</text>
+    <path class="wire" style="stroke:var(--accent);stroke-width:2.5"
+          d="M70,326 C80,252 100,252 110,326
+             C120,252 140,252 150,326
+             C160,252 180,252 190,326
+             C200,252 220,252 230,326
+             C240,252 260,252 270,326
+             C280,252 300,252 310,326
+             C320,252 340,252 350,326
+             C360,252 380,252 390,326
+             C400,252 420,252 430,326
+             C440,252 460,252 470,326
+             C480,252 500,252 510,326
+             C520,252 540,252 550,326
+             C560,252 580,252 590,326
+             C600,252 620,252 630,326
+             C640,252 660,252 670,326 L700,326"/>
+    <line class="wire thin ideal" x1="70" y1="270" x2="700" y2="270"/>
+    <text x="676" y="264" text-anchor="end" class="lbl">√2U₂′</text>
+
+    <text x="24" y="382" class="lbl">③ 桥式：波形与②完全相同，但 U_o ≈ 0.9U₂（U₂ 为整个副边）</text>
+    <line class="wire thin ideal" x1="70" y1="502" x2="700" y2="502"/>
+    <line class="wire thin" x1="70" y1="502" x2="70" y2="422"/>
+    <text x="62" y="418" text-anchor="end" class="lbl">u_o</text>
+    <path class="wire" style="stroke:var(--accent);stroke-width:2.5"
+          d="M70,502 C80,428 100,428 110,502
+             C120,428 140,428 150,502
+             C160,428 180,428 190,502
+             C200,428 220,428 230,502
+             C240,428 260,428 270,502
+             C280,428 300,428 310,502
+             C320,428 340,428 350,502
+             C360,428 380,428 390,502
+             C400,428 420,428 430,502
+             C440,428 460,428 470,502
+             C480,428 500,428 510,502
+             C520,428 540,428 550,502
+             C560,428 580,428 590,502
+             C600,428 620,428 630,502
+             C640,428 660,428 670,502 L700,502"/>
+    <line class="wire thin ideal" x1="70" y1="446" x2="700" y2="446"/>
+    <text x="676" y="440" text-anchor="end" class="lbl">√2U₂</text>
+  </svg>
+</div>
+
+<p>
+  看图要抓两点：<strong>波峰个数</strong>（半波一个、全波两个）与<strong>峰值高度</strong>（都等于 <code>√2U_2</code>，
+  只是半波的平均值低，因为有一半时间输出为 0）。桥式与中心抽头式的波形<strong>形状完全一样</strong>，
+  差别只在变压器结构和二极管耐压。
+</p>
+
+<h2>五、电容滤波：把波峰"存"起来</h2>
+
+<h3>5.1 工作原理</h3>
+
+<p>
+  在负载两端并一只大电容 <code>C</code>。整流输出上升时，二极管导通给电容充电；
+  输出开始下降时，二极管截止，电容通过 <code>R_L</code> 放电，把电压"撑住"。
+  于是输出不再是深谷，而是一条带锯齿的近似直流线。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="100%" height="auto" role="img" aria-label="电容滤波后的输出波形：电容充电沿正弦上升，放电按指数下降，形成三角状纹波">
+    <line class="wire thin ideal" x1="56" y1="330" x2="700" y2="330"/>
+    <line class="wire thin" x1="56" y1="330" x2="56" y2="110"/>
+    <text x="48" y="106" text-anchor="end" class="lbl">u_o</text>
+    <text x="48" y="346" text-anchor="end" class="lbl">0</text>
+
+    <path class="wire thin ideal"
+          d="M56,291 C64,234 136,234 160,330
+             C184,234 256,234 280,330
+             C304,234 376,234 400,330
+             C424,234 496,234 520,330
+             C544,234 616,234 640,330
+             C664,234 690,240 700,258"/>
+
+    <path class="wire" style="stroke:var(--accent);stroke-width:3"
+          d="M56,318
+             C68,254 88,252 100,252
+             C124,268 168,296 196,308
+             C206,278 214,258 220,252
+             C244,268 288,296 316,308
+             C326,278 334,258 340,252
+             C364,268 408,296 436,308
+             C446,278 454,258 460,252
+             C484,268 528,296 556,308
+             C566,278 574,258 580,252
+             C604,268 648,296 676,308
+             L700,306"/>
+
+    <line class="wire thin ideal" x1="56" y1="252" x2="700" y2="252"/>
+    <text x="700" y="244" text-anchor="end" class="lbl">√2U₂（空载时）</text>
+
+    <line class="wire thin ideal" x1="56" y1="286" x2="700" y2="286" style="stroke:var(--accent)"/>
+    <text x="700" y="300" text-anchor="end" class="lbl" style="fill:var(--accent)">U_o(AV) ≈ 1.2U₂</text>
+
+    <line class="wire thin" x1="196" y1="308" x2="196" y2="252" style="stroke:var(--text-light)"/>
+    <polygon points="192,262 200,262 196,252" fill="#4a4a4a"/>
+    <polygon points="192,298 200,298 196,308" fill="#4a4a4a"/>
+    <text x="206" y="284" class="lbl">ΔU 纹波</text>
+
+    <text x="100" y="240" text-anchor="middle" class="lbl">充电</text>
+    <text x="270" y="196" class="lbl">放电（C 通过 R_L）</text>
+    <text x="360" y="386" text-anchor="middle" class="lbl">虚线＝整流输出；粗线＝滤波后的实际输出</text>
+  </svg>
+</div>
+
+<h3>5.2 两个工程数字：空载 √2U₂，带载 1.2U₂</h3>
+
+<p>
+  滤波电容把峰值"记住"了。所以：
+</p>
+<ul>
+  <li><strong>空载</strong>（<code>R_L = ∞</code>）：电容无处放电，输出一直停在峰值 → <code>U_o = √2 U_2</code>；</li>
+  <li><strong>带载</strong>：每个周期放电一部分，平均值下降。工程上估 <code>U_o(AV) ≈ 1.2 U_2</code>；</li>
+  <li>介于两者之间的一切值都可能出现，取决于时间常数 <code>τ = R_L C</code>。</li>
+</ul>
+
+<div class="math">τ = R_L C ≫ T/2　（T = 20 ms，全波时放电间隔为 T/2 = 10 ms）</div>
+
+<p>
+  <code>τ</code> 越大，放电越慢，纹波越小、平均值越接近峰值。
+  工程经验：<strong>τ 取 (3~5) 倍的 T/2</strong>，即 <code>R_L C ≥ 30~50 ms</code>。
+  这就是为什么 50 Hz 电源的滤波电容动辄 1000 μF 以上——<code>R_L</code> 只有几十欧，
+  要靠 <code>C</code> 把时间常数顶上去。
+</p>
+
+<h3>5.3 纹波估算</h3>
+
+<p>
+  放电阶段电容按指数下降，但当 <code>ΔU</code> 远小于 <code>U_o</code> 时，可近似成直线，
+  于是有最常用的估算式：
+</p>
+
+<div class="math">ΔU ≈ I_o · T / (2 C)　（全波 / 桥式）　　ΔU ≈ I_o · T / C　（半波）</div>
+
+<p>
+  也就是说：<strong>纹波与负载电流成正比、与电容成反比</strong>。
+  要纹波减半，要么电容加倍，要么电流减半。
+  纹波系数 <code>S = U_r(rms)/U_o ≈ ΔU/(2√3 U_o)</code>（三角波的 RMS 是峰峰值的 <code>1/(2√3)</code>）。
+</p>
+
+<div class="tip">
+  <span class="tip-label">电容滤波的副作用（常考）</span>
+  ① 二极管<strong>导通角变小</strong>（只在峰值附近充电），冲击电流大，容易烧管子，所以要选 <code>I_F</code> 大的整流管；<br>
+  ② 输出电压随负载变化大（<code>R_L</code> 减小 → 平均值下降），所以<strong>电容滤波后面必须跟稳压电路</strong>；<br>
+  ③ 空载时输出可达 <code>√2U_2</code>，选电容的耐压要按 <code>√2U_2</code> 再留 1.5 倍裕量。
+</div>
+
+<h2>六、整流二极管的选型</h2>
+
+<p>
+  选管只看两件事：<strong>流过的电流</strong>和<strong>承受的反压</strong>，再各留裕量。
+</p>
+
+<table>
+  <tr><th>参数</th><th>电路中的实际值</th><th>选型规则</th></tr>
+  <tr>
+    <td>最大整流电流 <code>I_F</code></td>
+    <td>桥式：<code>I_D = I_o/2</code>；半波：<code>I_D = I_o</code></td>
+    <td><code>I_F ≥ (1.5~2) I_D</code>，滤波电容大时取 2~3 倍（冲击电流）</td>
+  </tr>
+  <tr>
+    <td>最高反向工作电压 <code>U_RM</code></td>
+    <td>桥式：<code>√2U_2</code>；中心抽头：<code>2√2U_2′</code></td>
+    <td><code>U_RM ≥ (1.5~2) ×</code> 实际峰值；电网波动 +10% 也要算进去</td>
+  </tr>
+</table>
+
+<p>
+  常用小功率整流管：<strong>1N4001~1N4007</strong>（1 A，50~1000 V），
+  国产 <strong>2CZ 系列</strong>。桥式整流的四只管子常封装成<strong>整流桥堆</strong>（如 KBU 系列），
+  四个引脚标 <code>~ ~ + −</code>，接线不会错。
+</p>
+
+<h2>七、典型例题</h2>
+
+<h3>例 1：桥式整流的输出与管流</h3>
+
+<p>
+  桥式整流电路，变压器副边电压有效值 <code>U_2 = 20 V</code>，负载 <code>R_L = 100 Ω</code>，
+  忽略二极管压降。求 <code>U_o(AV)、I_o</code>、每只二极管的平均电流和最高反向电压。
+</p>
+
+<p><strong>解</strong>：直接套 0.9 系数。</p>
+<div class="math">U_o(AV) = 0.9 × 20 = 18 V</div>
+<div class="math">I_o = 18 / 100 = 0.18 A = 180 mA</div>
+<div class="math">I_D = I_o / 2 = 90 mA</div>
+<div class="math">U_RM = √2 × 20 = 28.3 V</div>
+
+<p>
+  若改用<strong>中心抽头全波</strong>且<strong>半个副边</strong>也是 20 V，则 <code>U_o = 0.9 × 20 = 18 V</code> 不变，
+  但 <code>U_RM = 2√2 × 20 = 56.6 V</code>——同样的输出，管子要多耐一倍压。这就是桥式更受欢迎的原因。
+</p>
+
+<h3>例 2：由输出反求变压器副边电压</h3>
+
+<p>
+  某仪器需要 <code>U_o = 24 V、I_o = 1 A</code> 的直流，采用桥式整流 + 电容滤波，
+  要求滤波后平均电压约 <code>1.2U_2</code>。求变压器副边电压与容量。
+</p>
+
+<p><strong>解</strong>：由 <code>U_o ≈ 1.2 U_2</code>：</p>
+<div class="math">U_2 ≈ 24 / 1.2 = 20 V</div>
+
+<p>副边电流有效值（桥式，带电容滤波）：</p>
+<div class="math">I_2 ≈ 1.11 I_o = 1.11 × 1 = 1.11 A</div>
+
+<p>变压器副边容量：</p>
+<div class="math">S_2 = U_2 · I_2 = 20 × 1.11 ≈ 22 VA</div>
+
+<p>
+  考虑效率与裕量，选 <strong>25~30 VA、副边 20 V</strong> 的变压器。
+  注意这里用的是"带载 1.2 倍"的估算——如果按 <code>0.9U_2</code> 反算会得到 26.7 V，
+  做出来的电源在满载时会明显偏低，因为电容滤波的输出比 0.9 高。这是工程估算与纯理论值的差别。
+</p>
+
+<h3>例 3：二极管选型</h3>
+
+<p>
+  上题电路（<code>U_2 = 20 V，I_o = 1 A</code>），电网电压允许 <code>+10%</code> 波动，
+  电容滤波。选择整流二极管。
+</p>
+
+<p><strong>第一步：实际承受的反压</strong>（取电网最高时）</p>
+<div class="math">U_RM = 1.1 × √2 × 20 = 1.1 × 28.3 ≈ 31 V</div>
+
+<p><strong>第二步：实际流过的平均电流</strong></p>
+<div class="math">I_D = I_o / 2 = 0.5 A</div>
+
+<p><strong>第三步：留裕量选型</strong></p>
+<div class="math">I_F ≥ 2 × 0.5 = 1 A　，　U_R ≥ 2 × 31 = 62 V</div>
+
+<p>
+  查手册，<strong>1N4002（1 A / 100 V）</strong>满足要求；若想更稳妥可用 1N4004（1 A / 400 V）。
+  <strong>不要选 1N4001（50 V）</strong>——它离 62 V 的要求太近，电网一波动就击穿。
+</p>
+
+<div class="tip">
+  <span class="tip-label">选型题的答题模板</span>
+  ① 算 <code>U_RM</code>（含电网波动）；② 算 <code>I_D</code>；③ 各乘 1.5~2 倍裕量；
+  ④ 在手册里挑一个<strong>两个参数都满足</strong>的型号，写清"否则会……"。
+  只算不选、或只选不算，都拿不到满分。
+</div>
+
+<h3>例 4：电容滤波后的输出与纹波</h3>
+
+<p>
+  桥式整流 + 电容滤波，<code>U_2 = 20 V，f = 50 Hz，C = 1000 μF，R_L = 100 Ω</code>。
+  求输出平均电压、纹波峰峰值与纹波系数。
+</p>
+
+<p><strong>第一步：时间常数</strong></p>
+<div class="math">τ = R_L C = 100 × 1000×10⁻⁶ = 0.1 s = 100 ms</div>
+<p>
+  <code>T/2 = 10 ms</code>，<code>τ = 10 × (T/2)</code>，远大于放电间隔，滤波效果良好 → 可用 <code>1.2U_2</code> 估算。
+</p>
+
+<p><strong>第二步：输出平均电压</strong></p>
+<div class="math">U_o ≈ 1.2 × 20 = 24 V　（空载时可达 √2×20 = 28.3 V）</div>
+
+<p><strong>第三步：负载电流</strong></p>
+<div class="math">I_o = 24 / 100 = 0.24 A</div>
+
+<p><strong>第四步：纹波峰峰值</strong></p>
+<div class="math">ΔU ≈ I_o T / (2C) = 0.24 × 0.02 / (2 × 1000×10⁻⁶) = 4.8×10⁻³ / 2×10⁻³ = 2.4 V</div>
+
+<p><strong>第五步：纹波系数</strong>（三角波有效值 = <code>ΔU/(2√3)</code>）</p>
+<div class="math">S = (2.4 / 3.46) / 24 ≈ 0.69 / 24 ≈ 2.9%</div>
+
+<p>
+  对比半波整流的 <code>S = 1.57</code>，滤波后只剩 2.9%，改善了 50 倍。
+  但 2.4 V 的纹波对放大电路仍然太大，所以后面还要接稳压电路——那就是下一课。
+</p>
+
+<h2>八、易错点与速查表</h2>
+
+<h3>六个高频错误</h3>
+<ol>
+  <li><strong>把 <code>U_2</code> 当成峰值</strong>。<code>U_2</code> 是有效值，峰值要乘 <code>√2</code>。整个第 10 章都在有效值和峰值之间来回切换。</li>
+  <li><strong>桥式的反压按 <code>2√2U_2</code> 算</strong>。桥式是 <code>√2U_2</code>，只有中心抽头式才是 <code>2√2U_2′</code>。</li>
+  <li><strong>忘了每只管子只承担一半电流</strong>。桥式 <code>I_D = I_o/2</code>，这是桥式相对于半波的一大优势。</li>
+  <li><strong>认为电容滤波后一定是 <code>1.2U_2</code></strong>。它只在 <code>R_L C</code> 足够大且带额定负载时成立；空载是 <code>√2U_2</code>，轻载接近峰值，重载接近 <code>0.9U_2</code>。</li>
+  <li><strong>纹波公式里 T 用错</strong>。全波/桥式的放电间隔是 <code>T/2</code>，所以分母有 2；半波没有。</li>
+  <li><strong>把滤波电容的耐压按 <code>U_2</code> 选</strong>。必须按 <code>√2U_2</code> 并留裕量，否则空载瞬间就炸。</li>
+</ol>
+
+<h3>速查表</h3>
+
+<table>
+  <tr><th>项目</th><th>半波</th><th>桥式</th><th>中心抽头全波</th></tr>
+  <tr><td><code>U_o(AV)</code></td><td><code>0.45U_2</code></td><td><code>0.9U_2</code></td><td><code>0.9U_2′</code></td></tr>
+  <tr><td>二极管数量</td><td>1</td><td>4</td><td>2</td></tr>
+  <tr><td>每管平均电流</td><td><code>I_o</code></td><td><code>I_o/2</code></td><td><code>I_o/2</code></td></tr>
+  <tr><td>最高反向电压</td><td><code>√2U_2</code></td><td><code>√2U_2</code></td><td><code>2√2U_2′</code></td></tr>
+  <tr><td>脉动系数 <code>S</code></td><td>1.57</td><td>0.67</td><td>0.67</td></tr>
+  <tr><td>输出频率</td><td><code>f</code></td><td><code>2f</code></td><td><code>2f</code></td></tr>
+  <tr><td>滤波后 <code>U_o</code></td><td><code>≈U_2</code></td><td><code>≈1.2U_2</code></td><td><code>≈1.2U_2′</code></td></tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">记忆锚点</span>
+  <code>0.45</code> = 半波，<code>0.9</code> = 全波（正好两倍）；
+  <code>S = 1.57</code> 与 <code>0.67</code> 也是 2.34 倍的关系；
+  滤波后统一乘 <code>1.2</code>（带载）或 <code>1.414</code>（空载）。
+</div>
+
+<h2>九、Quiz — 考研风格题</h2>
+
+<p>四道题覆盖系数、反压、滤波估算和选型，选完立刻看解析。</p>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>四个环节</strong>：变压器降压 → 整流单向 → 滤波填平 → 稳压恒定。本课完成前三步。</li>
+  <li><strong>两个系数</strong>：半波 <code>0.45U_2</code>，全波/桥式 <code>0.9U_2</code>；桥式每管只承担 <code>I_o/2</code>。</li>
+  <li><strong>反压要看清电路</strong>：桥式 <code>√2U_2</code>，中心抽头 <code>2√2U_2′</code>。</li>
+  <li><strong>电容滤波看时间常数</strong>：空载 <code>√2U_2</code>，带载约 <code>1.2U_2</code>，纹波 <code>ΔU ≈ I_o T/(2C)</code>。</li>
+  <li><strong>选管两参数</strong>：<code>I_F</code> 与 <code>U_RM</code>，各留 1.5~2 倍裕量。</li>
+</ol>
+
+<p>
+  下一课（<strong>Lesson 0034</strong>）解决本课留下的问题：滤波后的电压还会随负载和电网波动，
+  纹波仍有几伏。要得到"纹丝不动"的 <code>U_o</code>，必须加<strong>稳压电路</strong>——
+  从稳压管、串联型负反馈稳压，一直到 78xx 和 LM317。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第十章 §10.1「直流电源的组成」、
+  §10.2「整流电路」、§10.3「滤波电路」。
+</div>
+
+<div class="ask-agent">
+  0.45 和 0.9 总是记混？桥式的导通路径画不出来？电容滤波的 1.2 倍不敢用？<br>
+  <strong>直接问我</strong>——把题目里的 <code>U_2</code> 和 <code>R_L</code> 发我，一起把四个数算一遍。
+</div>
+
+<div class="footer-nav">
+  <a href="./0032-signal-conversion.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0033 / 0035</span>
+  <a href="./0034-voltage-regulator.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "桥式整流电路，变压器副边电压有效值 U_2 = 20 V，负载 R_L = 100 Ω，忽略二极管压降。输出电压平均值与每只二极管的平均电流约为？",
+    options: [
+      "U_o ≈ 18 V，I_D ≈ 90 mA",
+      "U_o ≈ 9 V，I_D ≈ 90 mA",
+      "U_o ≈ 18 V，I_D ≈ 180 mA",
+      "U_o ≈ 28 V，I_D ≈ 140 mA"
+    ],
+    correct: 0,
+    explain: "桥式 U_o(AV) = 0.9U_2 = 0.9 × 20 = 18 V；I_o = 18/100 = 180 mA；桥式每只二极管只导通半个周期，I_D = I_o/2 = 90 mA。选 9 V 是把半波系数 0.45 用错了；选 180 mA 是忘了每管只承担一半电流。"
+  },
+  {
+    q: "上题桥式电路中，每只整流二极管承受的最高反向电压约为？若要改用中心抽头全波电路（半个副边仍为 20 V），反压又是多少？",
+    options: [
+      "桥式 28.3 V；中心抽头 28.3 V",
+      "桥式 28.3 V；中心抽头 56.6 V",
+      "桥式 56.6 V；中心抽头 28.3 V",
+      "桥式 56.6 V；中心抽头 56.6 V"
+    ],
+    correct: 1,
+    explain: "桥式截止管两端只跨一个副边，U_RM = √2U_2 = 28.3 V。中心抽头式截止管两端跨的是上下两个半副边串联，U_RM = 2√2U_2′ = 2 × 28.3 = 56.6 V。同样的输出，中心抽头对管子的耐压要求高一倍，这是桥式的主要优势。"
+  },
+  {
+    q: "桥式整流加电容滤波，U_2 = 20 V，C = 1000 μF，R_L = 100 Ω，f = 50 Hz。输出平均电压与纹波峰峰值约为？",
+    options: [
+      "U_o ≈ 18 V，ΔU ≈ 2.4 V",
+      "U_o ≈ 24 V，ΔU ≈ 2.4 V",
+      "U_o ≈ 24 V，ΔU ≈ 4.8 V",
+      "U_o ≈ 28 V，ΔU ≈ 1.2 V"
+    ],
+    correct: 1,
+    explain: "τ = R_LC = 0.1 s = 10 × (T/2)，滤波充分，带载取 U_o ≈ 1.2U_2 = 24 V；I_o = 24/100 = 0.24 A；全波 ΔU ≈ I_oT/(2C) = 0.24 × 0.02/(2 × 10⁻³) = 2.4 V。选 4.8 V 是漏了分母的 2（那是半波公式）；选 28 V 是按空载峰值算的，实际带载达不到。"
+  },
+  {
+    q: "半波整流电路，U_2 = 30 V，负载电流 I_o = 200 mA，电网允许 +10% 波动。下列二极管选型最合理的是？",
+    options: [
+      "1N4001（1 A / 50 V）",
+      "1N4002（1 A / 100 V）",
+      "1N4148（0.2 A / 75 V）",
+      "1N4007（1 A / 1000 V）即可，无需考虑电流"
+    ],
+    correct: 1,
+    explain: "半波每管承担全部负载电流 I_D = 200 mA，按 2 倍裕量需 I_F ≥ 0.4 A；反压 U_RM = 1.1 × √2 × 30 = 46.7 V，按 2 倍裕量需 ≥ 93 V。1N4002（1 A / 100 V）两个参数都刚好满足；1N4001 的 50 V 不够；1N4148 的 0.2 A 没有裕量；1N4007 电压够但"无需考虑电流"的说法错误。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！系数、反压、滤波、选型四条主线都通了，可以进稳压电路了。' :
+        right >= 2 ? '👍 基本掌握。重点回看反压那一条：先判断有没有中心抽头，再决定乘不乘 2。' :
+        '📚 先把半波 0.45、全波 0.9、滤波 1.2 这三个数各写五遍，再重做一遍 quiz。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

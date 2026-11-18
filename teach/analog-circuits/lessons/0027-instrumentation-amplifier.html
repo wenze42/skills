@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0027 — 仪表放大器与信号预处理</title>
+<link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+
+<h1>Lesson 0027 — 仪表放大器与信号预处理</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0027 / 0029 · 约 55 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  本课直接建立在 <a href="./0013-differential-amplifier.html">Lesson 0013（差分放大电路）</a>、
+  <a href="./0019-opamp-basics.html">Lesson 0019（运放基础）</a> 与
+  <a href="./0020-opamp-applications-and-oscillators.html">Lesson 0020（运放应用）</a> 之上。
+  需要随时能写出：差分电路的差模增益、共模增益、共模抑制比 CMRR；
+  运放的虚短 <code>u_+ = u_−</code> 与虚断 <code>i_+ = i_− = 0</code>。
+</div>
+
+<p>
+  前面学过的差分放大电路，是用<strong>分立三极管</strong>搭出来的。它能抑制共模，但有个绕不过去的毛病：
+  输入电阻不够高、增益靠改电阻、共模抑制受电阻精度限制。现实中的传感器——
+  应变片电桥、热电偶、压电薄膜、心电电极——输出阻抗动辄几千欧到几兆欧，
+  信号只有毫伏甚至微伏，而共模干扰（50 Hz 工频、人体电位）却有伏级。
+</p>
+<p>
+  把这种信号直接送进普通差分电路，等于用一把晃动的尺子去量头发丝。
+  <strong>仪表放大器</strong>（Instrumentation Amplifier，INA）就是为这个场景发明的：
+  三只运放、一只电阻 <code>R_G</code> 决定全部增益，输入电阻接近无穷大，
+  共模抑制比轻松做到 100 dB 以上。这一课从"为什么不够"讲到"怎么设计一条心电信号链"。
+</p>
+
+<h2>一、普通差分电路的三宗罪</h2>
+
+<p>
+  先复习最基本的<strong>单运放差分电路</strong>（也叫减法电路）：四个电阻 <code>R_1、R_2、R_3、R_f</code>，
+  当 <code>R_1 = R_2、R_3 = R_f</code> 时输出为
+</p>
+
+<div class="math">u_o = (R_f / R_1) · (u_i2 − u_i1)</div>
+
+<p>它看起来完美，但用在传感器前端会暴露三个致命问题。</p>
+
+<h3>1.1 输入电阻低</h3>
+
+<p>
+  反相端那条支路的输入电阻就是 <code>R_1</code>，典型值 10 kΩ 量级；
+  同相端虽然高一些，但为了匹配也必须取同样的 <code>R_1 + R_f</code>。
+  而应变片电桥的输出电阻是 350 Ω～1 kΩ，看着不大，可一旦传感器输出阻抗随温度、
+  随导线长度变化，<code>R_1</code> 的分压比就跟着变——<strong>增益变成不可重复的</strong>。
+</p>
+<p>
+  更糟的是，信号源内阻 <code>R_s</code> 会直接串进 <code>R_1</code>：
+  实际增益变成 <code>R_f/(R_1 + R_s)</code>。传感器内阻一漂，标定就作废。
+</p>
+
+<h3>1.2 增益调节不便</h3>
+
+<p>
+  要改增益，必须<strong>同时</strong>改 <code>R_1</code> 和 <code>R_2</code>（或同时改 <code>R_3</code> 和 <code>R_f</code>），
+  否则共模抑制立刻崩掉。四只电阻要同步、同比例、同温度系数地变——这在量产里几乎不可能。
+  工程师真正想要的是：<strong>一只电位器拧下去，增益连续可调，CMRR 不受影响</strong>。
+</p>
+
+<h3>1.3 共模抑制受电阻匹配限制</h3>
+
+<p>
+  单运放差分电路的 CMRR 完全由四只电阻的匹配精度决定。设电阻有相对误差 <code>δ = ΔR/R</code>，
+  可以证明（本课第四节推导）：
+</p>
+
+<div class="math">CMRR ≈ (1 + A_d) / (4δ)　，　A_d = R_f / R_1</div>
+
+<p>
+  取 <code>A_d = 5、δ = 1%</code>：<code>CMRR ≈ 6/0.04 = 150</code>，即 <strong>43.5 dB</strong>。
+  而心电前端要求 100 dB 以上——差 56 dB，也就是共模干扰会被多放大 600 倍。
+  靠 0.01% 的电阻？那是激光修调薄膜电阻的领域，成本和交期都不是课堂电路能承受的。
+</p>
+
+<div class="tip">
+  <span class="tip-label">一句话总结</span>
+  单运放差分电路的三个毛病同源：<strong>信号要经过电阻网络才进入运放</strong>。
+  想让输入电阻高、增益只由一只电阻决定、共模抑制不依赖四只电阻匹配，
+  就必须让信号<strong>先碰到运放的同相输入端</strong>——这就是三运放结构的出发点。
+</div>
+
+<h2>二、三运放仪表放大器</h2>
+
+<p>
+  三运放仪表放大器分两级：<strong>第一级</strong>由 A1、A2 组成同相输入的差分放大器，
+  负责"高输入电阻 + 全部增益"；<strong>第二级</strong>由 A3 组成普通差分放大器，负责"把双端转单端"。
+  增益被拆成两段的乘积，只有第一级的一只 <code>R_G</code> 参与调节。
+</p>
+
+<div class="circuit">
+  <svg xmlns="http://www.w3.org/2000/svg" class="schematic" viewBox="0 0 720 430" width="100%" height="auto" role="img" aria-label="三运放仪表放大器完整电路：A1与A2构成同相输入级，R_G跨接在两反相输入端之间，A3构成差分输出级">
+    <text x="360" y="24" text-anchor="middle" class="lbl">三运放仪表放大器：增益 A_u = (1 + 2R/R_G) · (R_f/R_1)</text>
+
+    <polygon points="150,78 150,162 232,120" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="160" y="104" class="lbl">+</text>
+    <text x="160" y="150" class="lbl">−</text>
+    <text x="196" y="126" text-anchor="middle" class="lbl">A1</text>
+
+    <polygon points="150,278 150,362 232,320" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="160" y="304" class="lbl">−</text>
+    <text x="160" y="350" class="lbl">+</text>
+    <text x="196" y="326" text-anchor="middle" class="lbl">A2</text>
+
+    <polygon points="470,178 470,262 566,220" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="480" y="204" class="lbl">−</text>
+    <text x="480" y="252" class="lbl">+</text>
+    <text x="520" y="226" text-anchor="middle" class="lbl">A3</text>
+
+    <line class="wire" x1="48" y1="100" x2="150" y2="100"/>
+    <circle cx="48" cy="100" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="28" y="94" class="lbl">u_i1</text>
+
+    <line class="wire" x1="48" y1="340" x2="150" y2="340"/>
+    <circle cx="48" cy="340" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="28" y="334" class="lbl">u_i2</text>
+
+    <line class="wire" x1="150" y1="138" x2="100" y2="138"/>
+    <circle class="dot" cx="100" cy="138" r="4"/>
+    <line class="wire" x1="100" y1="138" x2="100" y2="96"/>
+    <rect class="area" x="86" y="62" width="28" height="34" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="64" y="84" text-anchor="middle" class="lbl">R</text>
+    <line class="wire" x1="100" y1="62" x2="100" y2="44"/>
+    <line class="wire" x1="100" y1="44" x2="262" y2="44"/>
+    <line class="wire" x1="262" y1="44" x2="262" y2="120"/>
+    <line class="wire" x1="232" y1="120" x2="262" y2="120"/>
+    <circle class="dot" cx="262" cy="120" r="4"/>
+
+    <line class="wire" x1="150" y1="302" x2="100" y2="302"/>
+    <circle class="dot" cx="100" cy="302" r="4"/>
+    <line class="wire" x1="100" y1="302" x2="100" y2="344"/>
+    <rect class="area" x="86" y="344" width="28" height="34" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="64" y="366" text-anchor="middle" class="lbl">R</text>
+    <line class="wire" x1="100" y1="378" x2="100" y2="398"/>
+    <line class="wire" x1="100" y1="398" x2="262" y2="398"/>
+    <line class="wire" x1="262" y1="398" x2="262" y2="320"/>
+    <line class="wire" x1="232" y1="320" x2="262" y2="320"/>
+    <circle class="dot" cx="262" cy="320" r="4"/>
+
+    <line class="wire" x1="100" y1="138" x2="100" y2="186"/>
+    <rect class="area" x="86" y="186" width="28" height="54" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="128" y="218" class="lbl">R_G</text>
+    <line class="wire" x1="100" y1="240" x2="100" y2="302"/>
+
+    <line class="wire" x1="262" y1="120" x2="322" y2="120"/>
+    <line class="wire" x1="322" y1="120" x2="322" y2="196"/>
+    <line class="wire" x1="322" y1="196" x2="348" y2="196"/>
+    <rect class="area" x="348" y="182" width="52" height="28" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="374" y="174" text-anchor="middle" class="lbl">R_3</text>
+    <line class="wire" x1="400" y1="196" x2="470" y2="196"/>
+
+    <line class="wire" x1="262" y1="320" x2="322" y2="320"/>
+    <line class="wire" x1="322" y1="320" x2="322" y2="244"/>
+    <line class="wire" x1="322" y1="244" x2="348" y2="244"/>
+    <rect class="area" x="348" y="230" width="52" height="28" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="374" y="222" text-anchor="middle" class="lbl">R_4</text>
+    <line class="wire" x1="400" y1="244" x2="470" y2="244"/>
+
+    <circle class="dot" cx="400" cy="196" r="4"/>
+    <line class="wire" x1="400" y1="196" x2="400" y2="112"/>
+    <line class="wire" x1="400" y1="112" x2="520" y2="112"/>
+    <line class="wire" x1="520" y1="112" x2="520" y2="132"/>
+    <rect class="area" x="506" y="132" width="28" height="48" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="556" y="162" class="lbl">R_f</text>
+    <line class="wire" x1="520" y1="180" x2="520" y2="220"/>
+    <line class="wire" x1="566" y1="220" x2="606" y2="220"/>
+    <circle class="dot" cx="606" cy="220" r="4"/>
+
+    <circle class="dot" cx="400" cy="244" r="4"/>
+    <line class="wire" x1="400" y1="244" x2="400" y2="330"/>
+    <rect class="area" x="386" y="330" width="28" height="44" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="440" y="358" class="lbl">R_1</text>
+    <line class="wire" x1="400" y1="374" x2="400" y2="392"/>
+    <line class="wire" x1="382" y1="392" x2="418" y2="392"/>
+    <line class="wire" x1="390" y1="400" x2="410" y2="400"/>
+
+    <line class="wire" x1="606" y1="220" x2="676" y2="220"/>
+    <circle cx="676" cy="220" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="676" y="204" text-anchor="middle" class="lbl">u_o</text>
+
+    <text x="118" y="124" text-anchor="end" class="lbl">u_o1</text>
+    <text x="118" y="322" text-anchor="end" class="lbl">u_o2</text>
+    <text x="360" y="420" text-anchor="middle" class="lbl">A1、A2 同相输入 → 输入电阻极高；共模时 R_G 上无电流，第一级共模增益为 0</text>
+  </svg>
+</div>
+
+<h3>2.1 第一级：同相输入，为什么共模增益是零</h3>
+
+<p>
+  看 A1、A2。信号从<strong>同相端</strong>进入，所以输入电阻就是运放同相端的输入电阻——
+  理想为无穷大，实际可达 10⁹～10¹² Ω，而且<strong>与增益无关</strong>。这是第一级最重要的性质。
+</p>
+<p>
+  A1 的反相端经 <code>R</code> 接到自己的输出 <code>u_o1</code>；A2 同理接到 <code>u_o2</code>；
+  两只运放的反相端之间跨接 <code>R_G</code>。由虚短：
+</p>
+
+<div class="math">u_A1− = u_i1　，　u_A2− = u_i2</div>
+
+<p>
+  这两个反相端正好是 <code>R_G</code> 的两端。于是 <code>R_G</code> 上的电压就是<strong>两输入之差</strong>，
+  流过的电流为：
+</p>
+
+<div class="math">i_G = (u_i1 − u_i2) / R_G</div>
+
+<p>
+  这个电流由 A1 输出流出、经 <code>R</code> 与 <code>R_G</code> 流回 A2 输出。
+  在 <code>R</code> 上产生压降 <code>i_G·R</code>，方向使 <code>u_o1</code> 高于 <code>u_i1</code>、<code>u_o2</code> 低于 <code>u_i2</code>：
+</p>
+
+<div class="math">u_o1 = u_i1 + i_G R　，　u_o2 = u_i2 − i_G R</div>
+<div class="math">u_o1 − u_o2 = (u_i1 − u_i2) + 2 i_G R = (u_i1 − u_i2) · (1 + 2R/R_G)</div>
+
+<p>
+  第一级的差模增益就是 <code>A_u1 = 1 + 2R/R_G</code>。注意它<strong>只由一只电阻 R_G 决定</strong>，
+  改增益不用碰任何匹配电阻。
+</p>
+
+<div class="tip">
+  <span class="tip-label">共模为什么是零（本课最核心的一句话）</span>
+  令 <code>u_i1 = u_i2 = u_cm</code>。此时 <code>R_G</code> 两端<strong>电位相同</strong>，
+  没有电流流过 <code>R_G</code>（<code>i_G = 0</code>）；<code>R</code> 上也没有压降，
+  于是 <code>u_o1 = u_o2 = u_cm</code>。<br>
+  第一级对共模的增益<strong>等于 1</strong>，而差模增益是 <code>1 + 2R/R_G</code>，
+  所以第一级的共模抑制比就是 <code>A_u1</code> 本身——增益越大，共模抑制越好。
+  这不是靠电阻匹配换来的，是<strong>拓扑结构白送的</strong>。
+</div>
+
+<h3>2.2 第二级：把双端变单端</h3>
+
+<p>
+  A3 是一个标准差分放大器，输入是 <code>u_o1、u_o2</code>。当 <code>R_3 = R_4 = R_1</code>、
+  反馈电阻为 <code>R_f</code> 时：
+</p>
+
+<div class="math">u_o = (R_f / R_1) · (u_o2 − u_o1)</div>
+
+<p>
+  注意符号：A3 的反相端接 <code>u_o1</code>、同相端接 <code>u_o2</code>，所以输出正比于
+  <code>u_o2 − u_o1</code>。把第一级的结果代入：
+</p>
+
+<div class="math">u_o = (R_f/R_1) · (1 + 2R/R_G) · (u_i2 − u_i1)</div>
+
+<p>
+  这就是仪表放大器的总增益。工程上常把第二级做成<strong>单位增益</strong>（<code>R_f = R_1</code>），
+  于是简化为最常用的形式：
+</p>
+
+<div class="math">A_u = 1 + 2R / R_G</div>
+
+<p>
+  第二级存在的意义不是增益，而是<strong>减法</strong>：它把已经放大的双端信号转成对地单端信号，
+  同时再贡献一级共模抑制。但它也带来一个副作用——第二级的四只电阻如果失配，
+  会把第一级残留的共模重新"漏"到输出。这是整机 CMRR 的瓶颈，第四节专门算。
+</p>
+
+<h3>2.3 增益的两种写法与设计取舍</h3>
+
+<table>
+  <tr><th>形式</th><th>表达式</th><th>适用场景</th><th>注意</th></tr>
+  <tr>
+    <td>完整式</td>
+    <td>A_u = (1 + 2R/R_G)·(R_f/R_1)</td>
+    <td>两级都参与增益</td>
+    <td>第二级增益不宜过大，否则第一级共模被放大后更容易泄漏</td>
+  </tr>
+  <tr>
+    <td>简化式</td>
+    <td>A_u = 1 + 2R/R_G</td>
+    <td>第二级单位增益（R_f = R_1）</td>
+    <td>增益全部由 R_G 决定，CMRR 最优</td>
+  </tr>
+  <tr>
+    <td>单电阻调节</td>
+    <td>R_G = 2R/(A_u − 1)</td>
+    <td>需要连续可调增益</td>
+    <td>R_G 用精密电位器或波段开关切换</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">为什么 R_G 常做成外接</span>
+  <code>R_G</code> 是唯一决定增益的元件，把它引出到芯片外部，用户就能用一只电阻设定增益。
+  经典 INA128 的 datasheet 给出 <code>R_G = 50 kΩ/(A_u − 1)</code>，对应内部 <code>2R = 50 kΩ</code>。
+  这也解释了为什么仪表放大器的增益不能做到无穷大——<code>R_G → 0</code> 时增益受运放输出电流和开环增益限制。
+</div>
+<h2>三、共模与差模在 R_G 上的电流</h2>
+
+<p>
+  理解仪表放大器的关键，是把任意两个输入拆成<strong>共模分量</strong>与<strong>差模分量</strong>：
+</p>
+
+<div class="math">u_cm = (u_i1 + u_i2)/2　，　u_d = u_i1 − u_i2</div>
+<div class="math">u_i1 = u_cm + u_d/2　，　u_i2 = u_cm − u_d/2</div>
+
+<p>
+  第一级只看 <code>R_G</code> 上的电压，也就是 <code>u_i1 − u_i2 = u_d</code>。
+  共模分量 <code>u_cm</code> 同时出现在 <code>R_G</code> 两端，<strong>互相抵消，不产生电流</strong>。
+  下图把两种情况并排画出来：左边共模，右边差模。
+</p>
+
+<div class="circuit">
+  <svg xmlns="http://www.w3.org/2000/svg" class="schematic" viewBox="0 0 720 300" width="100%" height="auto" role="img" aria-label="共模与差模时R_G上的电流对比：共模时两端同电位无电流，差模时电流为u_d除以R_G">
+    <text x="180" y="26" text-anchor="middle" class="lbl">(a) 共模：u_i1 = u_i2 = u_cm</text>
+    <text x="540" y="26" text-anchor="middle" class="lbl">(b) 差模：u_i1 ≠ u_i2</text>
+
+    <line class="wire" x1="36" y1="34" x2="36" y2="286" stroke-dasharray="6 6" style="stroke:var(--border)"/>
+
+    <polygon points="100,76 100,132 160,104" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="108" y="94" class="lbl">+</text>
+    <text x="108" y="126" class="lbl">−</text>
+    <polygon points="100,182 100,238 160,210" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="108" y="200" class="lbl">−</text>
+    <text x="108" y="232" class="lbl">+</text>
+
+    <line class="wire" x1="26" y1="88" x2="100" y2="88"/>
+    <text x="22" y="82" text-anchor="end" class="lbl">u_cm</text>
+    <line class="wire" x1="26" y1="226" x2="100" y2="226"/>
+    <text x="22" y="220" text-anchor="end" class="lbl">u_cm</text>
+
+    <line class="wire" x1="160" y1="104" x2="196" y2="104"/>
+    <line class="wire" x1="196" y1="104" x2="196" y2="164"/>
+    <rect class="area" x="182" y="164" width="28" height="52" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="226" y="196" class="lbl">R_G</text>
+    <line class="wire" x1="196" y1="216" x2="196" y2="210"/>
+    <line class="wire" x1="160" y1="210" x2="196" y2="210"/>
+
+    <text x="196" y="136" text-anchor="middle" class="lbl">同电位</text>
+    <text x="196" y="252" text-anchor="middle" style="fill:var(--accent); font-size:15px;">i_G = 0</text>
+
+    <polygon points="440,76 440,132 500,104" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="448" y="94" class="lbl">+</text>
+    <text x="448" y="126" class="lbl">−</text>
+    <polygon points="440,182 440,238 500,210" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="448" y="200" class="lbl">−</text>
+    <text x="448" y="232" class="lbl">+</text>
+
+    <line class="wire" x1="366" y1="88" x2="440" y2="88"/>
+    <text x="362" y="82" text-anchor="end" class="lbl">u_i1</text>
+    <line class="wire" x1="366" y1="226" x2="440" y2="226"/>
+    <text x="362" y="220" text-anchor="end" class="lbl">u_i2</text>
+
+    <line class="wire" x1="500" y1="104" x2="536" y2="104"/>
+    <line class="wire" x1="536" y1="104" x2="536" y2="164"/>
+    <rect class="area" x="522" y="164" width="28" height="52" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="566" y="196" class="lbl">R_G</text>
+    <line class="wire" x1="536" y1="216" x2="536" y2="210"/>
+    <line class="wire" x1="500" y1="210" x2="536" y2="210"/>
+
+    <line class="wire" x1="536" y1="150" x2="536" y2="164" stroke-width="2.5" style="stroke:var(--accent)"/>
+    <polygon points="536,146 531,156 541,156" fill="#2b6cb0" stroke="none"/>
+    <text x="586" y="156" class="lbl">i_G = u_d / R_G</text>
+    <line class="wire" x1="536" y1="216" x2="536" y2="210" stroke-width="2.5" style="stroke:var(--accent)"/>
+    <polygon points="536,220 531,210 541,210" fill="#2b6cb0" stroke="none"/>
+
+    <text x="180" y="284" text-anchor="middle" class="lbl">共模被 R_G 两端的同电位抵消</text>
+    <text x="540" y="284" text-anchor="middle" class="lbl">差模电流 i_G 在 R 上产生放大的压差</text>
+  </svg>
+</div>
+
+<h3>3.1 定量验证：共模增益确实为 1</h3>
+
+<p>
+  再走一遍推导，这次用叠加。设 <code>u_i1 = u_i2 = u_cm</code>：
+</p>
+<ol>
+  <li>虚短给出 A1 反相端 = <code>u_cm</code>，A2 反相端 = <code>u_cm</code>；</li>
+  <li><code>R_G</code> 两端电压为 <code>u_cm − u_cm = 0</code>，所以 <code>i_G = 0</code>；</li>
+  <li><code>R</code> 上无压降，<code>u_o1 = u_cm、u_o2 = u_cm</code>；</li>
+  <li>A3 的输入差为 0，输出共模分量为 0（理想）。</li>
+</ol>
+
+<p>
+  所以<strong>第一级共模增益 = 1</strong>，而<strong>总电路对共模的增益 = 0</strong>（第二级把它减掉了）。
+  第一级的"共模增益 1"并不丢人——它把共模原样搬到输出，第二级差分再减一次，
+  真正决定整机 CMRR 的是<strong>第二级电阻的匹配精度</strong>与<strong>第一级运放的 CMRR</strong>。
+</p>
+
+<div class="tip">
+  <span class="tip-label">共模抑制的两个来源</span>
+  ① 第一级：<code>R_G</code> 把共模"短路"掉，共模增益只有 1，差模增益 <code>1+2R/R_G</code>，
+  所以第一级内部就贡献了 <code>1+2R/R_G</code> 倍的 CMRR；<br>
+  ② 第二级：差分减法再抑制一次，但受四只电阻匹配限制。<br>
+  设计时要把增益尽量放在第一级，让第二级保持单位增益——这是提高整机 CMRR 最有效的手段。
+</div>
+
+<h2>四、CMRR 与电阻匹配误差</h2>
+
+<p>
+  理想运放、理想电阻下，仪表放大器的 CMRR 是无穷大。现实中 CMRR 被两件事拉低：
+  运放本身的共模抑制有限、电阻存在容差。后者是主要矛盾，而且可以定量算。
+</p>
+
+<h3>4.1 单运放差分电路的失配</h3>
+
+<p>
+  设差分电路中 <code>R_1</code> 有相对误差 <code>δ</code>（<code>R_1' = R_1(1+δ)</code>），其余电阻理想。
+  对共模输入 <code>u_cm</code> 求输出，可以得到共模增益：
+</p>
+
+<div class="math">A_c ≈ A_d · δ / (1 + A_d)　，　A_d = R_f/R_1</div>
+
+<p>于是</p>
+
+<div class="math">CMRR = A_d / A_c ≈ (1 + A_d) / δ</div>
+
+<p>
+  咦，和第一节写的 <code>(1+A_d)/(4δ)</code> 差一个 4？差别在于<strong>失配的电阻个数与位置</strong>。
+  若四只电阻各自独立、误差同分布，最坏情况会叠加，工程估算统一取：
+</p>
+
+<div class="math">CMRR ≈ (1 + A_d) / (4δ)　（δ 为单只电阻的相对容差）</div>
+
+<p>
+  这个 4 不是精确系数，而是"四只电阻、最坏组合"的经验因子。
+  考研答题写 <code>CMRR ≈ (1+A_d)/(4δ)</code> 即可；若题目明确只有一只电阻失配，则用 <code>(1+A_d)/δ</code>。
+</p>
+
+<h3>4.2 仪表放大器的失配</h3>
+
+<p>
+  三运放结构中，第一级的 CMRR 主要由 <code>R_G</code> 与两只 <code>R</code> 的匹配决定，
+  但因为它把共模原样传到输出（增益 1），真正的瓶颈在第二级 A3：
+</p>
+
+<div class="math">CMRR_total ≈ (1 + R_f/R_1) / (4δ)</div>
+
+<p>
+  注意这个式子里<strong>没有第一级增益</strong>。这意味着：即使你把第一级增益做到 1000，
+  只要第二级电阻有 0.1% 失配，整机 CMRR 就被钉死在
+  <code>(1+1)/(4×0.001) = 500</code>，即 54 dB。这就是为什么高端仪表放大器要把
+  第二级四只电阻<strong>激光修调到 0.01% 以内</strong>，或者干脆做成"双运放"结构省掉第二级。
+</p>
+
+<h3>4.3 算例：0.1% 电阻能撑多少 dB</h3>
+
+<table>
+  <tr><th>第二级增益 R_f/R_1</th><th>电阻容差 δ</th><th>CMRR ≈ (1+A_d)/(4δ)</th><th>dB</th></tr>
+  <tr><td>1</td><td>1%</td><td>50</td><td>34.0</td></tr>
+  <tr><td>1</td><td>0.1%</td><td>500</td><td>54.0</td></tr>
+  <tr><td>1</td><td>0.01%</td><td>5000</td><td>74.0</td></tr>
+  <tr><td>10</td><td>0.1%</td><td>2750</td><td>68.8</td></tr>
+  <tr><td>10</td><td>0.01%</td><td>27500</td><td>88.8</td></tr>
+</table>
+
+<p>
+  结论很反直觉：<strong>提高第二级增益反而能改善 CMRR</strong>（分子 <code>1+A_d</code> 变大），
+  但代价是第二级会把第一级残留的共模也放大。工程折中是第二级取 2～10 倍，
+  再靠精密电阻把 δ 压到 0.01%。
+</p>
+
+<div class="tip">
+  <span class="tip-label">dB 换算只需记三个数</span>
+  <code>20 lg 10 = 20 dB</code>、<code>20 lg 100 = 40 dB</code>、<code>20 lg 1000 = 60 dB</code>。
+  所以 CMRR = 10⁵ 就是 100 dB，10⁶ 就是 120 dB。反算：100 dB → 10⁵，120 dB → 10⁶。
+</div>
+<h2>五、电桥传感器与仪表放大器</h2>
+
+<p>
+  仪表放大器最常见的搭档是<strong>惠斯通电桥</strong>。应变片、称重传感器、压力传感器、
+  PT100 测温，本质都是"电阻变化 → 电桥失衡 → 差分电压"。
+</p>
+
+<h3>5.1 电桥输出公式</h3>
+
+<p>
+  四个桥臂 <code>R_1、R_2、R_3、R_4</code>，激励电压 <code>U_S</code>。
+  两个中点对地的电位分别是两个分压：
+</p>
+
+<div class="math">U_L = U_S · R_3/(R_1 + R_3)　，　U_R = U_S · R_4/(R_2 + R_4)</div>
+<div class="math">ΔU = U_L − U_R</div>
+
+<p>
+  初始平衡时四臂相等，<code>ΔU = 0</code>。设只有 <code>R_1</code> 变化 <code>R_1 = R + ΔR</code>，
+  其余为 <code>R</code>，则
+</p>
+
+<div class="math">ΔU = U_S · [ R/(2R + ΔR) − 1/2 ] = − U_S · ΔR / (4R + 2ΔR) ≈ − U_S · ΔR/(4R)</div>
+
+<p>
+  取绝对值，得到最该背下来的电桥公式：
+</p>
+
+<div class="math">|ΔU| = U_S · ΔR / (4R)　（单臂工作）</div>
+
+<div class="circuit">
+  <svg xmlns="http://www.w3.org/2000/svg" class="schematic" viewBox="0 0 720 470" width="100%" height="auto" role="img" aria-label="惠斯通电桥接仪表放大器：四个桥臂组成菱形电桥，两中点输出差分电压送入INA">
+    <text x="360" y="24" text-anchor="middle" class="lbl">惠斯通电桥：单臂 ΔR → 差分输出 ΔU ≈ U_S·ΔR/(4R)</text>
+
+    <line class="wire" x1="300" y1="58" x2="300" y2="36"/>
+    <circle cx="300" cy="30" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="300" y="18" text-anchor="middle" class="lbl">+U_S</text>
+
+    <line class="wire" x1="300" y1="70" x2="180" y2="190"/>
+    <line class="wire" x1="300" y1="70" x2="420" y2="190"/>
+    <line class="wire" x1="180" y1="190" x2="300" y2="310"/>
+    <line class="wire" x1="420" y1="190" x2="300" y2="310"/>
+
+    <rect class="area" x="-30" y="-13" width="60" height="26" rx="3" stroke="#1a1a1a" stroke-width="2.5" transform="translate(240,130) rotate(135)"/>
+    <rect class="area" x="-30" y="-13" width="60" height="26" rx="3" stroke="#1a1a1a" stroke-width="2.5" transform="translate(360,130) rotate(45)"/>
+    <rect class="area" x="-30" y="-13" width="60" height="26" rx="3" stroke="#1a1a1a" stroke-width="2.5" transform="translate(240,250) rotate(45)"/>
+    <rect class="area" x="-30" y="-13" width="60" height="26" rx="3" stroke="#1a1a1a" stroke-width="2.5" transform="translate(360,250) rotate(135)"/>
+
+    <text x="196" y="112" text-anchor="end" class="lbl">R+ΔR</text>
+    <text x="404" y="112" class="lbl">R</text>
+    <text x="196" y="286" text-anchor="end" class="lbl">R</text>
+    <text x="404" y="286" class="lbl">R</text>
+
+    <circle class="dot" cx="180" cy="190" r="4"/>
+    <circle class="dot" cx="420" cy="190" r="4"/>
+    <circle class="dot" cx="300" cy="310" r="4"/>
+
+    <line class="wire" x1="300" y1="310" x2="300" y2="330"/>
+    <line class="wire" x1="282" y1="330" x2="318" y2="330"/>
+    <line class="wire" x1="290" y1="338" x2="310" y2="338"/>
+
+    <line class="wire" x1="180" y1="190" x2="112" y2="190"/>
+    <line class="wire" x1="112" y1="190" x2="112" y2="420"/>
+    <line class="wire" x1="112" y1="420" x2="560" y2="420"/>
+    <line class="wire" x1="560" y1="420" x2="560" y2="244"/>
+    <text x="72" y="184" class="lbl">u_o−</text>
+
+    <line class="wire" x1="420" y1="190" x2="474" y2="190"/>
+    <line class="wire" x1="474" y1="190" x2="474" y2="202"/>
+    <line class="wire" x1="474" y1="202" x2="560" y2="202"/>
+    <text x="446" y="180" class="lbl">u_o+</text>
+
+    <rect class="area" x="560" y="176" width="126" height="92" rx="5" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="623" y="214" text-anchor="middle" class="lbl">仪表放大器</text>
+    <text x="623" y="240" text-anchor="middle" class="lbl">A_u</text>
+    <text x="572" y="196" class="lbl">+</text>
+    <text x="572" y="238" class="lbl">−</text>
+
+    <line class="wire" x1="686" y1="222" x2="708" y2="222"/>
+    <circle cx="708" cy="222" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="708" y="208" text-anchor="middle" class="lbl">u_o</text>
+
+    <text x="112" y="452" class="lbl">左臂中点经长导线绕行至 INA 反相端，右臂中点直接进同相端</text>
+  </svg>
+</div>
+
+<h3>5.2 三种桥接方式</h3>
+
+<table>
+  <tr><th>接法</th><th>变化的桥臂</th><th>输出</th><th>相对灵敏度</th></tr>
+  <tr><td>单臂（1/4 桥）</td><td>1 只</td><td>U_S·ΔR/(4R)</td><td>1</td></tr>
+  <tr><td>半桥</td><td>2 只，一增一减</td><td>U_S·ΔR/(2R)</td><td>2</td></tr>
+  <tr><td>全桥</td><td>4 只，两增两减</td><td>U_S·ΔR/R</td><td>4</td></tr>
+</table>
+
+<p>
+  全桥不只是灵敏度高 4 倍，它还有两个隐藏好处：<strong>非线性误差被抵消</strong>
+  （分母里的 <code>2ΔR</code> 项在对称变化时相互抵消）、<strong>温度漂移相互抵消</strong>
+  （四只应变片同处一个温度场，电阻同向漂移，电桥仍平衡）。
+  所以称重传感器几乎清一色用全桥。
+</p>
+
+<div class="tip">
+  <span class="tip-label">电桥输出为什么必须用仪表放大器</span>
+  典型应变片：<code>R = 350 Ω、U_S = 5 V、ΔR/R = 0.1%</code>，单臂输出只有
+  <code>5 × 0.001/4 = 1.25 mV</code>。电桥输出电阻约 350 Ω，若用 <code>R_1 = 10 kΩ</code>
+  的普通差分电路，信号先被 <code>350/(10k+350)</code> 衰减 3.4%，而且这个衰减随温度变。
+  仪表放大器的输入电阻是 GΩ 级，350 Ω 源内阻的影响可以忽略。
+</div>
+
+<h3>5.3 电桥的共模问题</h3>
+
+<p>
+  注意电桥两个中点对地的电位都大约是 <code>U_S/2</code>。也就是说，
+  <strong>差模信号只有毫伏，共模电平却有 2.5 V</strong>，两者相差 2000 倍。
+  这正是仪表放大器存在的理由：它必须在这 2.5 V 共模之上，分辨出 1 mV 的差模变化。
+  若 CMRR 只有 60 dB（1000 倍），2.5 V 共模会产生 2.5 mV 的等效输出误差——
+  比信号本身还大，测量直接报废。
+</p>
+
+<h2>六、工程实践：屏蔽驱动、右腿驱动与隔离</h2>
+
+<p>
+  真实信号链里，仪表放大器只是第一环。导线、人体、工频电场会引入大量共模干扰，
+  必须配合三种手段：<strong>屏蔽驱动</strong>、<strong>右腿驱动</strong>、<strong>隔离</strong>。
+</p>
+
+<h3>6.1 屏蔽驱动（Driven Shield）</h3>
+
+<p>
+  传感器到放大器之间的电缆有分布电容 <code>C_c</code>（每米几十到几百 pF）。
+  芯线屏蔽层接地时，共模电压 <code>u_cm</code> 会通过 <code>C_c</code> 注入电流：
+</p>
+
+<div class="math">i_leak = C_c · du_cm/dt</div>
+
+<p>
+  这个电流流过信号源内阻 <code>R_s</code>，产生误差电压 <code>i_leak·R_s</code>；
+  更麻烦的是两条芯线的 <code>C_c</code> 不可能完全相等，于是共模被"转换成"差模。
+</p>
+<p>
+  解决办法：<strong>不要把屏蔽层接地，而是接到一个缓冲器的输出</strong>，
+  让屏蔽层电位跟随共模电压 <code>u_cm</code>。屏蔽层与芯线之间<strong>没有电位差</strong>，
+  就没有容性电流，等效把电缆电容"消除"了。这个缓冲器通常直接取仪表放大器第一级的共模节点。
+</p>
+
+<h3>6.2 右腿驱动（Right Leg Drive, RLD）</h3>
+
+<p>
+  心电测量中，人体通过工频电场耦合会抬到几十伏的共模电位（安全电流限制下）。
+  仅靠仪表放大器的 CMRR 不够，因为电极阻抗不匹配会把共模转成差模。
+  右腿驱动把共模"反向打回去"：
+</p>
+<ol>
+  <li>从仪表放大器第一级取出共模电压 <code>u_cm</code>；</li>
+  <li>经反相放大器变成 <code>−A_r·u_cm</code>；</li>
+  <li>通过右腿电极（串限流电阻 <code>R_LR</code>，典型 100 kΩ～1 MΩ 保证安全）注入人体。</li>
+</ol>
+
+<p>
+  这是一个负反馈环路，把人体共模电压压低到 <code>u_cm/(1+A_r)</code>。
+  效果相当于把等效 CMRR 提高了 <code>1+A_r</code> 倍，轻松再加 40 dB。
+  限流电阻是安全底线：即使电路故障，流过人体的电流也被限制在微安级。
+</p>
+
+<h3>6.3 隔离放大</h3>
+
+<p>
+  医疗设备（心电、脑电）必须承受除颤器高压，患者与市电之间要有<strong>电气隔离</strong>。
+  隔离放大器用变压器或光耦传递信号，隔离电压可达 2.5 kV～5 kV，
+  同时隔离电源也要独立（隔离 DC-DC）。代价是带宽、精度和成本，
+  所以通常放在信号链末端、ADC 之前。
+</p>
+
+<div class="circuit">
+  <svg xmlns="http://www.w3.org/2000/svg" class="schematic" viewBox="0 0 720 300" width="100%" height="auto" role="img" aria-label="心电信号链框图：电极经仪表放大器、高通、陷波、可编程增益到ADC，右腿驱动从共模点反馈回人体">
+    <text x="360" y="22" text-anchor="middle" class="lbl">心电信号链：差分增益 1000，CMRR 需求 &gt; 100 dB</text>
+
+    <rect class="area" x="24" y="96" width="76" height="52" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="62" y="128" text-anchor="middle" class="lbl">电极</text>
+
+    <rect class="area" x="128" y="88" width="96" height="68" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="176" y="116" text-anchor="middle" class="lbl">INA</text>
+    <text x="176" y="140" text-anchor="middle" class="lbl">×100</text>
+
+    <rect class="area" x="252" y="96" width="76" height="52" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="290" y="120" text-anchor="middle" class="lbl">HPF</text>
+    <text x="290" y="140" text-anchor="middle" class="lbl">0.5 Hz</text>
+
+    <rect class="area" x="356" y="96" width="76" height="52" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="394" y="120" text-anchor="middle" class="lbl">陷波</text>
+    <text x="394" y="140" text-anchor="middle" class="lbl">50 Hz</text>
+
+    <rect class="area" x="460" y="88" width="96" height="68" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="508" y="116" text-anchor="middle" class="lbl">PGA</text>
+    <text x="508" y="140" text-anchor="middle" class="lbl">×10</text>
+
+    <rect class="area" x="584" y="96" width="76" height="52" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="622" y="128" text-anchor="middle" class="lbl">ADC</text>
+
+    <line class="wire" x1="100" y1="122" x2="128" y2="122"/>
+    <line class="wire" x1="224" y1="122" x2="252" y2="122"/>
+    <line class="wire" x1="328" y1="122" x2="356" y2="122"/>
+    <line class="wire" x1="432" y1="122" x2="460" y2="122"/>
+    <line class="wire" x1="556" y1="122" x2="584" y2="122"/>
+    <line class="wire" x1="660" y1="122" x2="690" y2="122"/>
+    <polygon points="690,116 690,128 704,122" fill="#1a1a1a"/>
+
+    <line class="wire" x1="176" y1="156" x2="176" y2="214"/>
+    <circle class="dot" cx="176" cy="156" r="4"/>
+    <polygon points="176,262 171,250 181,250" fill="#1a1a1a" stroke="none"/>
+
+    <rect class="area" x="128" y="214" width="96" height="52" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="176" y="238" text-anchor="middle" class="lbl">−A_r</text>
+    <text x="176" y="258" text-anchor="middle" class="lbl">右腿驱动</text>
+
+    <line class="wire" x1="128" y1="240" x2="86" y2="240"/>
+    <line class="wire" x1="86" y1="240" x2="86" y2="148"/>
+    <polygon points="86,144 81,156 91,156" fill="#1a1a1a" stroke="none"/>
+    <text x="42" y="196" class="lbl">R_LR</text>
+    <line class="wire" x1="86" y1="176" x2="86" y2="196" stroke-width="2.5" style="stroke:var(--accent)"/>
+
+    <text x="360" y="286" text-anchor="middle" class="lbl">1 mV 心电信号 × 1000 = 1 V；1 V 共模需被压到 5 mV 以下 → CMRR &gt; 106 dB</text>
+  </svg>
+</div>
+
+<p>
+  上图里 <code>HPF 0.5 Hz</code> 隔掉电极极化直流，<code>50 Hz 陷波</code>压工频，
+  <code>PGA ×10</code> 把总增益补到 1000。右腿驱动从 INA 的共模点取信号，
+  反相后经 <code>R_LR</code> 注回人体，把共模抑制再加 40 dB 以上。
+</p>
+<h2>七、四道完整例题</h2>
+
+<h3>例题 1：电桥输出与所需增益</h3>
+
+<p>
+  <strong>题</strong>：某称重传感器为全桥接法，<code>R = 350 Ω</code>，额定载荷下每片应变片
+  <code>ΔR = 1.4 Ω</code>，激励 <code>U_S = 5 V</code>。① 求单臂、全桥两种情况下的电桥输出；
+  ② 若 ADC 满量程 2.0 V，求仪表放大器所需增益。
+</p>
+
+<p><strong>解①</strong>：先算相对变化量</p>
+<div class="math">ΔR/R = 1.4/350 = 0.004 = 0.4%</div>
+
+<p>单臂：</p>
+<div class="math">|ΔU| = U_S·ΔR/(4R) = 5 × 0.004/4 = 0.005 V = 5 mV</div>
+
+<p>全桥（四臂两增两减，灵敏度 ×4）：</p>
+<div class="math">|ΔU| = U_S·ΔR/R = 5 × 0.004 = 0.020 V = 20 mV</div>
+
+<p><strong>解②</strong>：满量程 20 mV 对应输出 2.0 V，</p>
+<div class="math">A_u = 2.0 V / 20 mV = 100</div>
+
+<p>
+  <strong>验算</strong>：采用 <code>R = 20 kΩ、R_f/R_1 = 5</code>，则第一级需 <code>1+2R/R_G = 20</code>，
+  即 <code>R_G = 40 kΩ/19 ≈ 2.11 kΩ</code>。取 E24 系列 <code>2.1 kΩ</code>，
+  实际第一级 <code>1 + 40/2.1 = 20.05</code>，总增益 <code>100.2</code>，误差 0.2%，
+  优于大多数应变片的综合精度（1%～2%）。
+</p>
+
+<div class="tip">
+  <span class="tip-label">量程核算意识</span>
+  算出增益后一定要回头检查：<strong>最大信号 × 增益 ≤ ADC 满量程</strong>，
+  并留 20%～30% 余量给过载。本例 20 mV × 100 = 2.0 V 正好打满，
+  工程上应把增益降到 80 左右，留出超载空间。
+</div>
+
+<h3>例题 2：给定增益反求 R_G</h3>
+
+<p>
+  <strong>题</strong>：仪表放大器取 <code>R = 25 kΩ</code>，第二级 <code>R_f = 100 kΩ、R_1 = 20 kΩ</code>。
+  要求总增益 <code>A_u = 200</code>，求 <code>R_G</code>。
+</p>
+
+<p><strong>解</strong>：先算第二级增益</p>
+<div class="math">A_u2 = R_f/R_1 = 100k/20k = 5</div>
+
+<p>第一级需要承担</p>
+<div class="math">A_u1 = A_u/A_u2 = 200/5 = 40</div>
+
+<p>由 <code>A_u1 = 1 + 2R/R_G</code>：</p>
+<div class="math">2R/R_G = 39　⟹　R_G = 2R/39 = 50 kΩ/39 ≈ 1.282 kΩ</div>
+
+<p>
+  取标准值 <code>1.3 kΩ</code> 时 <code>A_u1 = 1 + 50/1.3 = 39.46</code>，
+  总增益 <code>197.3</code>，相对误差 −1.3%。若精度要求高，用 <code>1.28 kΩ</code>（E96 系列）
+  可得 <code>A_u1 = 40.06</code>，总增益 <code>200.3</code>。
+</p>
+
+<p>
+  <strong>验算</strong>：<code>1 + 2×25k/1.282k = 1 + 39.0 = 40.0</code>，
+  <code>40 × 5 = 200</code> ✅。注意 <code>R_G</code> 与增益是<strong>反比</strong>关系：
+  增益越大，<code>R_G</code> 越小，对 <code>R_G</code> 的绝对误差越敏感。
+  高增益时（如 1000 倍），<code>R_G</code> 只有几十欧，必须用精密电阻或集成方案。
+</p>
+
+<h3>例题 3：由电阻失配估算 CMRR</h3>
+
+<p>
+  <strong>题</strong>：上题电路若第二级四只电阻的容差为 <code>δ = 0.1%</code>，
+  ① 估算整机 CMRR；② 要达到 100 dB，电阻容差需做到多少？
+</p>
+
+<p><strong>解①</strong>：第二级增益 <code>A_d = 5</code>，代入</p>
+<div class="math">CMRR ≈ (1 + A_d)/(4δ) = 6/(4 × 0.001) = 1500</div>
+<div class="math">20 lg 1500 = 20 × 3.176 = 63.5 dB</div>
+
+<p><strong>解②</strong>：要求 <code>CMRR = 10⁵</code>，反解 δ：</p>
+<div class="math">δ = (1 + A_d)/(4 × CMRR) = 6/(4 × 10⁵) = 1.5 × 10⁻⁵ = 0.0015%</div>
+
+<p>
+  <strong>结论</strong>：0.1% 的薄膜电阻只能给到 63.5 dB，离 100 dB 差 36.5 dB（约 67 倍）。
+  这正是"分立电阻搭仪表放大器"的天花板。集成仪表放大器（如 INA128）在片内用激光修调
+  把 δ 做到 0.001% 量级，才能标称 100 dB 以上；再往上就要靠右腿驱动、屏蔽驱动这类
+  <strong>系统级手段</strong>，而不是继续堆电阻精度。
+</p>
+
+<div class="tip">
+  <span class="tip-label">答题模板</span>
+  ① 写出 <code>A_d = R_f/R_1</code>；② 代 <code>CMRR ≈ (1+A_d)/(4δ)</code>；
+  ③ 用 <code>20 lg</code> 转 dB；④ 反解时把 dB 先转回倍数。
+  四步写全，过程分基本不会丢。
+</div>
+
+<h3>例题 4：心电信号链的增益与 CMRR 分配</h3>
+
+<p>
+  <strong>题</strong>：心电前端指标：差模信号 <code>u_d = 1 mV</code>，工频共模干扰
+  <code>u_cm = 1 V</code>，ADC 输入满量程 <code>1 V</code>，要求共模在输出端产生的误差
+  小于 <code>5 mV</code>。① 求总增益；② 求所需 CMRR；③ 若右腿驱动提供 40 dB，
+  仪表放大器本身需多少 dB？④ 给出增益分配方案。
+</p>
+
+<p><strong>解①</strong>：</p>
+<div class="math">A_u = 1 V / 1 mV = 1000</div>
+
+<p><strong>解②</strong>：共模在输出端的误差为 <code>u_cm · A_u / CMRR</code>，要求</p>
+<div class="math">1 V × 1000 / CMRR &lt; 5 mV　⟹　CMRR &gt; 1000/0.005 = 2 × 10⁵</div>
+<div class="math">20 lg(2 × 10⁵) = 20 × 5.301 = 106 dB</div>
+
+<p><strong>解③</strong>：右腿驱动把人体共模先压低 <code>1+A_r</code> 倍，
+相当于系统 CMRR 增加 <code>20 lg(1+A_r)</code>。提供 40 dB 后：</p>
+<div class="math">CMRR_INA ≥ 106 − 40 = 66 dB（约 2000 倍）</div>
+
+<p><strong>解④</strong>：增益分三段，避免单级过大导致带宽和噪声恶化：</p>
+<table>
+  <tr><th>环节</th><th>增益</th><th>理由</th></tr>
+  <tr><td>仪表放大器第一级</td><td>×100</td><td>增益放前面可压低后级噪声贡献；CMRR 也随之提高</td></tr>
+  <tr><td>仪表放大器第二级</td><td>×1</td><td>单位增益，CMRR 最优，避免共模被二次放大</td></tr>
+  <tr><td>PGA</td><td>×10</td><td>靠近 ADC，便于切换量程</td></tr>
+  <tr><td><strong>合计</strong></td><td><strong>×1000</strong></td><td>1 mV → 1 V</td></tr>
+</table>
+
+<p>
+  <strong>验算</strong>：第一级 <code>1+2R/R_G = 100</code>，取 <code>R = 25 kΩ</code> 得
+  <code>R_G = 50k/99 ≈ 505 Ω</code>。第二级 <code>δ = 0.02%</code> 时
+  <code>CMRR ≈ 2/(4×0.0002) = 2500 = 68 dB</code>，加上右腿驱动 40 dB，
+  系统约 108 dB，满足 106 dB 要求，余量 2 dB。
+</p>
+
+<div class="tip">
+  <span class="tip-label">为什么不能把 1000 倍全放在第一级</span>
+  第一级增益由 <code>1+2R/R_G</code> 决定，1000 倍要求 <code>R_G ≈ 50 Ω</code>。
+  这时 <code>R_G</code> 的引线电阻、接触电阻（几十毫欧到几欧）都变成百分之几的增益误差；
+  同时第一级运放带宽被压缩 1000 倍。工程上单级增益很少超过 100～200。
+</div>
+
+<h2>八、易错点与速查表</h2>
+
+<h3>七个高频错误</h3>
+<ol>
+  <li><strong>把 <code>R_G</code> 当成反馈电阻</strong>。<code>R_G</code> 跨接在两只运放的<strong>反相输入端</strong>之间，
+      不接地、不接输出。接错位置增益公式全错。</li>
+  <li><strong>认为共模时第一级输出为零</strong>。第一级共模增益是 <strong>1</strong>，
+      <code>u_o1 = u_o2 = u_cm</code>；是第二级把它们相减才得到零。</li>
+  <li><strong>用 <code>A_u = R_f/R_G</code></strong>。正确是 <code>1 + 2R/R_G</code>，
+      系数 2 来自两只 <code>R</code>；漏掉 1 会在低增益时误差巨大。</li>
+  <li><strong>忘记第二级增益</strong>。完整式是两级相乘，只有 <code>R_f = R_1</code> 时才能用简化式。</li>
+  <li><strong>电桥公式少除 4</strong>。单臂是 <code>U_S·ΔR/(4R)</code>，半桥除 2，全桥不除。</li>
+  <li><strong>CMRR 用电压比直接当 dB</strong>。<code>CMRR(dB) = 20 lg(CMRR)</code>，不是 10 lg。</li>
+  <li><strong>忽略输入偏置电流</strong>。仪表放大器输入偏置电流虽小（nA 级），
+      流过电桥内阻仍会产生失调；高阻传感器要选 <code>I_B</code> 更小的型号。</li>
+</ol>
+
+<h3>速查表</h3>
+
+<table>
+  <tr><th>项目</th><th>公式 / 结论</th><th>要点</th></tr>
+  <tr><td>第一级差模增益</td><td>A_u1 = 1 + 2R/R_G</td><td>只由 R_G 决定</td></tr>
+  <tr><td>第一级共模增益</td><td>1</td><td>共模时 R_G 无电流</td></tr>
+  <tr><td>总增益</td><td>(1+2R/R_G)·(R_f/R_1)</td><td>第二级单位增益时简化为 1+2R/R_G</td></tr>
+  <tr><td>输入电阻</td><td>≈ 运放同相端输入电阻（GΩ 级）</td><td>与增益无关</td></tr>
+  <tr><td>CMRR（单运放差分）</td><td>≈ (1+A_d)/(4δ)</td><td>δ 为电阻相对容差</td></tr>
+  <tr><td>CMRR（三运放）</td><td>≈ (1+R_f/R_1)/(4δ)</td><td>瓶颈在第二级电阻匹配</td></tr>
+  <tr><td>CMRR(dB)</td><td>20 lg(CMRR)</td><td>10⁵ → 100 dB</td></tr>
+  <tr><td>单臂电桥</td><td>|ΔU| = U_S·ΔR/(4R)</td><td>半桥 ×2，全桥 ×4</td></tr>
+  <tr><td>电桥共模</td><td>≈ U_S/2</td><td>差模 mV 级，共模 V 级</td></tr>
+  <tr><td>右腿驱动</td><td>共模压低 (1+A_r) 倍</td><td>限流电阻保证安全</td></tr>
+</table>
+
+<h2>九、Quiz — 考研风格题</h2>
+
+<p>4 道题覆盖增益、共模、电桥与 CMRR 估算。先动笔，再点选项。</p>
+
+<div class="quiz" id="quiz-container"></div>
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>普通差分电路的三宗罪</strong>：输入电阻低、增益调节要动四只电阻、CMRR 受电阻匹配限制。</li>
+  <li><strong>三运放结构的两级分工</strong>：A1/A2 同相输入负责高输入电阻与全部增益，
+      A3 差分负责双端转单端；<code>A_u = (1+2R/R_G)·(R_f/R_1)</code>。</li>
+  <li><strong>共模增益为零的机理</strong>：共模时 <code>R_G</code> 两端同电位、无电流，
+      第一级只是把共模原样搬运（增益 1），第二级再相减。</li>
+  <li><strong>CMRR 由电阻匹配决定</strong>：<code>CMRR ≈ (1+A_d)/(4δ)</code>，
+      0.1% 电阻只有 54～64 dB，100 dB 需要 0.001% 量级的修调电阻。</li>
+  <li><strong>电桥前端</strong>：单臂 <code>U_S·ΔR/(4R)</code>，全桥灵敏 4 倍；
+      电桥的共模是 <code>U_S/2</code>，比差模大上千倍，非仪表放大器不可。</li>
+  <li><strong>系统级手段</strong>：屏蔽驱动消除电缆电容电流，右腿驱动把共模压低 <code>1+A_r</code> 倍，
+      隔离放大保证患者安全。</li>
+</ol>
+
+<p>
+  下一课（<strong>Lesson 0028</strong>）换一个方向：不再放大外部信号，而是让电路<strong>自己产生</strong>正弦波。
+  你会看到，RC 桥式振荡器的起振条件 <code>A ≥ 3</code>，恰好就建立在今天这套"同相放大 + 反馈"的语言上。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第七章 §7.5「信号处理与放大」，
+  仪表放大器与电桥应用部分；CMRR 与电阻失配的估算参见第三章差分放大电路。
+</div>
+
+<div class="ask-agent">
+  电桥输出算成 4 倍还是 1/4？<code>R_G</code> 接在哪里总画错？CMRR 换算 dB 老差 3 dB？<br>
+  <strong>直接问我</strong>——把电阻值和传感器参数发我，一起把整条信号链算通。
+</div>
+
+<div class="footer-nav">
+  <a href="./0026-active-filters.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0027 / 0035</span>
+  <a href="./0028-rc-bridge-oscillator.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "三运放仪表放大器取 R = 20 kΩ，R_G = 1 kΩ，第二级 R_f = 100 kΩ、R_1 = 10 kΩ。总增益 A_u 约为？",
+    options: [
+      "A_u = 41",
+      "A_u = 410",
+      "A_u = 82",
+      "A_u = 10"
+    ],
+    correct: 1,
+    explain: "第一级 A_u1 = 1 + 2R/R_G = 1 + 40k/1k = 41；第二级 A_u2 = R_f/R_1 = 100k/10k = 10；总增益 = 41 × 10 = 410。选 A 漏了第二级，选 C 把系数 2 又乘了一次。"
+  },
+  {
+    q: "仪表放大器两输入端加上相同的共模电压 u_cm 时，下列哪项正确？",
+    options: [
+      "R_G 上电流为 u_cm/R_G，第一级输出为 2u_cm",
+      "R_G 上电流为零，第一级输出 u_o1 = u_o2 = u_cm",
+      "R_G 上电流为零，第一级输出也为零",
+      "第一级输出为 u_cm/2，第二级再放大两倍"
+    ],
+    correct: 1,
+    explain: "共模时两反相端电位都等于 u_cm，R_G 两端同电位，i_G = 0，R 上无压降，所以 u_o1 = u_o2 = u_cm。第一级共模增益为 1 而不是 0；是第二级差分相减后才得到共模输出为零。"
+  },
+  {
+    q: "惠斯通电桥 U_S = 5 V，四臂 R = 350 Ω，仅一只桥臂变化 ΔR = 0.7 Ω。单臂输出约为？",
+    options: [
+      "0.5 mV",
+      "1.0 mV",
+      "2.5 mV",
+      "10 mV"
+    ],
+    correct: 2,
+    explain: "ΔR/R = 0.7/350 = 0.002；|ΔU| = U_S·ΔR/(4R) = 5 × 0.002/4 = 0.0025 V = 2.5 mV。若误用半桥公式（除以 2）会得 5 mV，误用全桥公式会得 10 mV。"
+  },
+  {
+    q: "某差分电路 A_d = 1，四只电阻容差 δ = 0.1%。按 CMRR ≈ (1+A_d)/(4δ) 估算，CMRR 约为？",
+    options: [
+      "500，约 54 dB",
+      "250，约 48 dB",
+      "1000，约 60 dB",
+      "50，约 34 dB"
+    ],
+    correct: 0,
+    explain: "CMRR ≈ (1+1)/(4×0.001) = 2/0.004 = 500；20 lg 500 = 20 × 2.699 ≈ 54 dB。注意 dB 用 20 lg 而不是 10 lg，否则会算成 27 dB。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！增益、共模、电桥、CMRR 四块都通了，可以进振荡器了。' :
+        right >= 3 ? '👍 基本掌握。建议回看 CMRR 那一节，把 dB 换算再写两遍。' :
+        '📚 先把 A_u = (1+2R/R_G)(R_f/R_1) 和 ΔU = U_S·ΔR/(4R) 各推一遍，再来 quiz。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

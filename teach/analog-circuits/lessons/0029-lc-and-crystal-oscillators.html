@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0029 — LC 正弦波振荡电路与石英晶体振荡器</title>
+<link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+
+<h1>Lesson 0029 — LC 正弦波振荡电路与石英晶体振荡器</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0029 / 0029 · 约 60 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  上一课 <a href="./0028-rc-bridge-oscillator.html">Lesson 0028（RC 桥式振荡电路）</a> 的
+  "相位平衡 + 幅度平衡"判据在本课原封不动，只是选频网络从 RC 换成了 LC 与石英晶体。
+  另外需要 <a href="./0013-differential-amplifier.html">Lesson 0013</a> 中晶体管三种组态的相位关系：
+  <strong>共射反相、共基同相、共集同相</strong>。
+</div>
+
+<p>
+  RC 振荡器适合低频，但频率一高就露馅：要 <code>f_0 = 1 MHz</code>，取 <code>C = 100 pF</code>
+  时 <code>R = 1.59 kΩ</code>，分布电容、运放输入电容会直接改变频率；
+  而且 RC 网络的 Q 只有 1/3，选频能力弱，频率稳定度通常只有 10⁻³ 量级。
+</p>
+<p>
+  频率再往上走，工程师换成<strong>LC 谐振回路</strong>：Q 可以做到几十到几百，频率稳定度提高到 10⁻⁴；
+  再往上要求更高（通信本振、时钟源），就用<strong>石英晶体</strong>，Q 高达 10⁴～10⁶，
+  稳定度 10⁻⁶～10⁻⁹。这一课把这三代选频网络一次讲完。
+</p>
+
+<h2>一、LC 并联谐振回路</h2>
+
+<p>
+  理想 LC 并联回路在谐振时阻抗无穷大。实际电感有损耗，用一个串联小电阻 <code>r</code> 表示，
+  于是回路变成"<code>r + jωL</code>"与"<code>1/(jωC)</code>"并联。
+</p>
+
+<h3>1.1 谐振频率</h3>
+
+<p>
+  并联谐振（电压谐振）发生在两支路电流虚部相互抵消的时刻，角频率为
+</p>
+
+<div class="math">ω_0 = 1/√(LC)　⟹　f_0 = 1/(2π√(LC))</div>
+
+<p>
+  这个式子与 r 无关（只要 r 足够小）。它是所有 LC 振荡器频率公式的源头：
+  后面电感三点式、电容三点式，都是先把电路等效成一个 <code>L_eq</code> 与一个 <code>C_eq</code>，
+  再套这个公式。
+</p>
+
+<h3>1.2 谐振阻抗与品质因数</h3>
+
+<p>谐振时回路呈现纯电阻，其值为</p>
+
+<div class="math">R_p = L/(rC) = Q·ω_0L = Q/(ω_0C) = Q²r</div>
+
+<p>品质因数定义为</p>
+
+<div class="math">Q = ω_0L/r = 1/(ω_0Cr) = (1/r)·√(L/C)</div>
+
+<p>
+  <code>Q</code> 有三重身份，做题时要会互相换算：
+</p>
+<ul>
+  <li><strong>阻抗比</strong>：<code>R_p/r = Q²</code>，即并联谐振阻抗是串联损耗电阻的 <code>Q²</code> 倍；</li>
+  <li><strong>选择性</strong>：通频带 <code>BW = f_0/Q</code>，Q 越大曲线越尖；</li>
+  <li><strong>储能与耗能之比</strong>：<code>Q = 2π × 回路储能/每周期耗能</code>。</li>
+</ul>
+
+<p>
+  举例：<code>L = 100 μH、C = 100 pF、r = 5 Ω</code>。
+  <code>ω_0 = 1/√(10⁻¹⁴) = 10⁷ rad/s</code>，
+  <code>Q = 10⁷ × 10⁻⁴/5 = 200</code>，
+  <code>R_p = Q²r = 200² × 5 = 200 kΩ</code>。
+  一个 5 Ω 的线圈损耗，在谐振时被"放大"成 200 kΩ 的并联阻抗——这就是 LC 回路能选出微弱信号的原因。
+</p>
+
+<div class="circuit">
+  <svg xmlns="http://www.w3.org/2000/svg" class="schematic" viewBox="0 0 720 360" width="100%" height="auto" role="img" aria-label="LC并联谐振回路的阻抗频率特性：谐振时阻抗最大，Q越大曲线越尖锐，通频带越窄">
+    <text x="360" y="24" text-anchor="middle" class="lbl">LC 并联回路 |Z| — f：谐振时阻抗最大，Q 越高峰越尖</text>
+
+    <line class="wire thin" x1="70" y1="300" x2="650" y2="300"/>
+    <polygon points="650,294 650,306 664,300" fill="#1a1a1a"/>
+    <line class="wire thin" x1="70" y1="300" x2="70" y2="56"/>
+    <polygon points="64,56 76,56 70,42" fill="#1a1a1a"/>
+    <text x="664" y="320" text-anchor="end" class="lbl">f</text>
+    <text x="58" y="50" text-anchor="end" class="lbl">|Z|</text>
+
+    <line class="wire thin ideal" x1="257" y1="70" x2="257" y2="300"/>
+    <text x="257" y="320" text-anchor="middle" class="lbl">f₀</text>
+    <line class="wire thin ideal" x1="70" y1="80" x2="257" y2="80"/>
+    <text x="62" y="84" text-anchor="end" class="lbl">R_p</text>
+
+    <line class="wire thin" x1="219" y1="220" x2="219" y2="300" stroke-dasharray="5 5"/>
+    <line class="wire thin" x1="294" y1="220" x2="294" y2="300" stroke-dasharray="5 5"/>
+    <text x="256" y="338" text-anchor="middle" class="lbl">BW = f₀/Q</text>
+
+    <path class="wire" d="M70,271 C90,268 107,262 120,258 C140,252 160,244 182,232 C200,221 210,205 219,180 C228,150 240,105 257,80 C274,105 286,150 294,180 C303,205 313,221 331,232 C353,244 373,252 393,258 C420,264 450,268 500,271" style="stroke:var(--accent)" stroke-width="3"/>
+
+    <path class="wire" d="M70,293 C110,291 150,287 190,280 C210,276 219,268 228,252 C238,230 248,150 257,80 C266,150 276,230 286,252 C295,268 304,276 324,280 C364,287 404,291 444,293 C500,295 560,296 630,297" style="stroke:var(--accent); stroke-dasharray:7 5"/>
+
+    <text x="340" y="120" class="lbl">Q = 200（实线）</text>
+    <text x="410" y="286" class="lbl">Q = 20（虚线）</text>
+    <text x="120" y="286" class="lbl">容性</text>
+    <text x="500" y="286" class="lbl">容性</text>
+    <text x="300" y="72" class="lbl">感性</text>
+  </svg>
+</div>
+
+<h3>1.3 从谐振曲线读三件事</h3>
+
+<ol>
+  <li><strong>谐振时阻抗最大</strong>：所以共射放大器把 LC 回路放在集电极，谐振频率上电压增益最高，
+      相当于一个"频率选择放大器"。</li>
+  <li><strong>Q 决定选择性</strong>：Q 越大，曲线越尖，通频带 <code>BW = f_0/Q</code> 越窄；
+      振荡器需要的正是"只让一个频率满足相位条件"。</li>
+  <li><strong>失谐后呈容性或感性</strong>：低于 <code>f_0</code> 呈感性、高于 <code>f_0</code> 呈容性
+      （并联回路在谐振点附近电抗随频率急剧变化）。三点式振荡器的相位判断就靠这一点。</li>
+</ol>
+
+<div class="tip">
+  <span class="tip-label">为什么振荡器偏爱高 Q</span>
+  高 Q 意味着回路储能大、每周期损耗小，频率对外界参数（晶体管结电容、温度、电源）不敏感。
+  Q 从 20 提高到 200，通频带窄 10 倍，相位曲线在 <code>f_0</code> 附近也陡 10 倍——
+  同样的附加相移引起的频率偏移就小 10 倍。这是"频率稳定度"的物理来源。
+</div>
+
+<h2>二、变压器反馈式振荡器</h2>
+
+<p>
+  最直观的 LC 振荡器：共射放大器 + 集电极 LC 回路 + 变压器耦合回基极。
+  共射组态本身反相 180°，只要变压器再提供 180° 的倒相，环路总相移就是 360°，满足相位平衡。
+</p>
+
+<div class="circuit">
+  <svg xmlns="http://www.w3.org/2000/svg" class="schematic" viewBox="0 0 720 400" width="100%" height="auto" role="img" aria-label="变压器反馈式LC振荡器：共射放大器集电极接LC回路，次级绕组反馈到基极，同名端保证正反馈">
+    <text x="360" y="22" text-anchor="middle" class="lbl">变压器反馈式：共射反相 180° + 变压器倒相 180° = 360°</text>
+
+    <line class="wire" x1="420" y1="60" x2="520" y2="60"/>
+    <line class="wire" x1="520" y1="60" x2="520" y2="44"/>
+    <circle cx="520" cy="40" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="520" y="30" text-anchor="middle" class="lbl">+V_CC</text>
+
+    <line class="wire" x1="420" y1="60" x2="420" y2="90"/>
+    <path class="wire" d="M420,90 a12,12 0 0 1 0,24 a12,12 0 0 1 0,24 a12,12 0 0 1 0,24" style="stroke:var(--text)"/>
+    <line class="wire" x1="420" y1="162" x2="420" y2="170"/>
+    <text x="452" y="132" class="lbl">L_p</text>
+
+    <line class="wire" x1="420" y1="170" x2="325" y2="170"/>
+    <line class="wire" x1="325" y1="170" x2="325" y2="178"/>
+    <line class="wire" x1="325" y1="178" x2="285" y2="208"/>
+
+    <line class="wire" x1="480" y1="90" x2="480" y2="130"/>
+    <line class="wire" x1="480" y1="90" x2="420" y2="90"/>
+    <line class="wire" x1="464" y1="142" x2="496" y2="142" stroke-width="3"/>
+    <line class="wire" x1="464" y1="156" x2="496" y2="156" stroke-width="3"/>
+    <line class="wire" x1="480" y1="156" x2="480" y2="170"/>
+    <line class="wire" x1="480" y1="170" x2="420" y2="170"/>
+    <text x="504" y="152" class="lbl">C</text>
+
+    <line class="wire" x1="285" y1="200" x2="285" y2="240" stroke-width="4"/>
+    <line class="wire" x1="240" y1="220" x2="285" y2="220"/>
+    <line class="wire" x1="285" y1="232" x2="320" y2="268"/>
+    <polygon points="320,268 306,265 313,254" fill="#1a1a1a"/>
+    <text x="250" y="208" text-anchor="end" class="lbl">b</text>
+    <text x="326" y="164" class="lbl">c</text>
+    <text x="326" y="286" class="lbl">e</text>
+    <text x="360" y="248" class="lbl">T</text>
+
+    <line class="wire" x1="320" y1="268" x2="360" y2="268"/>
+    <line class="wire" x1="360" y1="268" x2="360" y2="340"/>
+    <line class="wire" x1="340" y1="340" x2="380" y2="340"/>
+    <line class="wire" x1="348" y1="348" x2="372" y2="348"/>
+
+    <line class="wire" x1="240" y1="220" x2="200" y2="220"/>
+    <line class="wire" x1="200" y1="220" x2="200" y2="240"/>
+    <path class="wire" d="M200,240 a12,12 0 0 1 0,24 a12,12 0 0 1 0,24" style="stroke:var(--text)"/>
+    <line class="wire" x1="200" y1="288" x2="200" y2="340"/>
+    <line class="wire" x1="200" y1="340" x2="360" y2="340"/>
+    <text x="160" y="266" text-anchor="end" class="lbl">L_s</text>
+
+    <circle cx="408" cy="96" r="3.5" fill="#1a1a1a"/>
+    <circle cx="188" cy="246" r="3.5" fill="#1a1a1a"/>
+    <text x="300" y="316" text-anchor="middle" class="lbl">磁耦合，同名端（•）保证反馈同相</text>
+
+    <text x="600" y="150" class="lbl">相位：</text>
+    <text x="600" y="174" class="lbl">共射 → 180°</text>
+    <text x="600" y="198" class="lbl">变压器 → 180°</text>
+    <text x="600" y="222" class="lbl">合计 → 360° ✅</text>
+  </svg>
+</div>
+
+<h3>2.1 相位判断的具体步骤</h3>
+
+<ol>
+  <li>设基极电位瞬时为正 → 集电极电流增大 → 集电极电位<strong>下降</strong>（共射反相）；</li>
+  <li>集电极下降意味着 <code>L_p</code> 下端电位下降，按同名端关系，次级 <code>L_s</code>
+      上端（接基极那端）电位也<strong>下降</strong>；</li>
+  <li>基极被拉低，与最初的"基极为正"相反——这说明接法反了？</li>
+</ol>
+
+<p>
+  等等，这里要小心同名端的定义。正确的判断方法是<strong>看反馈是否增强了原始扰动</strong>：
+  若基极电位的微小上升，经放大和变压器倒相后，回到基极的电压<strong>也是上升</strong>，
+  就是正反馈。共射已经把相位翻了 180°，变压器必须再翻一次；同名端的接法决定了这第二次倒相。
+  实验上若不起振，把次级两端对调即可——这是最实用的排查手段。
+</p>
+
+<h3>2.2 起振条件与优缺点</h3>
+
+<p>
+  变压器反馈式靠互感 <code>M</code> 把能量送回基极，起振条件可写成
+  <code>h_fe · M/(L_p) ≥ 1</code> 量级（不同教材符号略有差异），本质仍是环路增益大于 1。
+</p>
+
+<table>
+  <tr><th>优点</th><th>缺点</th></tr>
+  <tr><td>结构简单，容易起振</td><td>变压器体积大、成本高，不易集成</td></tr>
+  <tr><td>初、次级隔离，便于匹配</td><td>互感 M 随频率和磁芯变化，频率稳定度一般</td></tr>
+  <tr><td>可方便地取出多组输出</td><td>分布电容限制高频应用</td></tr>
+</table>
+
+<p>
+  正因为变压器不便集成，实际分立电路更多用<strong>三点式</strong>：用电抗元件分压代替绕组抽头，
+  省掉变压器，相位条件也更容易判断。
+</p>
+<h2>三、电感三点式（哈特莱 Hartley）</h2>
+
+<p>
+  三点式的思路：把 LC 回路的一个端点接集电极、另一个端点接基极，
+  再从回路中间<strong>抽一个头</strong>接发射极。这样回路对交流而言被分成两部分，
+  一部分是"输出负载"，另一部分是"反馈取样"，用一个回路同时完成选频与反馈。
+</p>
+
+<p>
+  电感三点式把电感分成 <code>L_1、L_2</code> 两段（中间抽头接发射极），电容 <code>C</code>
+  跨接在集电极与基极之间。两段电感顺向串联，总电感为
+</p>
+
+<div class="math">L_eq = L_1 + L_2 + 2M</div>
+<div class="math">f_0 ≈ 1 / [2π√((L_1 + L_2 + 2M)·C)]</div>
+
+<p>
+  当两段绕在同一个磁芯上、耦合系数接近 1 时，<code>M ≈ √(L_1L_2)</code>，
+  总电感接近 <code>(√L_1 + √L_2)²</code>。若两段各自独立（无互感），就退化为 <code>L_1 + L_2</code>。
+  教材题目若没给 <code>M</code>，通常按 <code>M = 0</code> 处理。
+</p>
+
+<div class="circuit">
+  <svg xmlns="http://www.w3.org/2000/svg" class="schematic" viewBox="0 0 720 400" width="100%" height="auto" role="img" aria-label="电感三点式振荡器：L1与L2串联中间抽头接发射极，电容跨接集电极与基极">
+    <text x="360" y="22" text-anchor="middle" class="lbl">电感三点式（Hartley）：L₁、L₂ 抽头接发射极，f₀ ≈ 1/(2π√((L₁+L₂+2M)C))</text>
+
+    <line class="wire" x1="480" y1="160" x2="480" y2="70"/>
+    <circle cx="480" cy="64" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="480" y="52" text-anchor="middle" class="lbl">+V_CC</text>
+
+    <line class="wire" x1="480" y1="160" x2="580" y2="160"/>
+    <line class="wire" x1="580" y1="160" x2="580" y2="228"/>
+    <line class="wire" x1="564" y1="228" x2="596" y2="228" stroke-width="3"/>
+    <line class="wire" x1="564" y1="242" x2="596" y2="242" stroke-width="3"/>
+    <line class="wire" x1="580" y1="242" x2="580" y2="320"/>
+    <line class="wire" x1="580" y1="320" x2="480" y2="320"/>
+    <text x="604" y="240" class="lbl">C</text>
+
+    <path class="wire" d="M480,160 a12,12 0 0 1 0,24 a12,12 0 0 1 0,24" style="stroke:var(--text)"/>
+    <line class="wire" x1="480" y1="208" x2="480" y2="212"/>
+    <circle class="dot" cx="480" cy="210" r="4.5"/>
+    <text x="452" y="188" text-anchor="end" class="lbl">L₁</text>
+
+    <path class="wire" d="M480,212 a12,12 0 0 1 0,24 a12,12 0 0 1 0,24 a12,12 0 0 1 0,24" style="stroke:var(--text)"/>
+    <line class="wire" x1="480" y1="284" x2="480" y2="320"/>
+    <text x="452" y="268" text-anchor="end" class="lbl">L₂</text>
+
+    <line class="wire" x1="480" y1="160" x2="340" y2="160"/>
+    <line class="wire" x1="340" y1="160" x2="340" y2="178"/>
+    <line class="wire" x1="340" y1="178" x2="300" y2="208"/>
+
+    <line class="wire" x1="300" y1="200" x2="300" y2="240" stroke-width="4"/>
+    <line class="wire" x1="240" y1="220" x2="300" y2="220"/>
+    <line class="wire" x1="300" y1="232" x2="340" y2="268"/>
+    <polygon points="340,268 326,265 333,254" fill="#1a1a1a"/>
+    <text x="250" y="208" text-anchor="end" class="lbl">b</text>
+    <text x="346" y="158" class="lbl">c</text>
+    <text x="346" y="286" class="lbl">e</text>
+
+    <line class="wire" x1="340" y1="268" x2="380" y2="268"/>
+    <line class="wire" x1="380" y1="268" x2="380" y2="210"/>
+    <line class="wire" x1="380" y1="210" x2="480" y2="210"/>
+
+    <line class="wire" x1="480" y1="210" x2="430" y2="210"/>
+    <line class="wire" x1="430" y1="210" x2="430" y2="242"/>
+    <line class="wire" x1="414" y1="242" x2="446" y2="242" stroke-width="3"/>
+    <line class="wire" x1="414" y1="256" x2="446" y2="256" stroke-width="3"/>
+    <line class="wire" x1="430" y1="256" x2="430" y2="274"/>
+    <line class="wire" x1="412" y1="274" x2="448" y2="274"/>
+    <line class="wire" x1="420" y1="282" x2="440" y2="282"/>
+    <text x="398" y="252" text-anchor="end" class="lbl">C_E</text>
+
+    <line class="wire" x1="240" y1="220" x2="240" y2="320"/>
+    <line class="wire" x1="240" y1="320" x2="480" y2="320"/>
+    <text x="210" y="272" text-anchor="end" class="lbl">b 端</text>
+
+    <text x="360" y="380" text-anchor="middle" class="lbl">抽头把 L 分成两段：L₁ 上取输出，L₂ 上取反馈；两者极性相同 → 满足相位条件</text>
+  </svg>
+</div>
+
+<h3>3.1 相位条件：为什么抽头接发射极就能正反馈</h3>
+
+<p>
+  共射放大器：基极电压上升 → 集电极电压下降。集电极接在 <code>L_1</code> 的上端，
+  抽头（发射极）在 <code>L_1</code> 与 <code>L_2</code> 之间，基极接 <code>L_2</code> 的下端。
+</p>
+<p>
+  集电极电位下降，相当于 <code>L_1</code> 两端电压变化；由于 <code>L_1、L_2</code> 是同一回路的串联两段，
+  <code>L_2</code> 上的感应电压方向使基极电位<strong>进一步上升</strong>——正好加强原始扰动，
+  构成正反馈。这就是"<strong>射同基反</strong>"判据的来源：与发射极相连的两段电抗性质相同（都是电感），
+  不与发射极相连的那只（电容）性质相反。
+</p>
+
+<h3>3.2 反馈系数与起振</h3>
+
+<p>
+  反馈电压取自 <code>L_2</code>，反馈系数近似为
+</p>
+
+<div class="math">F ≈ L_2/(L_1 + L_2 + 2M)　（忽略负载与晶体管输入电阻）</div>
+
+<p>
+  <code>L_2</code> 越大，反馈越强，越容易起振，但晶体管输入电阻对回路的加载越重，Q 下降、波形变差。
+  工程上取 <code>L_2/L_1 ≈ 1/3～1/5</code>。抽头位置本质是在"起振裕量"与"回路 Q"之间折中。
+</p>
+
+<table>
+  <tr><th>优点</th><th>缺点</th></tr>
+  <tr><td>抽头方便，容易起振</td><td>两段电感耦合紧，分布电容大，高频性能差</td></tr>
+  <tr><td>只用一只电容，成本低</td><td>反馈系数靠抽头固定，不便调节</td></tr>
+  <tr><td>适合中短波频段</td><td>波形含谐波较多（电感抽头对高次谐波反馈强）</td></tr>
+</table>
+
+<h2>四、电容三点式（考毕兹 Colpitts）与克拉泼改进</h2>
+
+<p>
+  把电感和电容的位置对调，就得到电容三点式：<strong>两只电容 <code>C_1、C_2</code> 串联，
+  中间抽头接发射极；电感 <code>L</code> 跨接在集电极与基极之间</strong>。
+  相位判据同样满足"射同基反"：与发射极相连的两只都是电容（同性质），
+  不与发射极相连的 <code>L</code> 是电感（异性质）。
+</p>
+
+<div class="math">C_eq = C_1C_2/(C_1 + C_2)　⟹　f_0 ≈ 1/[2π√(L·C_1C_2/(C_1+C_2))]</div>
+
+<div class="circuit">
+  <svg xmlns="http://www.w3.org/2000/svg" class="schematic" viewBox="0 0 720 400" width="100%" height="auto" role="img" aria-label="电容三点式振荡器：C1与C2串联中间抽头接发射极，电感跨接集电极与基极">
+    <text x="360" y="22" text-anchor="middle" class="lbl">电容三点式（Colpitts）：C₁、C₂ 抽头接发射极，f₀ ≈ 1/(2π√(L·C₁C₂/(C₁+C₂)))</text>
+
+    <line class="wire" x1="480" y1="160" x2="480" y2="70"/>
+    <circle cx="480" cy="64" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="480" y="52" text-anchor="middle" class="lbl">+V_CC</text>
+
+    <line class="wire" x1="480" y1="160" x2="580" y2="160"/>
+    <path class="wire" d="M580,160 a12,12 0 0 1 0,24 a12,12 0 0 1 0,24 a12,12 0 0 1 0,24 a12,12 0 0 1 0,24 a12,12 0 0 1 0,24" style="stroke:var(--text)"/>
+    <line class="wire" x1="580" y1="280" x2="580" y2="320"/>
+    <line class="wire" x1="580" y1="320" x2="480" y2="320"/>
+    <text x="604" y="220" class="lbl">L</text>
+
+    <line class="wire" x1="480" y1="160" x2="480" y2="180"/>
+    <line class="wire" x1="464" y1="180" x2="496" y2="180" stroke-width="3"/>
+    <line class="wire" x1="464" y1="194" x2="496" y2="194" stroke-width="3"/>
+    <line class="wire" x1="480" y1="194" x2="480" y2="210"/>
+    <circle class="dot" cx="480" cy="210" r="4.5"/>
+    <text x="450" y="192" text-anchor="end" class="lbl">C₁</text>
+
+    <line class="wire" x1="480" y1="210" x2="480" y2="240"/>
+    <line class="wire" x1="464" y1="240" x2="496" y2="240" stroke-width="3"/>
+    <line class="wire" x1="464" y1="254" x2="496" y2="254" stroke-width="3"/>
+    <line class="wire" x1="480" y1="254" x2="480" y2="320"/>
+    <text x="450" y="252" text-anchor="end" class="lbl">C₂</text>
+
+    <line class="wire" x1="480" y1="160" x2="340" y2="160"/>
+    <line class="wire" x1="340" y1="160" x2="340" y2="178"/>
+    <line class="wire" x1="340" y1="178" x2="300" y2="208"/>
+
+    <line class="wire" x1="300" y1="200" x2="300" y2="240" stroke-width="4"/>
+    <line class="wire" x1="240" y1="220" x2="300" y2="220"/>
+    <line class="wire" x1="300" y1="232" x2="340" y2="268"/>
+    <polygon points="340,268 326,265 333,254" fill="#1a1a1a"/>
+    <text x="250" y="208" text-anchor="end" class="lbl">b</text>
+    <text x="346" y="158" class="lbl">c</text>
+    <text x="346" y="286" class="lbl">e</text>
+
+    <line class="wire" x1="340" y1="268" x2="380" y2="268"/>
+    <line class="wire" x1="380" y1="268" x2="380" y2="210"/>
+    <line class="wire" x1="380" y1="210" x2="480" y2="210"/>
+
+    <line class="wire" x1="480" y1="210" x2="430" y2="210"/>
+    <line class="wire" x1="430" y1="210" x2="430" y2="242"/>
+    <line class="wire" x1="414" y1="242" x2="446" y2="242" stroke-width="3"/>
+    <line class="wire" x1="414" y1="256" x2="446" y2="256" stroke-width="3"/>
+    <line class="wire" x1="430" y1="256" x2="430" y2="274"/>
+    <line class="wire" x1="412" y1="274" x2="448" y2="274"/>
+    <line class="wire" x1="420" y1="282" x2="440" y2="282"/>
+    <text x="398" y="252" text-anchor="end" class="lbl">C_E</text>
+
+    <line class="wire" x1="240" y1="220" x2="240" y2="320"/>
+    <line class="wire" x1="240" y1="320" x2="480" y2="320"/>
+
+    <text x="360" y="380" text-anchor="middle" class="lbl">反馈系数 F ≈ C₁/C₂：C₁ 小、C₂ 大 → 反馈弱但回路 Q 高；工程取 C₁/C₂ ≈ 0.1～0.5</text>
+  </svg>
+</div>
+
+<h3>4.1 反馈系数</h3>
+
+<p>
+  输出电压取自 <code>C_1</code> 两端（集电极到抽头），反馈电压取自 <code>C_2</code> 两端（抽头到基极）。
+  串联电容分压，反馈系数近似为
+</p>
+
+<div class="math">F ≈ C_1/C_2</div>
+
+<p>
+  注意是<strong>反比</strong>：电容越大，容抗越小，分到的电压越小。所以想要强反馈，
+  应减小 <code>C_2</code>（而不是增大）。这与电感的直觉相反，是考试高频错点。
+</p>
+
+<h3>4.2 克拉泼（Clapp）改进</h3>
+
+<p>
+  考毕兹的频率由 <code>C_1C_2/(C_1+C_2)</code> 决定，而晶体管极间电容
+  <code>C_be、C_ce</code> 直接并联在 <code>C_1、C_2</code> 上。温度、工作点一变，
+  结电容变，频率就漂。改进办法：在电感支路<strong>串入一只小电容 <code>C_3</code></strong>。
+</p>
+
+<div class="math">C_eq = [ (C_1C_2)/(C_1+C_2) · C_3 ] / [ (C_1C_2)/(C_1+C_2) + C_3 ]</div>
+
+<p>
+  若 <code>C_3 ≪ C_1、C_2</code>，则 <code>C_eq ≈ C_3</code>，于是
+</p>
+
+<div class="math">f_0 ≈ 1/(2π√(L·C_3))</div>
+
+<p>
+  此时频率几乎只由 <code>L、C_3</code> 决定，结电容只是在 <code>C_1、C_2</code> 上做微小修正，
+  对 <code>C_3</code> 的影响被"稀释"。代价是 <code>C_1、C_2</code> 可以取得较大，
+  反馈系数仍按 <code>C_1/C_2</code> 设计，选频与反馈几乎解耦。
+</p>
+
+<table>
+  <tr><th>电路</th><th>f₀</th><th>反馈系数</th><th>特点</th></tr>
+  <tr><td>变压器反馈式</td><td>1/(2π√(LC))</td><td>M/L 相关</td><td>隔离好，体积大</td></tr>
+  <tr><td>电感三点式</td><td>1/(2π√((L₁+L₂+2M)C))</td><td>L₂/(L₁+L₂+2M)</td><td>易起振，高频差</td></tr>
+  <tr><td>电容三点式</td><td>1/(2π√(L·C₁C₂/(C₁+C₂)))</td><td>C₁/C₂</td><td>波形好，高频好</td></tr>
+  <tr><td>克拉泼</td><td>≈1/(2π√(LC₃))</td><td>C₁/C₂</td><td>频率稳定度高，调频方便</td></tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">三点式判据一句话</span>
+  <strong>"射同基反"</strong>：与发射极（或运放同相端）相连的两只电抗元件必须<strong>同性质</strong>；
+  剩下那只（跨接在另两端之间）必须<strong>异性质</strong>。满足则相位条件成立，否则一定不振。
+</div>
+<h2>五、石英晶体振荡器</h2>
+
+<p>
+  LC 回路的 Q 最多几百，频率稳定度约 10⁻⁴——对收音机够用，对通信基站、示波器时基、
+  单片机时钟远远不够。石英晶体利用<strong>压电效应</strong>：交变电压使晶片机械振动，
+  机械振动又反过来产生电荷；当电信号频率等于晶片的机械谐振频率时，振动最强，
+  等效电抗发生剧烈变化。机械振动的 Q 极高，折算到电学上就是 <code>Q = 10⁴～10⁶</code>。
+</p>
+
+<h3>5.1 等效电路与两个谐振频率</h3>
+
+<p>
+  晶体的电学等效电路是<strong>一个串联支路与一只电容 <code>C_0</code> 并联</strong>：
+  串联支路包含动态电感 <code>L_q</code>、动态电容 <code>C_q</code>、动态电阻 <code>R_q</code>
+  （下标 q 表示 quartz）。<code>C_0</code> 是晶片两电极与支架的静态电容，几皮法。
+</p>
+
+<div class="circuit">
+  <svg xmlns="http://www.w3.org/2000/svg" class="schematic" viewBox="0 0 720 380" width="100%" height="auto" role="img" aria-label="石英晶体等效电路与电抗频率特性：串联谐振fs与并联谐振fp极近，之间呈感性">
+    <text x="230" y="30" text-anchor="middle" class="lbl">(a) 等效电路</text>
+    <text x="555" y="30" text-anchor="middle" class="lbl">(b) 电抗 — 频率特性</text>
+
+    <circle class="dot" cx="100" cy="70" r="4.5"/>
+    <circle class="dot" cx="100" cy="300" r="4.5"/>
+    <text x="80" y="64" text-anchor="end" class="lbl">A</text>
+    <text x="80" y="306" text-anchor="end" class="lbl">B</text>
+
+    <line class="wire" x1="100" y1="70" x2="210" y2="70"/>
+    <line class="wire" x1="210" y1="70" x2="210" y2="160"/>
+    <line class="wire" x1="194" y1="160" x2="226" y2="160" stroke-width="3"/>
+    <line class="wire" x1="194" y1="174" x2="226" y2="174" stroke-width="3"/>
+    <line class="wire" x1="210" y1="174" x2="210" y2="300"/>
+    <line class="wire" x1="210" y1="300" x2="100" y2="300"/>
+    <text x="238" y="172" class="lbl">C₀</text>
+
+    <line class="wire" x1="100" y1="70" x2="340" y2="70"/>
+    <line class="wire" x1="340" y1="70" x2="340" y2="92"/>
+    <rect class="area" x="324" y="92" width="32" height="44" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="372" y="118" class="lbl">R_q</text>
+    <line class="wire" x1="340" y1="136" x2="340" y2="150"/>
+    <path class="wire" d="M340,150 a10,10 0 0 1 0,20 a10,10 0 0 1 0,20 a10,10 0 0 1 0,20" style="stroke:var(--text)"/>
+    <text x="372" y="184" class="lbl">L_q</text>
+    <line class="wire" x1="340" y1="210" x2="340" y2="226"/>
+    <line class="wire" x1="324" y1="226" x2="356" y2="226" stroke-width="3"/>
+    <line class="wire" x1="324" y1="240" x2="356" y2="240" stroke-width="3"/>
+    <line class="wire" x1="340" y1="240" x2="340" y2="300"/>
+    <text x="372" y="238" class="lbl">C_q</text>
+    <line class="wire" x1="340" y1="300" x2="100" y2="300"/>
+
+    <text x="230" y="340" text-anchor="middle" class="lbl">L_q 很大（mH 级）、C_q 极小（0.01 pF 级）→ Q 极高</text>
+
+    <line class="wire thin" x1="420" y1="190" x2="690" y2="190"/>
+    <polygon points="690,184 690,196 704,190" fill="#1a1a1a"/>
+    <line class="wire thin" x1="420" y1="330" x2="420" y2="56"/>
+    <polygon points="414,56 426,56 420,42" fill="#1a1a1a"/>
+    <text x="704" y="210" text-anchor="end" class="lbl">f</text>
+    <text x="410" y="50" text-anchor="end" class="lbl">X</text>
+
+    <line class="wire thin ideal" x1="545" y1="56" x2="545" y2="330"/>
+    <line class="wire thin ideal" x1="578" y1="56" x2="578" y2="330"/>
+    <text x="545" y="348" text-anchor="middle" class="lbl">f_s</text>
+    <text x="578" y="348" text-anchor="middle" class="lbl">f_p</text>
+
+    <path class="wire" d="M430,204 C470,212 512,238 538,322" style="stroke:var(--accent); stroke-width:3"/>
+    <path class="wire" d="M548,190 C556,150 566,96 575,46" style="stroke:var(--accent); stroke-width:3"/>
+    <path class="wire" d="M582,320 C596,268 624,222 688,198" style="stroke:var(--accent); stroke-width:3"/>
+
+    <text x="466" y="232" class="lbl">容性</text>
+    <text x="556" y="120" class="lbl">感性</text>
+    <text x="632" y="222" class="lbl">容性</text>
+    <text x="562" y="70" text-anchor="middle" class="lbl">f_p − f_s 极窄</text>
+    <text x="555" y="372" text-anchor="middle" class="lbl">仅在 f_s～f_p 之间呈感性，可用作电感接入三点式电路</text>
+  </svg>
+</div>
+
+<p>
+  两个谐振频率：
+</p>
+
+<div class="math">串联谐振：f_s = 1/(2π√(L_qC_q))</div>
+<div class="math">并联谐振：f_p = 1/(2π√(L_q·C_qC_0/(C_q+C_0))) = f_s·√(1 + C_q/C_0)</div>
+
+<p>
+  因为 <code>C_q ≪ C_0</code>，所以 <code>f_p</code> 只比 <code>f_s</code> 高一点点：
+</p>
+
+<div class="math">(f_p − f_s)/f_s ≈ C_q/(2C_0)</div>
+
+<p>
+  典型值 <code>C_q = 0.02 pF、C_0 = 5 pF</code>，相对间隔只有 0.2%。
+  在 <code>f_s</code> 处晶体相当于<strong>短路</strong>（串联谐振，阻抗最小）；
+  在 <code>f_s～f_p</code> 之间呈<strong>感性</strong>；在 <code>f_p</code> 处相当于<strong>开路</strong>（并联谐振，阻抗最大）；
+  其余频段呈容性。
+</p>
+
+<h3>5.2 品质因数</h3>
+
+<div class="math">Q = ω_sL_q/R_q = 1/(ω_sC_qR_q)</div>
+
+<p>
+  代入 <code>L_q = 12.67 mH、C_q = 0.02 pF、R_q = 10 Ω、f_s = 10 MHz</code>：
+  <code>ω_sL_q = 2π×10⁷×0.01267 ≈ 7.96×10⁵ Ω</code>，
+  <code>Q ≈ 7.96×10⁵/10 ≈ 8×10⁴</code>。
+</p>
+<p>
+  对比 LC 回路的 200，晶体的 Q 高了 400 倍。频率稳定度的改善大致与 Q 成正比，
+  这就是晶体能把 10⁻⁴ 提升到 10⁻⁸ 量级的原因。
+</p>
+
+<h3>5.3 两种用法：串联型与并联型</h3>
+
+<table>
+  <tr><th>类型</th><th>晶体工作在</th><th>晶体作用</th><th>典型电路</th></tr>
+  <tr>
+    <td>串联型</td>
+    <td>f = f_s</td>
+    <td>阻抗最小，相当于一条"只对 f_s 导通"的反馈通路</td>
+    <td>晶体串在反馈支路中，与放大器构成正反馈</td>
+  </tr>
+  <tr>
+    <td>并联型</td>
+    <td>f_s &lt; f &lt; f_p</td>
+    <td>呈感性，等效为一只高 Q 电感</td>
+    <td>晶体替代三点式中的 L，构成"晶体三点式"</td>
+  </tr>
+</table>
+
+<p>
+  并联型并不是在晶体两端并一只电容那么简单：它把晶体<strong>当作电感</strong>使用，
+  外面再配 <code>C_1、C_2</code> 分压，结构与考毕兹完全一样，只是把 <code>L</code> 换成了晶体。
+  由于晶体只在 <code>f_s～f_p</code> 这一条极窄的区间内呈感性，
+  振荡频率被"锁"在这个区间里，外界参数几乎拉不动它。
+</p>
+
+<div class="tip">
+  <span class="tip-label">晶体的两个"禁区"</span>
+  ① 不能工作在 <code>f_p</code> 以上：那里呈容性，三点式的相位条件被破坏；<br>
+  ② 不能加过大激励：机械振动过强会损坏晶片或使其老化频漂。典型驱动功率是微瓦到毫瓦级。
+</div>
+
+<h3>5.4 三种选频网络的频率稳定度</h3>
+
+<table>
+  <tr><th>类型</th><th>Q 值</th><th>频率稳定度</th><th>典型频率范围</th></tr>
+  <tr><td>RC 桥式</td><td>≈ 1/3</td><td>10⁻³～10⁻⁴</td><td>1 Hz～1 MHz</td></tr>
+  <tr><td>LC 三点式</td><td>20～200</td><td>10⁻⁴～10⁻⁵</td><td>100 kHz～几百 MHz</td></tr>
+  <tr><td>石英晶体</td><td>10⁴～10⁶</td><td>10⁻⁶～10⁻⁹</td><td>10 kHz～几百 MHz</td></tr>
+</table>
+
+<p>
+  选型逻辑很简单：<strong>要频率准，先看 Q</strong>。RC 便宜、可调、适合低频；
+  LC 适合射频，频率可调；晶体频率不可调（只能微调几个 ppm），但只要不需要调，
+  它就是最稳的。
+</p>
+
+<h2>六、四道完整例题</h2>
+
+<h3>例题 1：LC 回路的 f₀、Q、R_p 与带宽</h3>
+
+<p>
+  <strong>题</strong>：并联谐振回路 <code>L = 100 μH、C = 100 pF</code>，电感损耗电阻 <code>r = 5 Ω</code>。
+  求 ① <code>f_0</code>；② <code>Q</code>；③ 谐振阻抗 <code>R_p</code>；④ 通频带 <code>BW</code>。
+</p>
+
+<p><strong>解①</strong>：</p>
+<div class="math">ω_0 = 1/√(LC) = 1/√(100μ × 100p) = 1/√(10⁻¹⁴) = 10⁷ rad/s</div>
+<div class="math">f_0 = ω_0/(2π) = 10⁷/6.283 ≈ 1.5915 MHz</div>
+
+<p><strong>解②</strong>：</p>
+<div class="math">Q = ω_0L/r = 10⁷ × 100×10⁻⁶/5 = 10³/5 = 200</div>
+
+<p><strong>解③</strong>：</p>
+<div class="math">R_p = Q²r = 200² × 5 = 200 kΩ</div>
+<p>也可用 <code>R_p = Qω_0L = 200 × 1000 = 200 kΩ</code> 验算，一致。</p>
+
+<p><strong>解④</strong>：</p>
+<div class="math">BW = f_0/Q = 1.5915 MHz/200 ≈ 7.96 kHz</div>
+
+<p>
+  <strong>讨论</strong>：若把 <code>r</code> 增大到 50 Ω，Q 降到 20，带宽变成 79.6 kHz，
+  选择性明显变差；<code>R_p</code> 也降到 20 kΩ，放大器增益随之下降。
+  这就是"高 Q 回路既选频好、又增益高"的定量体现。
+</p>
+
+<h3>例题 2：电容三点式的频率与反馈系数</h3>
+
+<p>
+  <strong>题</strong>：电容三点式中 <code>L = 100 μH、C_1 = 150 pF、C_2 = 300 pF</code>。
+  ① 求 <code>f_0</code>；② 求反馈系数 <code>F</code>；③ 若串入 <code>C_3 = 10 pF</code> 改成克拉泼，
+  近似求新的 <code>f_0</code>。
+</p>
+
+<p><strong>解①</strong>：先求串联等效电容</p>
+<div class="math">C_eq = C_1C_2/(C_1+C_2) = 150×300/(150+300) = 45000/450 = 100 pF</div>
+<div class="math">f_0 = 1/(2π√(100μ × 100p)) = 1/(2π × 10⁻⁷) ≈ 1.5915 MHz</div>
+
+<p><strong>解②</strong>：</p>
+<div class="math">F ≈ C_1/C_2 = 150/300 = 0.5</div>
+<p>
+  反馈系数 0.5 意味着反馈电压是输出电压的一半，属于较强反馈，容易起振；
+  代价是晶体管输入电阻对 <code>C_2</code> 的加载较重。
+</p>
+
+<p><strong>解③</strong>：克拉泼的等效电容是 <code>C_eq</code> 与 <code>C_3</code> 串联：</p>
+<div class="math">C_eq' = (100 × 10)/(100 + 10) = 9.09 pF</div>
+<div class="math">f_0' = 1/(2π√(100μ × 9.09p)) = 1/(2π × 3.015×10⁻⁸) ≈ 5.28 MHz</div>
+
+<p>
+  若直接用近似式 <code>f_0 ≈ 1/(2π√(LC_3)) = 5.03 MHz</code>，与精确值差 5%，
+  因为 <code>C_3 = 10 pF</code> 并不远小于 <code>C_eq = 100 pF</code>。
+  <strong>用近似式时要检查 <code>C_3 ≪ C_1、C_2</code> 是否成立</strong>；否则老老实实算串联。
+</p>
+
+<h3>例题 3：石英晶体的两个谐振频率与 Q</h3>
+
+<p>
+  <strong>题</strong>：某 10 MHz 晶体参数为 <code>L_q = 12.67 mH、C_q = 0.02 pF、C_0 = 5 pF、R_q = 10 Ω</code>。
+  求 ① <code>f_s</code>；② <code>f_p</code>；③ 相对间隔 <code>(f_p−f_s)/f_s</code>；④ <code>Q</code>。
+</p>
+
+<p><strong>解①</strong>：</p>
+<div class="math">L_qC_q = 12.67×10⁻³ × 0.02×10⁻¹² = 2.534×10⁻¹⁶</div>
+<div class="math">f_s = 1/(2π√(2.534×10⁻¹⁶)) = 1/(2π × 1.592×10⁻⁸) ≈ 10.00 MHz</div>
+
+<p><strong>解②</strong>：</p>
+<div class="math">f_p = f_s√(1 + C_q/C_0) = 10.00 × √(1 + 0.02/5) = 10.00 × √1.004</div>
+<div class="math">f_p ≈ 10.00 × 1.0020 = 10.020 MHz</div>
+
+<p><strong>解③</strong>：</p>
+<div class="math">(f_p − f_s)/f_s = 20 kHz/10 MHz = 2×10⁻³ = 0.2%</div>
+
+<p><strong>解④</strong>：</p>
+<div class="math">Q = 1/(ω_sC_qR_q) = 1/(2π×10⁷ × 0.02×10⁻¹² × 10) = 1/(1.257×10⁻⁵) ≈ 7.96×10⁴</div>
+
+<p>
+  <strong>结论</strong>：晶体的 Q 约 8 万，比同频率的 LC 回路（Q≈200）高 400 倍；
+  两个谐振频率只差 0.2%，感性区极窄，所以振荡频率被牢牢锁定在 10 MHz 附近。
+  这也解释了为什么晶振不需要外部精密电阻电容来"定频率"。
+</p>
+
+<h3>例题 4：三点式相位条件判断</h3>
+
+<p>
+  <strong>题</strong>：下列四组"集电极—发射极、基极—发射极、集电极—基极"之间的元件，
+  判断哪些能满足三点式的相位条件。
+</p>
+
+<table>
+  <tr><th>组别</th><th>c—e</th><th>b—e</th><th>c—b</th><th>是否满足</th></tr>
+  <tr><td>(a)</td><td>L₁</td><td>C₂</td><td>C₃</td><td>？</td></tr>
+  <tr><td>(b)</td><td>C₁</td><td>C₂</td><td>L</td><td>？</td></tr>
+  <tr><td>(c)</td><td>L₁</td><td>L₂</td><td>C</td><td>？</td></tr>
+  <tr><td>(d)</td><td>C₁</td><td>L₂</td><td>L₃</td><td>？</td></tr>
+</table>
+
+<p><strong>解</strong>：用"射同基反"判据，看与发射极相连的两个元件（c—e 与 b—e）是否同性质。</p>
+<ul>
+  <li><strong>(a)</strong> c—e 是 L、b—e 是 C，<strong>不同性质</strong> → 不满足；</li>
+  <li><strong>(b)</strong> c—e 是 C、b—e 是 C，同性质；c—b 是 L，异性质 → <strong>满足</strong>（考毕兹）；</li>
+  <li><strong>(c)</strong> c—e 是 L、b—e 是 L，同性质；c—b 是 C，异性质 → <strong>满足</strong>（哈特莱）；</li>
+  <li><strong>(d)</strong> c—e 是 C、b—e 是 L，不同性质 → 不满足。</li>
+</ul>
+
+<p>
+  <strong>复核 (b)</strong>：设集电极电压 <code>v_c</code>、基极 <code>v_b</code>、抽头（发射极）<code>v_e</code>。
+  两只电容串联分压给出
+</p>
+<div class="math">v_e = (C_1v_c + C_2v_b)/(C_1 + C_2)</div>
+<div class="math">v_be = v_b − v_e = C_1(v_b − v_c)/(C_1 + C_2)</div>
+
+<p>
+  共射放大使 <code>v_c</code> 与 <code>v_b</code> 反相，所以 <code>v_b − v_c</code> 与 <code>v_b</code> 同相，
+  <code>v_be</code> 加强原始扰动——正反馈成立。这也说明判据里的"同性质"不是巧合：
+  只有两只电容（或两只电感）同性质，分压式才会出现 <code>v_b − v_c</code> 这种"差值"结构。
+</p>
+<p>
+  反过来，若把 <code>L</code> 换成电容、把 <code>C_2</code> 换成电感（即 (d) 组），
+  与发射极相连的两只性质不同，分压关系不再给出所需的差值极性，电路不振。
+</p>
+
+<div class="tip">
+  <span class="tip-label">考场上的稳妥做法</span>
+  判据"射同基反"是经过严格推导的结论，直接套用即可，不要在考场上重新推一遍相位。
+  推导一次理解来源，答题时用判据，既快又不漏。
+</div>
+
+<h2>七、易错点与速查表</h2>
+
+<h3>七个高频错误</h3>
+<ol>
+  <li><strong>把 <code>C_1、C_2</code> 串联电容算成并联</strong>。
+      公式是 <code>C_1C_2/(C_1+C_2)</code>，结果一定小于其中较小的那只。</li>
+  <li><strong>三点式判据记反</strong>。是"射同基反"，不是"射反基同"。
+      与发射极相连的两只必须同性质。</li>
+  <li><strong>电容三点式的反馈系数写成 <code>C_2/C_1</code></strong>。正确是 <code>C_1/C_2</code>，
+      电容越大分压越小。</li>
+  <li><strong>电感三点式漏掉互感 <code>2M</code></strong>。题目给了 <code>M</code> 就必须加；
+      没给才按零处理。</li>
+  <li><strong>把晶体的 <code>f_s、f_p</code> 搞反</strong>。<code>f_s</code> 是串联谐振（阻抗最小），
+      <code>f_p</code> 是并联谐振（阻抗最大），且 <code>f_p &gt; f_s</code>。</li>
+  <li><strong>认为晶体在任何频率都呈感性</strong>。只在 <code>f_s～f_p</code> 之间呈感性，
+      其余频段呈容性。</li>
+  <li><strong>用克拉泼近似式不检查条件</strong>。<code>C_3</code> 不够小时误差可达百分之几，
+      必须用完整串联公式。</li>
+</ol>
+
+<h3>速查表</h3>
+
+<table>
+  <tr><th>项目</th><th>公式 / 结论</th><th>要点</th></tr>
+  <tr><td>LC 谐振频率</td><td>f₀ = 1/(2π√(LC))</td><td>与 r 无关（r 小）</td></tr>
+  <tr><td>品质因数</td><td>Q = ω₀L/r = 1/(ω₀Cr)</td><td>Q = (1/r)√(L/C)</td></tr>
+  <tr><td>谐振阻抗</td><td>R_p = Q²r = Qω₀L</td><td>谐振时阻抗最大</td></tr>
+  <tr><td>通频带</td><td>BW = f₀/Q</td><td>Q 越大越窄</td></tr>
+  <tr><td>电感三点式</td><td>f₀ = 1/(2π√((L₁+L₂+2M)C))</td><td>抽头接发射极</td></tr>
+  <tr><td>电容三点式</td><td>f₀ = 1/(2π√(L·C₁C₂/(C₁+C₂)))</td><td>F ≈ C₁/C₂</td></tr>
+  <tr><td>克拉泼</td><td>f₀ ≈ 1/(2π√(LC₃))</td><td>需 C₃ ≪ C₁、C₂</td></tr>
+  <tr><td>三点式判据</td><td>射同基反</td><td>与 e 相连的两只同性质</td></tr>
+  <tr><td>晶体串联谐振</td><td>f_s = 1/(2π√(L_qC_q))</td><td>阻抗最小，相当于短路</td></tr>
+  <tr><td>晶体并联谐振</td><td>f_p = f_s√(1+C_q/C₀)</td><td>阻抗最大，f_p 略大于 f_s</td></tr>
+  <tr><td>晶体 Q</td><td>Q = ω_sL_q/R_q</td><td>10⁴～10⁶</td></tr>
+</table>
+
+<h2>八、Quiz — 考研风格题</h2>
+
+<p>4 道题覆盖 LC 谐振、三点式频率与晶体特性。先算再点。</p>
+
+<div class="quiz" id="quiz-container"></div>
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>LC 并联回路的三组数</strong>：<code>f_0 = 1/(2π√(LC))</code>、
+      <code>Q = ω_0L/r</code>、<code>R_p = Q²r</code>；带宽 <code>BW = f_0/Q</code>。</li>
+  <li><strong>Q 是选频与稳频的共同来源</strong>：Q 越高，曲线越尖、相位越陡、
+      频率对参数变化越不敏感。</li>
+  <li><strong>变压器反馈式</strong>：共射 180° + 变压器倒相 180° = 360°；
+      同名端接反就不振，对调次级即可。</li>
+  <li><strong>电感三点式</strong>：<code>f_0 = 1/(2π√((L_1+L_2+2M)C))</code>，
+      抽头接发射极，<code>F ≈ L_2/(L_1+L_2+2M)</code>。</li>
+  <li><strong>电容三点式</strong>：<code>f_0 = 1/(2π√(L·C_1C_2/(C_1+C_2)))</code>，
+      <code>F ≈ C_1/C_2</code>；克拉泼串入小 <code>C_3</code> 后
+      <code>f_0 ≈ 1/(2π√(LC_3))</code>，稳定度显著提高。</li>
+  <li><strong>三点式判据"射同基反"</strong>：与发射极相连的两只电抗同性质，
+      剩下那只异性质；满足则相位条件成立。</li>
+  <li><strong>石英晶体</strong>：<code>f_s</code> 处阻抗最小、<code>f_p</code> 处阻抗最大，
+      两者只差约 <code>C_q/(2C_0)</code>；<code>f_s～f_p</code> 之间呈感性，
+      Q 达 10⁴～10⁶，稳定度 10⁻⁶～10⁻⁹。</li>
+</ol>
+
+<p>
+  到这里，"波形产生"这条线就走完了：RC 桥式负责低频可调，LC 三点式负责射频，
+  晶体负责高稳定度时钟。三种电路的判据完全一致——<strong>相位平衡 + 幅度平衡</strong>，
+  变的只是选频网络。把这套判据用熟，比记住十个电路图更有用。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第八章「波形的产生和信号的转换」，
+  §8.1 振荡条件、§8.2 LC 正弦波振荡电路、§8.3 石英晶体正弦波振荡电路。
+</div>
+
+<div class="ask-agent">
+  三点式的抽头到底接哪一端？晶体的 <code>f_s、f_p</code> 总记混？<br>
+  <strong>直接问我</strong>——把你的 L、C 值和目标频率发我，一起把回路参数算到能起振。
+</div>
+
+<div class="footer-nav">
+  <a href="./0028-rc-bridge-oscillator.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0029 / 0035</span>
+  <a href="./0030-voltage-comparators.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "LC 并联回路取 L = 100 μH、C = 100 pF，谐振频率约为？",
+    options: [
+      "≈ 159 kHz",
+      "≈ 1.59 MHz",
+      "≈ 15.9 MHz",
+      "≈ 159 MHz"
+    ],
+    correct: 1,
+    explain: "ω₀ = 1/√(LC) = 1/√(100μ × 100p) = 1/√(10⁻¹⁴) = 10⁷ rad/s；f₀ = 10⁷/(2π) ≈ 1.5915 MHz。数量级判断：√(LC) = 10⁻⁷ s，倒数就是 10⁷ rad/s。"
+  },
+  {
+    q: "电容三点式中 L = 100 μH、C₁ = C₂ = 100 pF，振荡频率约为？",
+    options: [
+      "≈ 1.59 MHz",
+      "≈ 2.25 MHz",
+      "≈ 3.18 MHz",
+      "≈ 4.50 MHz"
+    ],
+    correct: 1,
+    explain: "串联等效电容 C = C₁C₂/(C₁+C₂) = 100×100/200 = 50 pF；f₀ = 1/(2π√(100μ × 50p)) = 1/(2π × 7.071×10⁻⁸) ≈ 2.25 MHz。若误把两只电容相加（200 pF）会得约 1.13 MHz，误按单只 100 pF 会得 1.59 MHz。"
+  },
+  {
+    q: "关于石英晶体的 f_s 与 f_p，下列哪项正确？",
+    options: [
+      "f_s 是并联谐振，阻抗最大",
+      "f_p 略小于 f_s，两者之间呈容性",
+      "f_p 略大于 f_s，两者之间呈感性",
+      "f_s 与 f_p 完全相等，晶体始终呈纯阻"
+    ],
+    correct: 2,
+    explain: "f_s = 1/(2π√(L_qC_q)) 是串联谐振，阻抗最小，相当于短路；f_p = f_s√(1+C_q/C₀) 是并联谐振，阻抗最大。因 C_q ≪ C₀，f_p 只比 f_s 高约 C_q/(2C₀)（典型 0.2%），两者之间晶体呈感性，可作为电感接入三点式电路。"
+  },
+  {
+    q: "某三点式电路中，集电极—发射极之间为 L₁，基极—发射极之间为 L₂，集电极—基极之间为 C。它能否满足相位条件？",
+    options: [
+      "能，这是电感三点式（哈特莱）",
+      "能，这是电容三点式（考毕兹）",
+      "不能，因为与发射极相连的两只性质不同",
+      "不能，因为缺少变压器"
+    ],
+    correct: 0,
+    explain: "与发射极相连的是 L₁ 与 L₂，两者同为电感（同性质）；不与发射极相连的 C 为电容（异性质），符合「射同基反」，因此相位条件成立，这就是电感三点式（哈特莱）。若 c—e 与 b—e 一为电感一为电容，则不满足。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！RC、LC、晶体三条选频路线都打通了。' :
+        right >= 3 ? '👍 基本掌握。重点回看三点式判据与晶体 f_s/f_p 的区别。' :
+        '📚 先把 f₀ = 1/(2π√(LC)) 和"射同基反"各写三遍，再做一遍例题。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

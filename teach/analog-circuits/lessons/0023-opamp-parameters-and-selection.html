@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0023 — 集成运放的主要参数、种类与选用</title>
+<link rel="stylesheet" href="../assets/teach.css">
+<style>
+/* 720 宽视图下的字号补偿，保证手机端可读 */
+.schematic text { font-size: 21px; }
+.schematic .lbl { font-size: 18px; }
+</style>
+</head>
+<body>
+
+<h1>Lesson 0023 — 集成运放的主要参数、种类与选用</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0023 / 0023 · 约 55 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  需要 <a href="./0019-opamp-basics.html">Lesson 0019（运放基础与理想模型）</a>、
+  <a href="./0020-opamp-applications-and-oscillators.html">Lesson 0020（运放应用）</a>，
+  以及 <a href="./0022-differential-amplifier-configurations.html">Lesson 0022（差分电路与 K_CMR）</a>。
+  前两课拆开了运放内部，这一课把运放重新装回黑盒，<strong>逐项说明每个参数会给你带来多大误差</strong>。
+</div>
+
+<p>
+  理想运放只有五条假设，实际运放每一条都做不到。工程上所谓“会选运放”，
+  不是背一张型号表，而是<strong>拿到一个指标要求，能判断哪一项非理想因素会先咬你</strong>：
+  直流精度看 <code>U_IO、I_B、K_CMR</code>，交流速度看 <code>GBW、SR</code>，
+  带载能力看 <code>r_o</code> 和输出电流，高阻源看 <code>r_id</code> 和 <code>I_B</code>。
+</p>
+<p>
+  这一课把参数分成三组：<strong>直流精度、交流速度、极限保护</strong>。
+  每组都配一道带数字的例题，最后给出六类运放的选用场景。
+</p>
+
+<h2>一、理想运放的五项假设</h2>
+
+<p>
+  Lesson 0019 已经用过这五条，这里集中列出来，并说明每条假设在什么场合会失效。
+</p>
+
+<table>
+  <tr><th>假设</th><th>理想值</th><th>理想模型下的结论</th><th>失效后的后果</th></tr>
+  <tr><td>开环增益</td><td>A_od → ∞</td><td>闭环增益只由反馈网络决定；虚短</td><td>闭环增益有相对误差 1/(1+A_od F)</td></tr>
+  <tr><td>输入电阻</td><td>r_id → ∞</td><td>输入电流为零；虚断</td><td>高阻信号源被分压，增益下降</td></tr>
+  <tr><td>输出电阻</td><td>r_o → 0</td><td>输出电压不受负载影响</td><td>带载后增益下降、输出摆幅减小</td></tr>
+  <tr><td>带宽</td><td>BW → ∞</td><td>任何频率增益相同、无相移</td><td>高频增益滚降；转换速率限制大信号</td></tr>
+  <tr><td>失调与漂移</td><td>U_IO = 0，I_B = 0</td><td>零输入给出零输出</td><td>输出直流误差，随温度漂移</td></tr>
+</table>
+
+<p>
+  理想模型的方便之处在于：只要负反馈存在，就能写 <code>u+ = u−</code>、<code>i+ = i− = 0</code>，
+  剩下的全靠外部元件。实际运放的所有误差，都可以看成对这五条假设的“偏离量”。
+</p>
+
+<div class="tip">
+  <span class="tip-label">先判断“哪一项先失效”</span>
+  直流、低频、高阻源：先看 <code>U_IO、I_B、r_id</code>。<br>
+  高频、大信号：先看 <code>SR</code>，再看 <code>GBW</code>。<br>
+  带容性/低阻负载：先看 <code>r_o</code>、输出电流和稳定性。<br>
+  这一步判断对了，选型就完成了一半。
+</div>
+
+<h2>二、实际运放的等效电路与直流参数</h2>
+
+<p>
+  实际运放的低频小信号模型可以画成“一个输入电阻 + 一个受控电压源 + 一个输出电阻”：
+  输入端口之间是 <code>r_id</code>，输出端口是一个幅值为 <code>A_od u_id</code> 的受控源串联 <code>r_o</code>。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" width="100%" height="auto" role="img" aria-label="实际运放低频等效电路：输入端为 r_id，输出端为受控电压源 A_od u_id 串联输出电阻 r_o">
+    <circle cx="70" cy="110" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="54" y="100" text-anchor="end" class="lbl">u_+</text>
+    <line class="wire" x1="70" y1="110" x2="130" y2="110"/>
+    <line class="wire" x1="130" y1="110" x2="130" y2="120"/>
+    <rect class="area" x="117" y="120" width="26" height="80" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="158" y="166" class="lbl">r_id</text>
+    <line class="wire" x1="130" y1="200" x2="130" y2="210"/>
+    <line class="wire" x1="130" y1="210" x2="70" y2="210"/>
+    <circle cx="70" cy="210" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="54" y="200" text-anchor="end" class="lbl">u_−</text>
+
+    <text x="100" y="250" text-anchor="middle" class="lbl">u_id = u_+ − u_−</text>
+
+    <circle cx="360" cy="160" r="36" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="360" y="116" text-anchor="middle" class="lbl">+</text>
+    <text x="360" y="210" text-anchor="middle" class="lbl">−</text>
+    <text x="360" y="152" text-anchor="middle" class="lbl">A_od</text>
+    <text x="360" y="178" text-anchor="middle" class="lbl">u_id</text>
+    <line class="wire" x1="360" y1="124" x2="360" y2="80"/>
+    <line class="wire" x1="360" y1="80" x2="520" y2="80"/>
+    <line class="wire" x1="360" y1="196" x2="360" y2="240"/>
+    <line class="wire" x1="360" y1="240" x2="520" y2="240"/>
+
+    <rect class="area" x="506" y="120" width="28" height="80" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="520" y1="80" x2="520" y2="120"/>
+    <line class="wire" x1="520" y1="200" x2="520" y2="240"/>
+    <text x="550" y="166" class="lbl">r_o</text>
+
+    <line class="wire" x1="520" y1="80" x2="620" y2="80"/>
+    <line class="wire" x1="520" y1="240" x2="620" y2="240"/>
+    <circle cx="630" cy="80" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <circle cx="630" cy="240" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="648" y="86" class="lbl">+</text>
+    <text x="648" y="246" class="lbl">−</text>
+    <text x="660" y="166" text-anchor="middle" class="lbl">u_o</text>
+
+    <text x="360" y="300" text-anchor="middle" class="lbl">低频小信号模型：A_od 有限、r_id 有限、r_o 不为零</text>
+    <text x="360" y="326" text-anchor="middle" class="lbl">失调电压 U_IO 与偏置电流 I_B 另外用独立源叠加</text>
+  </svg>
+</div>
+
+<h3>2.1 开环增益 A_od</h3>
+
+<p>
+  <code>A_od</code> 是运放在开环、低频、无负载条件下的差模电压增益，通常用分贝表示：
+  <code>20 lg A_od</code>。通用型约 100 dB（10⁵），精密型可到 120~140 dB。
+  它决定闭环增益的精度：
+</p>
+
+<div class="math">A_f = A_od/(1 + A_od F)　⇒　相对误差 ≈ 1/(A_od F)</div>
+
+<p>
+  其中 <code>F</code> 是反馈系数。同相比例电路 <code>F = R_1/(R_1+R_f)</code>，
+  闭环增益 <code>1/F</code>。若 <code>A_od = 10⁵、F = 0.01</code>（闭环增益 100），
+  相对误差约 0.1%，可以接受；若闭环增益做到 1000，误差就到 1%，这时必须换高增益运放。
+</p>
+
+<h3>2.2 输入电阻 r_id 与输出电阻 r_o</h3>
+
+<p>
+  <code>r_id</code> 是差模输入电阻。双极型通用运放约 10⁶ Ω 量级，
+  BiFET 或 CMOS 输入可以到 10⁹~10¹² Ω。它和信号源内阻 <code>R_s</code> 构成分压：
+</p>
+
+<div class="math">u_id = u_s · r_id/(R_s + r_id)</div>
+
+<p>
+  当 <code>R_s = 1 MΩ、r_id = 2 MΩ</code> 时，只有 2/3 的信号进入运放，衰减 33%——
+  这就是高阻源必须选高阻型运放的原因。
+</p>
+
+<p>
+  <code>r_o</code> 是开环输出电阻，通用型约 50~200 Ω。闭环后输出电阻被反馈减小到
+  <code>r_o/(1+A_od F)</code>，通常小于 1 Ω，所以一般场合可以忽略；
+  但在大电流输出或驱动长电缆时，它和输出电流限制会成为主要矛盾。
+</p>
+
+<h3>2.3 共模抑制比 K_CMR</h3>
+
+<p>
+  <code>K_CMR</code> 衡量运放对共模输入的抑制能力。输入端存在共模电压 <code>u_ic</code> 时，
+  输出会多出一项误差：
+</p>
+
+<div class="math">Δu_o = (1 + R_f/R_1) · u_ic / K_CMR</div>
+
+<p>
+  注意前面的系数是<strong>噪声增益</strong> <code>1 + R_f/R_1</code>，不是信号增益。
+  反相放大电路的信号增益是 <code>−R_f/R_1</code>，但共模误差仍按噪声增益放大。
+  通用型 <code>K_CMR</code> 约 90 dB，精密型可到 120 dB 以上。
+</p>
+
+<h3>2.4 输入失调电压 U_IO 与温漂</h3>
+
+<p>
+  <code>U_IO</code> 是为了让输出电压为零，在输入端需要补加的等效直流电压。
+  它来自差分对两管的 <code>U_BE</code> 失配和电阻失配。通用型约 1~10 mV，
+  精密型可以做到 10~50 μV。
+</p>
+
+<p>
+  <code>U_IO</code> 的温漂用 <code>ΔU_IO/ΔT</code> 表示，单位 μV/°C。
+  它比初始失调更难处理：初始失调可以用调零电位器或软件校准消掉，
+  温漂却会随温度实时变化。
+</p>
+
+<h3>2.5 输入偏置电流 I_B 与失调电流 I_IO</h3>
+
+<p>
+  运放输入端并不是真的“断路”，两只输入管的基极（或栅极）需要偏置电流。
+  定义：
+</p>
+
+<div class="math">I_B = (I_B+ + I_B−)/2　　I_IO = |I_B+ − I_B−|</div>
+
+<p>
+  <code>I_B</code> 是两路的平均值，<code>I_IO</code> 是两路之差。双极型输入 <code>I_B</code>
+  约 10~500 nA，<code>I_IO</code> 约几 nA；FET 输入 <code>I_B</code> 可以低到 pA 级。
+  它们流过外部电阻时产生电压，被放大后成为输出误差——这是下一节例题 4 的主角。
+</p>
+
+<h3>2.6 典型参数对照</h3>
+
+<table>
+  <tr><th>参数</th><th>通用型（741 类）</th><th>高阻型（CA3140 类）</th><th>精密型（OP07 类）</th></tr>
+  <tr><td>A_od</td><td>约 100 dB</td><td>约 100 dB</td><td>约 120 dB</td></tr>
+  <tr><td>r_id</td><td>约 2 MΩ</td><td>约 10¹² Ω</td><td>约 2 MΩ</td></tr>
+  <tr><td>r_o</td><td>约 75 Ω</td><td>约 60 Ω</td><td>约 60 Ω</td></tr>
+  <tr><td>K_CMR</td><td>约 90 dB</td><td>约 90 dB</td><td>约 120 dB</td></tr>
+  <tr><td>U_IO</td><td>约 2 mV</td><td>约 5 mV</td><td>约 10 μV</td></tr>
+  <tr><td>I_B</td><td>约 80 nA</td><td>约 10 pA</td><td>约 2 nA</td></tr>
+  <tr><td>GBW</td><td>约 1 MHz</td><td>约 4 MHz</td><td>约 0.6 MHz</td></tr>
+  <tr><td>SR</td><td>约 0.5 V/μs</td><td>约 9 V/μs</td><td>约 0.3 V/μs</td></tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">表里的数怎么用</span>
+  这些是<strong>典型值</strong>，不是保证值。考试给具体数就用具体数；
+  课程设计估算时可以用典型值判断“量级对不对”。真正选型要看数据手册的
+  <strong>最大值/最小值</strong>，并按最坏情况叠加误差。
+</div>
+
+<h2>三、交流参数：带宽、增益带宽积与转换速率</h2>
+
+<p>
+  运放的开环增益随频率下降，主极点之后近似以 −20 dB/十倍频滚降。
+  描述这一段的两个关键量是<strong>开环带宽 f_H</strong> 和<strong>增益带宽积 GBW</strong>。
+</p>
+
+<h3>3.1 开环带宽与增益带宽积</h3>
+
+<p>
+  <code>f_H</code> 是开环增益比直流值下降 3 dB 的频率，通用型只有几赫兹到十几赫兹。
+  在主极点之后，增益与频率的乘积近似为常数：
+</p>
+
+<div class="math">GBW = A_od · f_H ≈ A_f · f_BW</div>
+
+<p>
+  其中 <code>A_f</code> 是闭环增益，<code>f_BW</code> 是闭环带宽。
+  所以闭环增益越大，带宽越窄——这是负反馈用带宽换增益的直接结果。
+  例：<code>GBW = 1 MHz，A_f = 100</code>，则 <code>f_BW = 10 kHz</code>。
+</p>
+
+<h3>3.2 转换速率 SR 与全功率带宽</h3>
+
+<p>
+  <code>SR</code>（slew rate）是输出电压的最大变化速率，单位 V/μs。
+  它由运放内部对补偿电容的充电电流决定，是一个<strong>大信号</strong>限制，
+  与 <code>GBW</code> 这种小信号限制是两回事。
+</p>
+
+<p>
+  设输出为正弦 <code>u_o = U_om sin(2πft)</code>，其最大斜率为：
+</p>
+
+<div class="math">du_o/dt|max = 2πf U_om</div>
+
+<p>
+  要不失真，必须满足 <code>2πf U_om ≤ SR</code>。由此得到<strong>全功率带宽</strong>：
+</p>
+
+<div class="math">f_p = SR/(2πU_om)</div>
+
+<p>
+  注意 <code>f_p</code> 与输出幅度成反比：幅度越大，允许的最高频率越低。
+  这就是为什么运放输出大信号时，频率一高就变成三角波——斜率被 <code>SR</code> 卡死了。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 460" width="100%" height="auto" role="img" aria-label="转换速率造成的失真：上排小信号时输出跟随正弦，下排高频大信号时输出斜率不足，变成三角波">
+    <text x="80" y="34" class="lbl">小信号 / 低频：输出跟得上，仍是正弦</text>
+    <line class="wire thin" x1="80" y1="120" x2="660" y2="120"/>
+    <path d="M80,120 Q110,50 140,120 T200,120 T260,120 T320,120 T380,120 T440,120 T500,120 T560,120 T620,120" fill="none" style="stroke:var(--accent);stroke-dasharray:6 4;stroke-width:2"/>
+    <path class="wire" d="M83,120 Q113,50 143,120 T203,120 T263,120 T323,120 T383,120 T443,120 T503,120 T563,120 T623,120" style="stroke-width:3"/>
+    <text x="80" y="222" class="lbl" style="fill:var(--accent)">理想</text>
+    <text x="140" y="222" class="lbl">实际</text>
+
+    <text x="80" y="244" class="lbl">高频 / 大信号：斜率被 SR 卡住，输出变三角波（实线斜率上限 = SR）</text>
+    <line class="wire thin" x1="80" y1="330" x2="660" y2="330"/>
+    <path d="M80,330 Q110,260 140,330 T200,330 T260,330 T320,330 T380,330 T440,330 T500,330 T560,330 T620,330" fill="none" style="stroke:var(--accent);stroke-dasharray:6 4;stroke-width:2"/>
+    <path class="wire" d="M80,365 L125,295 L170,365 L215,295 L260,365 L305,295 L350,365 L395,295 L440,365 L485,295 L530,365 L575,295 L620,365" style="stroke-width:3"/>
+
+    <line class="wire thin" x1="80" y1="390" x2="660" y2="390" style="stroke:var(--border)"/>
+    <text x="80" y="416" class="lbl">判据：2πf·U_om ≤ SR　⇒　f_p = SR/(2πU_om)</text>
+    <text x="80" y="444" class="lbl">幅度越大，f_p 越低；SR 不足时波形先变成三角波</text>
+  </svg>
+</div>
+
+<h3>例题 1：由 SR 求最高不失真频率</h3>
+
+<p>
+  已知运放 <code>SR = 0.5 V/μs</code>，要求输出幅度 <code>U_om = 10 V</code>。
+  求最高不失真频率；若强行输出 20 kHz，需要多大的 SR？
+</p>
+
+<p><strong>第一步：全功率带宽</strong></p>
+<div class="math">f_p = SR/(2πU_om) = 0.5 × 10⁶ / (2π × 10) ≈ 7.96 kHz</div>
+
+<p><strong>第二步：20 kHz 所需的 SR</strong></p>
+<div class="math">SR_req = 2πf U_om = 2π × 20 × 10³ × 10 ≈ 1.257 × 10⁶ V/s ≈ 1.26 V/μs</div>
+
+<p>
+  1.26 V/μs 大于 0.5 V/μs，所以 20 kHz、10 V 的输出一定会失真，波形顶部被“削”成斜坡。
+  两条出路：把幅度降到 4 V 以下（<code>f_p = 0.5e6/(2π×4) ≈ 19.9 kHz</code>），
+  或换 <code>SR ≥ 1.26 V/μs</code> 的运放。
+</p>
+
+<p>
+  物理意义：<code>SR</code> 限制的是电压的<strong>变化速度</strong>，不是幅度。
+  频率越高、幅度越大，要求的斜率越大；当要求的斜率超过 <code>SR</code>，
+  输出就跟不上输入，正弦的陡峭部分被拉直，形成三角波。
+</p>
+
+<h3>例题 2：GBW 与 SR，谁先限制</h3>
+
+<p>
+  已知 <code>GBW = 1 MHz，SR = 0.5 V/μs</code>，闭环增益 <code>A_f = 100</code>。
+  分别求输出幅度 <code>U_om = 10 V</code> 和 <code>U_om = 1 V</code> 时的最高不失真频率。
+</p>
+
+<p><strong>第一步：小信号带宽</strong></p>
+<div class="math">f_BW = GBW/A_f = 1 MHz/100 = 10 kHz</div>
+
+<p><strong>第二步：两种幅度下的全功率带宽</strong></p>
+<div class="math">U_om = 10 V：f_p = 0.5 × 10⁶/(2π × 10) ≈ 7.96 kHz</div>
+<div class="math">U_om = 1 V：f_p = 0.5 × 10⁶/(2π × 1) ≈ 79.6 kHz</div>
+
+<p><strong>第三步：取两者中较小的</strong></p>
+<div class="math">U_om = 10 V：f_max = min(10 kHz, 7.96 kHz) = 7.96 kHz（SR 先限制）</div>
+<div class="math">U_om = 1 V：f_max = min(10 kHz, 79.6 kHz) = 10 kHz（带宽先限制）</div>
+
+<p>
+  这个例子说明：<strong>小信号看 GBW，大信号看 SR</strong>。
+  同一只运放，输出 1 V 时能用到 10 kHz，输出 10 V 时只能用到 7.96 kHz。
+  若要在 10 V 下做到 20 kHz，<code>GBW</code> 要大于 <code>100 × 20 kHz = 2 MHz</code>，
+  <code>SR</code> 要大于 1.26 V/μs，两个条件必须同时满足。
+</p>
+
+<div class="tip">
+  <span class="tip-label">为什么 SR 不足时是三角波而不是“幅度变小”</span>
+  运放的输入级误差信号会一直增大，直到输出斜率用满 <code>SR</code>。
+  输出只能以最大斜率追赶输入，于是波形变成直线段拼接的三角波。
+  这不是线性失真，而是<strong>非线性失真</strong>，用频率补偿也修不好，只能换更快的运放或降低幅度。
+</div>
+
+<h2>四、直流误差：U_IO、I_B 与温漂</h2>
+
+<p>
+  直流精度问题可以统一看成“在输入端叠加了几个小直流源，然后被噪声增益放大”。
+  最常见的三个源是 <code>U_IO</code>、<code>I_B</code> 和 <code>I_IO</code>。
+</p>
+
+<h3>4.1 失调电压造成的输出误差</h3>
+
+<p>
+  把 <code>U_IO</code> 等效成同相输入端的一个直流源，它会被噪声增益放大：
+</p>
+
+<div class="math">Δu_o = (1 + R_f/R_1) · U_IO</div>
+
+<p>
+  这个式子对反相、同相组态都成立，因为 <code>U_IO</code> 位于两个输入端之间，
+  放大它的是噪声增益，而不是信号增益。
+</p>
+
+<h3>例题 3：U_IO 与温漂的输出误差</h3>
+
+<p>
+  某同相放大电路闭环增益 <code>A_f = 100</code>，运放 <code>U_IO = 5 mV</code>，
+  温漂 <code>ΔU_IO/ΔT = 10 μV/°C</code>。求室温下的输出直流误差；
+  若温度升高 30°C，再求漂移带来的附加误差。
+</p>
+
+<p><strong>第一步：初始失调</strong></p>
+<div class="math">Δu_o = 100 × 5 mV = 500 mV = 0.5 V</div>
+
+<p><strong>第二步：温漂</strong></p>
+<div class="math">ΔU_IO = 10 μV/°C × 30°C = 300 μV = 0.3 mV</div>
+<div class="math">Δu_o,drift = 100 × 0.3 mV = 30 mV</div>
+
+<p><strong>第三步：总量</strong></p>
+<div class="math">Δu_o,total ≈ 500 mV + 30 mV = 530 mV</div>
+
+<p>
+  0.5 V 的初始失调可以用隔直电容或调零电路去掉，但 30 mV 的漂移去不掉——
+  它随温度缓慢变化，落在信号频带内。若信号本身只有几十毫伏，这个漂移就会淹没信号。
+  所以精密直流放大要同时看 <code>U_IO</code> 和<strong>温漂</strong>，
+  后者往往才是选型的决定因素。
+</p>
+
+<div class="tip">
+  <span class="tip-label">失调误差能不能用调零消掉</span>
+  能消掉<strong>初始值</strong>，消不掉<strong>温漂</strong>和<strong>长时间漂移</strong>。
+  调零电位器还会引入额外噪声和漂移。高精度场合优先选低漂移运放（如 OP07 类），
+  或采用斩波稳零/自动调零结构，而不是一味依赖调零。
+</div>
+
+<h3>4.2 偏置电流造成的输出误差</h3>
+
+<p>
+  偏置电流流过外部电阻产生电压，这个电压再被噪声增益放大。
+  反相放大电路中，反相端看到的直流电阻是 <code>R_1 ∥ R_f</code>；
+  同相端如果没有平衡电阻，<code>R_+ = 0</code>。于是：
+</p>
+
+<div class="math">Δu_o ≈ (1 + R_f/R_1) · [I_B+ R_+ − I_B− (R_1 ∥ R_f)]</div>
+
+<p>
+  若在同相端接一个<strong>平衡电阻</strong> <code>R_2 = R_1 ∥ R_f</code>，两路的 <code>I_B</code>
+  产生的电压相互抵消，只剩下失调电流 <code>I_IO</code> 的贡献：
+</p>
+
+<div class="math">Δu_o ≈ (1 + R_f/R_1) · I_IO · R_2</div>
+
+<h3>例题 4：I_B 与平衡电阻</h3>
+
+<p>
+  反相放大电路 <code>R_1 = 10 kΩ，R_f = 100 kΩ</code>，运放
+  <code>I_B = 80 nA，I_IO = 20 nA</code>。分别求不接平衡电阻和接
+  <code>R_2 = 9.1 kΩ</code> 时的输出直流误差。
+</p>
+
+<p><strong>第一步：噪声增益</strong></p>
+<div class="math">1 + R_f/R_1 = 1 + 100/10 = 11</div>
+
+<p><strong>第二步：不接平衡电阻</strong>。同相端 <code>R_+ = 0</code>，只有反相端的
+<code>I_B</code> 流过 <code>R_1 ∥ R_f</code>：</p>
+<div class="math">R_1 ∥ R_f = 10 kΩ × 100 kΩ / 110 kΩ ≈ 9.09 kΩ</div>
+<div class="math">Δu_o = 11 × 80 nA × 9.09 kΩ = 11 × 0.727 mV ≈ 8.0 mV</div>
+
+<p><strong>第三步：接平衡电阻</strong>。两路 <code>I_B</code> 抵消，只剩 <code>I_IO</code>：</p>
+<div class="math">Δu_o = 11 × 20 nA × 9.1 kΩ = 11 × 0.182 mV ≈ 2.0 mV</div>
+
+<p>
+  误差从 8.0 mV 降到 2.0 mV，改善 4 倍。改善的倍数约等于
+  <code>I_B/I_IO = 80/20 = 4</code>。
+  注意平衡电阻并不能把误差降到零：<code>I_IO</code> 仍然存在，
+  而且 <code>R_2</code> 会引入额外热噪声。是否加平衡电阻，要看 <code>I_B</code> 与 <code>I_IO</code> 的比值，
+  以及电阻热噪声是否已经占主导。
+</p>
+
+<div class="tip">
+  <span class="tip-label">同相电路怎么办</span>
+  同相放大电路的同相端直接接信号源，<code>R_+</code> 由信号源内阻决定，不能随便加平衡电阻。
+  这时要选 <code>I_B</code> 小的运放，或让信号源内阻尽量低。
+  下一节的例题 5 就是这种情况的极端版本。
+</div>
+
+<h2>五、运放的种类与选用</h2>
+
+<h3>5.1 六类常见运放</h3>
+
+<table>
+  <tr><th>类型</th><th>代表型号</th><th>突出指标</th><th>典型用途</th></tr>
+  <tr>
+    <td>通用型</td><td>F007（μA741 同类）、LM324</td>
+    <td>A_od 约 100 dB，GBW 约 1 MHz，SR 约 0.5 V/μs</td>
+    <td>教学、低速低频、一般放大</td>
+  </tr>
+  <tr>
+    <td>高阻型</td><td>F55x、CA3140</td>
+    <td>r_id 10⁹~10¹² Ω，I_B pA 级</td>
+    <td>高内阻传感器、pH 电极、电荷放大</td>
+  </tr>
+  <tr>
+    <td>高速型</td><td>F05、LM318</td>
+    <td>SR 几十~几百 V/μs，GBW 十几~几十 MHz</td>
+    <td>视频、脉冲、快速 AD 驱动</td>
+  </tr>
+  <tr>
+    <td>低功耗型</td><td>F010、ICL7611</td>
+    <td>静态电流 μA~几十 μA，可用单电源</td>
+    <td>便携仪表、电池供电</td>
+  </tr>
+  <tr>
+    <td>高压型</td><td>F153、LM143</td>
+    <td>电源 ±30~±40 V，输出摆幅大</td>
+    <td>高压驱动、压电陶瓷</td>
+  </tr>
+  <tr>
+    <td>大功率型</td><td>F340、LM12</td>
+    <td>输出电流数百 mA~数 A，带短路保护</td>
+    <td>电机、音频、功率驱动</td>
+  </tr>
+</table>
+
+<p>
+  除了这六类，还有<strong>精密型</strong>（低 <code>U_IO</code>、低温漂、高 <code>K_CMR</code>，
+  如 OP07、OP27 一类）和<strong>轨到轨型</strong>（输入输出接近电源轨，适合单电源低压系统）。
+  考试大纲通常按前六类划分，但选型时要记得这两类。
+</p>
+
+<h3>5.2 选用原则</h3>
+
+<p>
+  选型不是“指标越高越好”，而是在四个维度之间取平衡：
+</p>
+
+<ol>
+  <li><strong>精度</strong>：直流小信号优先看 <code>U_IO</code>、温漂、<code>K_CMR</code>、<code>A_od</code>；
+      高阻源还要看 <code>I_B</code> 和 <code>r_id</code>。</li>
+  <li><strong>速度</strong>：小信号看 <code>GBW</code>，大信号看 <code>SR</code>；
+      两者要分别核算，不能只查一个。</li>
+  <li><strong>功耗</strong>：电池供电看静态电流 <code>I_Q</code>，必要时牺牲带宽换低功耗。</li>
+  <li><strong>成本与供货</strong>：能用通用型满足就不要上精密型；
+      双运放/四运放封装（如 LM324）能省板面积和成本。</li>
+</ol>
+
+<p>
+  还有几条“一票否决”的边界条件：电源电压范围、输出电流能力、输入共模范围、
+  是否允许输入到电源轨、封装与温度等级。这些不满足，其他指标再好也不能用。
+</p>
+
+<h3>例题 5：高阻信号源怎么选</h3>
+
+<p>
+  某传感器内阻 <code>R_s = 1 MΩ</code>，输出信号为直流缓变信号，要求放大 100 倍。
+  现有通用型运放（<code>I_B = 80 nA，r_id = 2 MΩ</code>）和高阻型运放
+  （<code>I_B = 10 pA，r_id = 1.5 × 10¹² Ω</code>）。分别估算输入侧的误差。
+</p>
+
+<p><strong>第一步：通用型的偏置电流误差</strong></p>
+<div class="math">U_error = I_B × R_s = 80 nA × 1 MΩ = 80 mV</div>
+<div class="math">Δu_o = 100 × 80 mV = 8 V</div>
+
+<p>
+  8 V 早已超过运放的输出摆幅，电路直接饱和。即使不饱和，80 mV 的输入误差
+  也可能比传感器信号本身还大。
+</p>
+
+<p><strong>第二步：通用型的输入电阻分压</strong></p>
+<div class="math">u_id/u_s = r_id/(R_s + r_id) = 2/(1 + 2) = 0.667</div>
+
+<p>
+  信号先衰减 33%，再放大 100 倍，实际增益只有 66.7，且随温度变化。
+</p>
+
+<p><strong>第三步：高阻型</strong></p>
+<div class="math">U_error = 10 pA × 1 MΩ = 10 μV</div>
+<div class="math">Δu_o = 100 × 10 μV = 1 mV</div>
+<div class="math">u_id/u_s = 1.5 × 10¹²/(10⁶ + 1.5 × 10¹²) ≈ 1 − 6.7 × 10⁻⁷</div>
+
+<p>
+  误差从 8 V 降到 1 mV，输入分压也可以忽略。结论很明确：
+  <strong>高阻源必须选高阻型（低 I_B、高 r_id）运放</strong>，
+  通用型的 <code>U_IO</code> 再低也救不了偏置电流造成的误差。
+</p>
+
+<div class="tip">
+  <span class="tip-label">选型顺序口诀</span>
+  先看<strong>源</strong>（内阻决定 I_B、r_id），再看<strong>信号</strong>（幅度与频率决定 SR、GBW），
+  再看<strong>负载</strong>（电阻/电容决定输出电流与稳定性），最后看<strong>电源与成本</strong>。
+  按这个顺序，九成的选型题都能一步步排除。
+</div>
+
+<h2>六、三种保护电路</h2>
+
+<p>
+  运放很“娇气”：输入电压超过电源轨可能损坏输入级，输出短路可能烧输出级，
+  电源接反则直接报废。工程上常加三种保护。
+</p>
+
+<h3>6.1 输入端保护</h3>
+
+<p>
+  最常见的是在两只输入端之间反并联两只二极管，再各串一个限流电阻。
+  正常工作时两输入端电压差只有毫伏级，二极管都不导通；
+  一旦输入差压超过约 ±0.7 V，其中一只二极管导通，把差压钳住，限流电阻限制电流。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" width="100%" height="auto" role="img" aria-label="运放输入端保护：两个输入端各串限流电阻，两输入端之间反并联两只二极管，把差模输入电压限制在正负0.7伏以内">
+    <polygon points="300,80 300,240 470,160" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="316" y="106" class="lbl">−</text>
+    <text x="316" y="224" class="lbl">+</text>
+
+    <circle cx="60" cy="110" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="44" y="100" text-anchor="end" class="lbl">u_i1</text>
+    <line class="wire" x1="60" y1="110" x2="130" y2="110"/>
+    <rect class="area" x="130" y="96" width="60" height="28" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="160" y="88" text-anchor="middle" class="lbl">R1</text>
+    <line class="wire" x1="190" y1="110" x2="300" y2="110"/>
+
+    <circle cx="60" cy="210" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="44" y="200" text-anchor="end" class="lbl">u_i2</text>
+    <line class="wire" x1="60" y1="210" x2="130" y2="210"/>
+    <rect class="area" x="130" y="196" width="60" height="28" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="160" y="188" text-anchor="middle" class="lbl">R2</text>
+    <line class="wire" x1="190" y1="210" x2="300" y2="210"/>
+
+    <line class="wire" x1="240" y1="110" x2="240" y2="168"/>
+    <polygon points="230,190 250,190 240,168" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="230" y1="168" x2="250" y2="168" stroke-width="3"/>
+    <line class="wire" x1="240" y1="190" x2="240" y2="210"/>
+    <circle class="dot" cx="240" cy="110" r="4"/>
+    <circle class="dot" cx="240" cy="210" r="4"/>
+    <text x="222" y="146" text-anchor="end" class="lbl">D1</text>
+
+    <line class="wire" x1="270" y1="110" x2="270" y2="132"/>
+    <polygon points="260,132 280,132 270,154" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire" x1="260" y1="154" x2="280" y2="154" stroke-width="3"/>
+    <line class="wire" x1="270" y1="154" x2="270" y2="210"/>
+    <circle class="dot" cx="270" cy="110" r="4"/>
+    <circle class="dot" cx="270" cy="210" r="4"/>
+    <text x="288" y="146" class="lbl">D2</text>
+
+    <line class="wire" x1="470" y1="160" x2="590" y2="160"/>
+    <circle cx="600" cy="160" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="616" y="166" class="lbl">u_o</text>
+
+    <text x="360" y="272" text-anchor="middle" class="lbl">R1、R2 限流；D1、D2 反并联，把两输入端之间的差压限制在 ±0.7 V</text>
+    <text x="360" y="302" text-anchor="middle" class="lbl">正常工作时二极管不导通，不影响小信号；故障时先导通，牺牲自己保住运放</text>
+  </svg>
+</div>
+
+<p>
+  这种保护的代价是：二极管的结电容和反向漏电流会并联在输入端，降低输入阻抗、增加噪声。
+  高阻、低噪声场合要选低漏电流二极管，或改用结型场效应管限幅、串联限流电阻加钳位二极管到电源轨。
+</p>
+
+<h3>6.2 输出端保护</h3>
+
+<p>
+  输出端最常见的故障是<strong>短路</strong>和<strong>感性负载反冲</strong>。
+  通用运放内部一般带短路电流限制（如 25 mA），但长时间短路仍会过热。
+  外部保护措施：
+</p>
+
+<ul>
+  <li>输出串一个小电阻（几十欧），限制短路电流，代价是带载能力下降；</li>
+  <li>输出对电源轨各接一只二极管，把感性负载断电时的反冲电压钳到电源轨；</li>
+  <li>驱动大电容时注意稳定性，必要时加隔离电阻或 RC 补偿。</li>
+</ul>
+
+<h3>6.3 电源端保护</h3>
+
+<p>
+  电源接反是实验课最常见的“秒烧”原因。保护措施：
+</p>
+
+<ul>
+  <li>电源入口串一只二极管（或整流桥），防止反接；二极管有 0.7 V 压降，低压系统要用肖特基；</li>
+  <li>电源引脚就近接 0.1 μF 去耦电容，远端再并 10 μF 电解电容；</li>
+  <li>电源轨之间接 TVS 或稳压二极管，抑制浪涌；</li>
+  <li>数字与模拟电源分开走线，单点接地，避免数字噪声串入模拟电源。</li>
+</ul>
+
+<h2>七、易错点与速查表</h2>
+
+<h3>五个高频错误</h3>
+<ol>
+  <li><strong>把 <code>U_IO</code> 乘信号增益</strong>。应乘噪声增益 <code>1+R_f/R_1</code>；
+      反相放大时信号增益是负的，但误差仍按正系数放大。</li>
+  <li><strong>把 <code>GBW</code> 当成“最大工作频率”</strong>。它除以闭环增益才是小信号带宽；
+      大信号还要再受 <code>SR</code> 限制。</li>
+  <li><strong>用 <code>f_p = SR/(2πU_om)</code> 时把 <code>U_om</code> 当成峰峰值</strong>。
+      公式里是<strong>峰值</strong>；若题目给峰峰值，要先除以 2。</li>
+  <li><strong>以为加了平衡电阻就完全没有偏置误差</strong>。只能抵消 <code>I_B</code>，
+      <code>I_IO</code> 仍在；而且平衡电阻会带来热噪声。</li>
+  <li><strong>忽略 <code>r_id</code> 的分压</strong>。高阻源下，<code>r_id</code> 与 <code>R_s</code>
+      分压会让实际增益小于设计值，且随温度变化。</li>
+</ol>
+
+<h3>速查表</h3>
+<table>
+  <tr><th>项目</th><th>公式 / 结论</th><th>备注</th></tr>
+  <tr><td>闭环增益误差</td><td>≈ 1/(A_od F)</td><td>A_od 越大越准</td></tr>
+  <tr><td>输入分压</td><td>r_id/(R_s + r_id)</td><td>高阻源必须看</td></tr>
+  <tr><td>共模误差</td><td>(1+R_f/R_1)·u_ic/K_CMR</td><td>按噪声增益放大</td></tr>
+  <tr><td>失调误差</td><td>(1+R_f/R_1)·U_IO</td><td>温漂另算</td></tr>
+  <tr><td>偏置电流误差</td><td>(1+R_f/R_1)·I_B·(R_1∥R_f)</td><td>平衡电阻后剩 I_IO 项</td></tr>
+  <tr><td>闭环带宽</td><td>f_BW = GBW/A_f</td><td>小信号</td></tr>
+  <tr><td>全功率带宽</td><td>f_p = SR/(2πU_om)</td><td>大信号，U_om 为峰值</td></tr>
+  <tr><td>所需 SR</td><td>2πf U_om</td><td>与幅度、频率成正比</td></tr>
+</table>
+
+<h2>八、Quiz — 考研风格题</h2>
+
+<p>4 道题覆盖 SR、失调误差、GBW 与高阻源选型。计算时注意峰值与峰峰值的区别。</p>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>五项理想假设对应五类误差</strong>：A_od 有限影响增益精度，r_id 有限影响高阻源，r_o 有限影响带载，BW 有限影响高频，失调影响直流。</li>
+  <li><strong>直流误差按噪声增益放大</strong>：<code>U_IO</code>、<code>I_B</code>、共模误差都乘 <code>1+R_f/R_1</code>，不是信号增益。</li>
+  <li><strong>小信号看 GBW，大信号看 SR</strong>：<code>f_BW = GBW/A_f</code>，<code>f_p = SR/(2πU_om)</code>，两者取小。</li>
+  <li><strong>高阻源先看 I_B 与 r_id</strong>：偏置电流在 1 MΩ 上产生 80 mV 是常事，换 FET 输入运放才能解决。</li>
+  <li><strong>保护分三处</strong>：输入端反并联二极管限差压，输出端限流/钳位，电源端防反接与去耦。</li>
+</ol>
+
+<p>
+  到这里，第 4 章“集成运算放大电路”的主线就闭合了：
+  <strong>0021 电流源 → 0022 差分对与 K_CMR → 0023 参数与选用</strong>。
+  从下一章开始进入频率响应与反馈，届时本课的 <code>GBW、SR、A_od</code>
+  会直接决定反馈系统的稳定性与带宽。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第 4 章「集成运算放大电路」，
+  §4.4「集成运放的性能指标及低频等效电路」、§4.5「集成运放的种类及选择」、
+  §4.6「集成运放的使用」。
+</div>
+
+<div class="ask-agent">
+  SR 与 GBW 还是分不清谁限制谁？失调、偏置、共模三种误差老混？<br>
+  <strong>直接问我</strong>——把运放型号、增益、信号幅度和频率发我，我陪你逐项算误差并给出选型结论。
+</div>
+
+<div class="footer-nav">
+  <a href="./0022-differential-amplifier-configurations.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0023 / 0035</span>
+  <a href="./0024-basic-opamp-math-circuits.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "运放 SR = 0.5 V/μs，要求输出峰值 U_om = 10 V。最高不失真频率约为？",
+    options: [
+      "7.96 kHz",
+      "79.6 kHz",
+      "15.9 kHz",
+      "50 kHz"
+    ],
+    correct: 0,
+    explain: "f_p = SR/(2πU_om) = 0.5×10⁶/(2π×10) ≈ 7.96 kHz。注意 SR 的单位换算：0.5 V/μs = 0.5×10⁶ V/s；U_om 是峰值，不是峰峰值。79.6 kHz 是把 10 V 当成 1 V 算的结果。"
+  },
+  {
+    q: "同相放大电路闭环增益为 100，运放 U_IO = 5 mV。仅由失调电压造成的输出直流误差约为？",
+    options: [
+      "5 mV",
+      "50 mV",
+      "0.5 V",
+      "5 V"
+    ],
+    correct: 2,
+    explain: "失调电压按噪声增益放大：Δu_o = (1+R_f/R_1)·U_IO = 100 × 5 mV = 0.5 V。这里 100 是噪声增益，也就是闭环增益；不能只乘 5 mV。"
+  },
+  {
+    q: "运放 GBW = 1 MHz，接成闭环增益 100 的放大电路。小信号闭环带宽约为？",
+    options: [
+      "1 MHz",
+      "100 kHz",
+      "10 kHz",
+      "1 kHz"
+    ],
+    correct: 2,
+    explain: "f_BW = GBW/A_f = 1 MHz/100 = 10 kHz。闭环增益越大，带宽越窄，这是负反馈用带宽换增益的结果。若输出幅度很大，还要再用 f_p = SR/(2πU_om) 检查 SR 是否够。"
+  },
+  {
+    q: "传感器内阻约 1 MΩ，信号为直流缓变电压。选运放时应优先考虑哪一类？",
+    options: [
+      "通用型（如 741 类），因为便宜",
+      "高阻型（如 CA3140 类），因为 I_B 小、r_id 大",
+      "高速型（如 LM318 类），因为 SR 大",
+      "大功率型（如 LM12 类），因为输出电流大"
+    ],
+    correct: 1,
+    explain: "1 MΩ 源内阻下，通用型 80 nA 的 I_B 会产生 80 mV 误差，放大 100 倍就是 8 V；2 MΩ 的 r_id 还会分压掉 33% 的信号。高阻型运放 I_B 可到 pA 级、r_id 到 10¹² Ω，这两项误差都可以忽略。高速型和大功率型与本题的直流高阻源无关。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！SR、失调、GBW、高阻源选型都掌握了，第 4 章可以收口。' :
+        right >= 3 ? '👍 基本掌握。回看例题 4 的偏置电流误差和例题 5 的选型对比。' :
+        '📚 先把四个误差公式抄一遍，再从例题 3 重算到例题 5。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

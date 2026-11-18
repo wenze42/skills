@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0028 — RC 桥式正弦波振荡电路</title>
+<link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+
+<h1>Lesson 0028 — RC 桥式正弦波振荡电路</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0028 / 0029 · 约 55 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  需要 <a href="./0015-feedback-basics.html">Lesson 0015（反馈的基本概念）</a>、
+  <a href="./0016-negative-feedback-effects.html">Lesson 0016（负反馈的作用）</a>、
+  <a href="./0017-deep-negative-feedback-and-stability.html">Lesson 0017（深度负反馈与稳定性）</a>
+  以及 <a href="./0020-opamp-applications-and-oscillators.html">Lesson 0020（运放应用）</a> 中的同相比例电路。
+  核心工具只有一个：闭环增益 <code>A_f = A/(1 + AF)</code>，以及"环路增益 <code>AF</code>"这个概念。
+</div>
+
+<p>
+  前面所有的放大电路都在回答同一个问题：<strong>给定一个输入，输出是多少</strong>。
+  振荡器反过来：<strong>没有输入，输出自己动起来</strong>。它不是"放大信号"，而是把电路内部的噪声
+  放大成稳定的正弦波。
+</p>
+<p>
+  这件事听起来像永动机，其实不是——振荡器需要直流电源供电，只是把直流能量转换成交流能量。
+  判断它能不能振荡、振荡在什么频率、幅度多大，全靠<strong>环路增益</strong>这一把尺子。
+  这一课讲最经典的 RC 桥式（文氏桥）振荡器；下一课讲 LC 与石英晶体。
+</p>
+
+<h2>一、振荡的两个条件</h2>
+
+<p>
+  把放大器接成闭环，输入接地，仍然有输出，这叫<strong>自激</strong>。
+  从反馈公式看，闭环增益的分母为零时增益无穷大：
+</p>
+
+<div class="math">A_f = A/(1 + AF)　⟹　自激条件：1 + AF = 0　⟹　AF = −1</div>
+
+<p>
+  写成幅值与相位两个条件，就是本课的总纲：
+</p>
+
+<div class="math">相位平衡：φ_A + φ_F = 2nπ　（n = 0, 1, 2, …）</div>
+<div class="math">幅度平衡：|A| · |F| = 1</div>
+
+<p>
+  <strong>相位条件</strong>决定"能不能振"：反馈信号必须与输入<strong>同相</strong>，
+  才能自己维持自己。差 180° 就成了负反馈，只会把信号压死。
+  <strong>幅度条件</strong>决定"振多大"：环路增益恰好为 1，每次循环补上的能量等于损耗的能量，幅度稳定。
+</p>
+
+<div class="tip">
+  <span class="tip-label">起振用 &gt;，平衡用 =</span>
+  电路刚上电时，输出为零（或只有微小的热噪声）。要让幅度从零长起来，必须
+  <code>|AF| &gt; 1</code>，让每次循环的净增益大于 1，幅度像滚雪球一样变大。<br>
+  幅度变大后，管子的非线性或稳幅元件把增益压下来，最终停在 <code>|AF| = 1</code>。<br>
+  所以：<strong>起振条件 |AF| &gt; 1，平衡条件 |AF| = 1</strong>。这两个不能混。
+</div>
+
+<h3>1.1 与"负反馈放大器自激"的区别</h3>
+
+<p>
+  第 17 课讲过，负反馈放大器如果环路相移达到 180°、环路增益又大于 1，也会自激——
+  那是<strong>事故</strong>，要设法消除。振荡器是<strong>故意</strong>让环路满足同样条件，
+  把自激变成功能。数学条件完全相同，设计意图相反：
+</p>
+
+<table>
+  <tr><th></th><th>负反馈放大器自激</th><th>正弦波振荡器</th></tr>
+  <tr><td>目的</td><td>必须避免</td><td>必须发生</td></tr>
+  <tr><td>相位</td><td>附加相移 180°（通常在高频段）</td><td>人为设计成 0° 或 360°</td></tr>
+  <tr><td>幅度</td><td>|AF| &gt; 1 即自激</td><td>起振 |AF| &gt; 1，靠稳幅回到 1</td></tr>
+  <tr><td>波形</td><td>往往不是纯正弦（可能方波、寄生振荡）</td><td>靠选频网络保证单一频率</td></tr>
+</table>
+
+<p>
+  要让振荡器输出<strong>纯正弦</strong>而不是方波，环路里必须有一个<strong>选频网络</strong>：
+  只让某一个频率满足相位条件，其余频率的相移不满足，自然被排除。
+  RC 桥式用的就是<strong>RC 串并联网络</strong>。
+</p>
+
+<h2>二、RC 串并联选频网络</h2>
+
+<p>
+  这个网络由两部分组成：<strong>串联臂</strong> <code>R</code> 与 <code>C</code> 串联，
+  <strong>并联臂</strong> <code>R</code> 与 <code>C</code> 并联。信号从串联臂进、从并联臂取出，
+  反馈系数就是并联臂阻抗除以总阻抗。
+</p>
+
+<div class="circuit">
+  <svg xmlns="http://www.w3.org/2000/svg" class="schematic" viewBox="0 0 720 340" width="100%" height="auto" role="img" aria-label="RC串并联选频网络：串联臂为R与C，并联臂为R与C并联，输出取自并联臂两端">
+    <text x="360" y="24" text-anchor="middle" class="lbl">RC 串并联网络：Z₁ = R + 1/(jωC)，Z₂ = R ∥ (1/jωC)</text>
+
+    <circle cx="46" cy="120" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="34" y="106" class="lbl">u_i</text>
+    <line class="wire" x1="46" y1="120" x2="96" y2="120"/>
+    <rect class="area" x="96" y="104" width="70" height="32" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="131" y="94" text-anchor="middle" class="lbl">R</text>
+    <line class="wire" x1="166" y1="120" x2="222" y2="120"/>
+
+    <line class="wire" x1="222" y1="102" x2="222" y2="138" stroke-width="3"/>
+    <line class="wire" x1="236" y1="102" x2="236" y2="138" stroke-width="3"/>
+    <text x="229" y="92" text-anchor="middle" class="lbl">C</text>
+    <line class="wire" x1="236" y1="120" x2="320" y2="120"/>
+
+    <circle class="dot" cx="320" cy="120" r="4.5"/>
+    <line class="wire" x1="320" y1="120" x2="452" y2="120"/>
+    <circle cx="452" cy="120" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="462" y="108" class="lbl">u_o</text>
+
+    <line class="wire" x1="320" y1="120" x2="320" y2="156"/>
+    <rect class="area" x="304" y="156" width="32" height="64" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="352" y="192" class="lbl">R</text>
+    <line class="wire" x1="320" y1="220" x2="320" y2="268"/>
+
+    <line class="wire" x1="320" y1="120" x2="320" y2="140"/>
+    <line class="wire" x1="320" y1="140" x2="392" y2="140"/>
+    <line class="wire" x1="392" y1="140" x2="392" y2="200"/>
+    <line class="wire" x1="376" y1="200" x2="408" y2="200" stroke-width="3"/>
+    <line class="wire" x1="376" y1="214" x2="408" y2="214" stroke-width="3"/>
+    <text x="418" y="212" class="lbl">C</text>
+    <line class="wire" x1="392" y1="214" x2="392" y2="268"/>
+
+    <line class="wire" x1="320" y1="268" x2="452" y2="268"/>
+    <circle cx="452" cy="268" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="462" y="286" class="lbl">u_o−（地）</text>
+    <line class="wire" x1="386" y1="268" x2="386" y2="284"/>
+    <line class="wire" x1="368" y1="284" x2="404" y2="284"/>
+    <line class="wire" x1="376" y1="292" x2="396" y2="292"/>
+
+    <text x="196" y="322" text-anchor="middle" class="lbl">串联臂</text>
+    <text x="368" y="322" text-anchor="middle" class="lbl">并联臂</text>
+  </svg>
+</div>
+
+<h3>2.1 传递函数推导</h3>
+
+<p>用阻抗分压，反馈系数 <code>F = U_o/U_i</code>：</p>
+
+<div class="math">Z_1 = R + 1/(jωC)　，　Z_2 = R ∥ 1/(jωC) = R/(1 + jωRC)</div>
+<div class="math">F = Z_2/(Z_1 + Z_2)</div>
+
+<p>
+  把 <code>Z_1、Z_2</code> 代入，分子分母同乘 <code>(1 + jωRC)</code>，整理得：
+</p>
+
+<div class="math">F = 1 / [ 3 + j(ωRC − 1/(ωRC)) ]</div>
+
+<p>
+  这是一个非常漂亮的结果：<strong>实部恒为 3</strong>，虚部只随频率变化。
+  分三种情况：
+</p>
+<ul>
+  <li><code>ωRC = 1</code> 时虚部为零，<code>F = 1/3</code>，相移 <code>φ_F = 0</code>；</li>
+  <li><code>ωRC &lt; 1</code>（低频）时虚部为负，<code>φ_F &gt; 0</code>（超前）；</li>
+  <li><code>ωRC &gt; 1</code>（高频）时虚部为正，<code>φ_F &lt; 0</code>（滞后）。</li>
+</ul>
+
+<p>令虚部为零，得到谐振角频率与频率：</p>
+<div class="math">ω_0 = 1/(RC)　⟹　f_0 = 1/(2πRC)</div>
+
+<div class="circuit">
+  <svg xmlns="http://www.w3.org/2000/svg" class="schematic" viewBox="0 0 720 360" width="100%" height="auto" role="img" aria-label="RC串并联网络的幅频特性与相频特性：在f0处幅值最大为三分之一，相移为零">
+    <text x="190" y="30" text-anchor="middle" class="lbl">幅频特性 |F| — f/f₀</text>
+    <text x="540" y="30" text-anchor="middle" class="lbl">相频特性 φ_F — f/f₀</text>
+
+    <line class="wire thin" x1="80" y1="290" x2="330" y2="290"/>
+    <polygon points="330,284 330,296 344,290" fill="#1a1a1a"/>
+    <line class="wire thin" x1="80" y1="290" x2="80" y2="60"/>
+    <polygon points="74,60 86,60 80,46" fill="#1a1a1a"/>
+    <text x="344" y="312" text-anchor="end" class="lbl">f/f₀（对数）</text>
+    <text x="70" y="54" text-anchor="end" class="lbl">|F|</text>
+
+    <line class="wire ideal" x1="192" y1="70" x2="192" y2="290"/>
+    <text x="192" y="322" text-anchor="middle" class="lbl">1</text>
+    <line class="wire thin ideal" x1="80" y1="208" x2="330" y2="208"/>
+    <text x="72" y="212" text-anchor="end" class="lbl">1/3</text>
+
+    <path class="wire" d="M86,282 C130,278 160,262 176,238 C184,224 188,214 192,208 C196,214 200,224 208,238 C224,262 254,278 298,282" style="stroke:var(--accent)"/>
+    <circle class="dot" cx="192" cy="208" r="5" style="fill:var(--accent)"/>
+    <text x="206" y="200" class="lbl">F = 1/3</text>
+
+    <text x="98" y="304" class="lbl">0.1</text>
+    <text x="300" y="304" class="lbl">10</text>
+
+    <line class="wire thin" x1="410" y1="180" x2="676" y2="180"/>
+    <polygon points="676,174 676,186 690,180" fill="#1a1a1a"/>
+    <line class="wire thin" x1="410" y1="80" x2="410" y2="290"/>
+    <polygon points="404,80 416,80 410,66" fill="#1a1a1a"/>
+    <text x="690" y="202" text-anchor="end" class="lbl">f/f₀</text>
+    <text x="400" y="72" text-anchor="end" class="lbl">φ_F</text>
+
+    <line class="wire ideal" x1="530" y1="80" x2="530" y2="290"/>
+    <text x="530" y="308" text-anchor="middle" class="lbl">1</text>
+    <line class="wire thin ideal" x1="410" y1="180" x2="676" y2="180"/>
+    <text x="402" y="86" text-anchor="end" class="lbl">+90°</text>
+    <text x="402" y="286" text-anchor="end" class="lbl">−90°</text>
+
+    <path class="wire" d="M416,90 C460,100 500,130 516,158 C522,168 526,174 530,180 C534,186 538,192 544,202 C560,230 600,260 670,270" style="stroke:var(--accent)"/>
+    <circle class="dot" cx="530" cy="180" r="5" style="fill:var(--accent)"/>
+    <text x="540" y="172" class="lbl">φ = 0</text>
+
+    <text x="360" y="344" text-anchor="middle" class="lbl">只在 f₀ 处同时满足"幅值 1/3、相移 0"，其余频率相移不为零，被环路排除</text>
+  </svg>
+</div>
+
+<h3>2.2 为什么选 RC 而不是 LC</h3>
+
+<p>
+  低频（几赫兹到几百千赫兹）如果用电感做选频，<code>L = 1/(4π²f²C)</code>。
+  取 <code>f_0 = 1 kHz、C = 0.1 μF</code>，需要 <code>L ≈ 253 mH</code>——体积大、Q 值低、还有磁芯非线性。
+  RC 网络用两只电阻两只电容就能实现，成本低、便于集成，这是音频与低频振荡器几乎都用 RC 的原因。
+</p>
+<p>
+  代价是 RC 网络的选频能力弱（Q 只有 1/3），所以对放大器的增益精度要求高，
+  而且频率稳定性不如 LC 和晶体。这是后话。
+</p>
+<h2>三、文氏桥（Wien Bridge）振荡电路</h2>
+
+<p>
+  有了"相移为零、幅值 1/3"的选频网络，接下来只需要一个<strong>同相放大器</strong>：
+  放大器的相移是 0°（同相），网络在 <code>f_0</code> 处相移也是 0°，
+  总相移满足 <code>2nπ</code>；只要放大器增益补上网络的 1/3 衰减，就能起振。
+</p>
+
+<p>
+  同相比例电路的增益是 <code>A_u = 1 + R_f/R_1</code>。幅度条件要求：
+</p>
+
+<div class="math">A_u · F = (1 + R_f/R_1) · (1/3) ≥ 1　⟹　R_f/R_1 ≥ 2</div>
+
+<p>
+  这就是文氏桥最著名的结论：<strong>同相放大器增益至少为 3</strong>，
+  等价于 <code>R_f ≥ 2R_1</code>。实际取略大于 3（如 3.1～3.3），保证可靠起振。
+</p>
+
+<div class="circuit">
+  <svg xmlns="http://www.w3.org/2000/svg" class="schematic" viewBox="0 0 720 430" width="100%" height="auto" role="img" aria-label="文氏桥振荡器完整电路：同相比例放大器加RC串并联正反馈网络，Rf与R1设定增益为3">
+    <text x="360" y="24" text-anchor="middle" class="lbl">文氏桥：同相放大（A=1+R_f/R₁≥3）+ RC 串并联正反馈（F=1/3）</text>
+
+    <polygon points="380,200 380,300 500,250" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="392" y="222" class="lbl">−</text>
+    <text x="392" y="282" class="lbl">+</text>
+    <text x="440" y="256" text-anchor="middle" class="lbl">A</text>
+
+    <line class="wire" x1="500" y1="250" x2="600" y2="250"/>
+    <circle class="dot" cx="520" cy="250" r="4"/>
+    <circle cx="600" cy="250" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="600" y="236" text-anchor="middle" class="lbl">u_o</text>
+
+    <line class="wire" x1="600" y1="250" x2="600" y2="40"/>
+    <line class="wire" x1="600" y1="40" x2="80" y2="40"/>
+    <line class="wire" x1="80" y1="40" x2="80" y2="70"/>
+    <line class="wire" x1="80" y1="70" x2="100" y2="70"/>
+
+    <rect class="area" x="100" y="54" width="70" height="32" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="135" y="46" text-anchor="middle" class="lbl">R</text>
+    <line class="wire" x1="170" y1="70" x2="205" y2="70"/>
+    <line class="wire" x1="205" y1="52" x2="205" y2="88" stroke-width="3"/>
+    <line class="wire" x1="219" y1="52" x2="219" y2="88" stroke-width="3"/>
+    <text x="212" y="44" text-anchor="middle" class="lbl">C</text>
+    <line class="wire" x1="219" y1="70" x2="280" y2="70"/>
+    <circle class="dot" cx="280" cy="70" r="4.5"/>
+
+    <line class="wire" x1="280" y1="70" x2="310" y2="70"/>
+    <line class="wire" x1="310" y1="70" x2="310" y2="120"/>
+    <rect class="area" x="294" y="120" width="32" height="56" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="344" y="152" class="lbl">R</text>
+    <line class="wire" x1="310" y1="176" x2="310" y2="200"/>
+
+    <line class="wire" x1="310" y1="70" x2="360" y2="70"/>
+    <line class="wire" x1="360" y1="70" x2="360" y2="150"/>
+    <line class="wire" x1="344" y1="150" x2="376" y2="150" stroke-width="3"/>
+    <line class="wire" x1="344" y1="164" x2="376" y2="164" stroke-width="3"/>
+    <text x="386" y="162" class="lbl">C</text>
+    <line class="wire" x1="360" y1="164" x2="360" y2="200"/>
+
+    <line class="wire" x1="310" y1="200" x2="360" y2="200"/>
+    <line class="wire" x1="335" y1="200" x2="335" y2="212"/>
+    <line class="wire" x1="319" y1="212" x2="351" y2="212"/>
+    <line class="wire" x1="327" y1="220" x2="343" y2="220"/>
+
+    <line class="wire" x1="280" y1="70" x2="280" y2="280"/>
+    <line class="wire" x1="280" y1="280" x2="380" y2="280"/>
+
+    <line class="wire" x1="380" y1="220" x2="340" y2="220"/>
+    <circle class="dot" cx="340" cy="220" r="4.5"/>
+    <line class="wire" x1="340" y1="220" x2="340" y2="260"/>
+    <rect class="area" x="324" y="260" width="32" height="56" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="300" y="292" text-anchor="end" class="lbl">R₁</text>
+    <line class="wire" x1="340" y1="316" x2="340" y2="336"/>
+    <line class="wire" x1="322" y1="336" x2="358" y2="336"/>
+    <line class="wire" x1="330" y1="344" x2="350" y2="344"/>
+
+    <line class="wire" x1="340" y1="220" x2="340" y2="140"/>
+    <line class="wire" x1="340" y1="140" x2="400" y2="140"/>
+    <rect class="area" x="400" y="124" width="70" height="32" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="435" y="116" text-anchor="middle" class="lbl">R_f</text>
+    <line class="wire" x1="470" y1="140" x2="520" y2="140"/>
+    <line class="wire" x1="520" y1="140" x2="520" y2="250"/>
+
+    <text x="360" y="396" text-anchor="middle" class="lbl">正反馈网络接同相端：φ_A = 0°，φ_F = 0°（f₀），总相移 2nπ</text>
+    <text x="360" y="418" text-anchor="middle" class="lbl">负反馈网络 R_f、R₁ 设定增益，与选频网络互不干扰</text>
+  </svg>
+</div>
+
+<h3>3.1 为什么叫"桥"</h3>
+
+<p>
+  把电路画成电桥形式会更清楚：左边一臂是 RC 串并联网络（正反馈臂），
+  右边一臂是 <code>R_f、R_1</code>（负反馈臂），两个臂的中点分别接运放的同相端与反相端，
+  输出端与地是两个"桥"的顶点。<strong>四个臂构成一个桥，故名文氏桥。</strong>
+</p>
+<p>
+  这种"正反馈选频 + 负反馈定增益"的双臂结构有个巨大好处：
+  <strong>选频与增益解耦</strong>。调 <code>f_0</code> 只需同步改变选频网络的 <code>R、C</code>，
+  不会影响增益；调增益只需改 <code>R_f</code>，不影响频率。
+</p>
+
+<h3>3.2 相位条件的逐项核对</h3>
+
+<table>
+  <tr><th>环节</th><th>在 f₀ 处的相移</th><th>说明</th></tr>
+  <tr><td>同相放大器 A</td><td>0°</td><td>输入在同相端，输出与输入同相</td></tr>
+  <tr><td>RC 串并联网络 F</td><td>0°</td><td>虚部 ωRC − 1/(ωRC) = 0</td></tr>
+  <tr><td>环路总相移</td><td>0° = 2nπ（n=0）</td><td>满足相位平衡 ✅</td></tr>
+  <tr><td>幅度</td><td>|A|·|F| = 3 × 1/3 = 1</td><td>平衡；起振时略大于 1</td></tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">两个反馈别接反</span>
+  RC 网络必须接<strong>同相端</strong>（正反馈），<code>R_f、R_1</code> 必须接<strong>反相端</strong>（负反馈）。
+  接反了会变成两级负反馈，相位差 180°，永远不振。这是实验课最常见的故障。
+</div>
+
+<h2>四、起振、稳幅与波形</h2>
+
+<p>
+  上电瞬间，电路里只有电阻热噪声和运放失调，幅度大约微伏级。
+  只要 <code>|AF| &gt; 1</code>，每一轮循环幅度乘以 <code>|AF|</code>，呈<strong>指数增长</strong>：
+</p>
+
+<div class="math">U_m(t) = U_m(0) · e^σt　，　σ ≈ (|AF| − 1)/(RC)　（近似）</div>
+
+<p>
+  增长不会无限持续。当幅度接近电源电压时，运放进入非线性（输出限幅、压摆率受限），
+  等效增益下降；如果用了热敏电阻，增益还会随温度主动下降。最终
+  <code>|AF|</code> 被拉回 1，幅度稳定，形成<strong>等幅正弦波</strong>。
+</p>
+
+<div class="circuit">
+  <svg xmlns="http://www.w3.org/2000/svg" class="schematic" viewBox="0 0 720 350" width="100%" height="auto" role="img" aria-label="起振到稳幅的波形包络：幅度从噪声开始指数增长，进入非线性后稳定为等幅正弦波">
+    <text x="360" y="22" text-anchor="middle" class="lbl">起振 → 增长 → 稳幅：包络从指数上升变为水平</text>
+
+    <line class="wire thin" x1="46" y1="200" x2="690" y2="200"/>
+    <polygon points="690,194 690,206 704,200" fill="#1a1a1a"/>
+    <text x="52" y="194" class="lbl">0</text>
+    <text x="704" y="220" text-anchor="end" class="lbl">t</text>
+
+    <line class="wire thin ideal" x1="430" y1="50" x2="430" y2="330"/>
+    <text x="430" y="346" text-anchor="middle" class="lbl">进入非线性区</text>
+
+    <path class="wire thin ideal" d="M60,192 C160,188 260,170 330,140 C370,120 400,96 430,86 L680,86"/>
+    <path class="wire thin ideal" d="M60,208 C160,212 260,230 330,260 C370,280 400,304 430,314 L680,314"/>
+
+    <path class="wire" d="M60,200 Q75,190 90,200 Q105,213 120,200 Q135,183 150,200 Q165,222 180,200 Q195,171 210,200 Q225,236 240,200 Q255,155 270,200 Q285,256 300,200 Q315,132 330,200 Q345,281 360,200 Q375,106 390,200 Q405,304 420,200 Q435,88 450,200 Q465,317 480,200 Q495,83 510,200 Q525,317 540,200 Q555,83 570,200 Q585,317 600,200 Q615,83 630,200 Q645,317 660,200 Q675,83 690,200" style="stroke:var(--accent)"/>
+
+    <text x="74" y="232" class="lbl">噪声起振</text>
+    <text x="250" y="300" class="lbl">|AF| &gt; 1，指数增长</text>
+    <text x="560" y="336" text-anchor="middle" class="lbl">|AF| = 1，等幅振荡（幅度由稳幅元件决定）</text>
+  </svg>
+</div>
+
+<p>
+  注意波形形状：起振段幅度小、周期相同；增长段每个周期幅度更大；稳幅段幅度恒定。
+  <strong>频率始终由选频网络决定</strong>，与幅度无关——这正是线性选频网络的好处。
+</p>
+
+<h3>4.1 五种稳幅措施</h3>
+
+<table>
+  <tr><th>措施</th><th>原理</th><th>优点</th><th>缺点</th></tr>
+  <tr>
+    <td>R_f 用 NTC 热敏电阻</td>
+    <td>幅度↑ → 电流↑ → 温度↑ → R_f↓ → A↓</td>
+    <td>连续、波形好</td>
+    <td>热惯性大，稳定慢；需足够功耗</td>
+  </tr>
+  <tr>
+    <td>R_1 用 PTC 热敏电阻（或钨丝灯泡）</td>
+    <td>幅度↑ → 温度↑ → R_1↑ → A↓</td>
+    <td>灯泡同时起指示作用，经典方案</td>
+    <td>灯泡体积大、寿命有限</td>
+  </tr>
+  <tr>
+    <td>二极管双向限幅</td>
+    <td>幅度超过导通阈值后等效电阻下降</td>
+    <td>简单、快</td>
+    <td>削波引入谐波失真</td>
+  </tr>
+  <tr>
+    <td>场效应管压控电阻</td>
+    <td>整流滤波得到与幅度相关的栅压，改变沟道电阻</td>
+    <td>失真小、可调</td>
+    <td>电路复杂</td>
+  </tr>
+  <tr>
+    <td>AGC 自动增益控制</td>
+    <td>峰值检波 → 误差放大 → 控制增益</td>
+    <td>精度高，适合仪器</td>
+    <td>环路稳定性要设计</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <span class="tip-label">稳幅的方向不能反</span>
+  记住一句话：<strong>幅度越大，增益必须越小</strong>。
+  若热敏电阻接错（用 PTC 放在 R_f 位置），幅度增大时增益反而增大，
+  结果是"要么不振，要么幅值冲到电源轨变成方波"。
+</div>
+
+<h3>4.2 起振裕量与波形失真的折中</h3>
+
+<p>
+  <code>|AF|</code> 取得太接近 1，起振慢、易受温度影响停振；取得太大，稳幅时非线性深，
+  波形失真大、谐波多。工程经验：
+</p>
+<ul>
+  <li>用热敏电阻稳幅：<code>A</code> 取 3.05～3.2（裕量 2%～7%）；</li>
+  <li>用二极管限幅：<code>A</code> 可取 3.5 以上，但失真明显；</li>
+  <li>要求低失真（&lt; 0.1%）：必须用 AGC 或 PTC 灯泡，且 <code>A</code> 只比 3 大一点点。</li>
+</ul>
+
+<h2>五、频率调节与实用设计</h2>
+
+<h3>5.1 同轴双联电位器</h3>
+
+<p>
+  <code>f_0 = 1/(2πRC)</code>，要连续调频，必须<strong>同时</strong>改变两个 <code>R</code>
+  （串联臂与并联臂的 R），且保持两者相等。做法是用<strong>同轴双联电位器</strong>：
+  一个旋钮带动两个阻值相同的电位器。
+</p>
+<p>
+  如果只改一个 <code>R</code>，网络不再是"对称"的，<code>F</code> 在谐振处不再等于 1/3，
+  相位条件也被破坏，输出频率会偏离公式、幅度也会跳变。
+</p>
+
+<h3>5.2 用波段开关切换电容</h3>
+
+<p>
+  电位器的调节范围有限（一般 10 倍以内），宽频段覆盖要靠<strong>切换 C</strong>：
+</p>
+
+<table>
+  <tr><th>频段</th><th>C</th><th>R（f₀ 中心）</th><th>覆盖范围（R 变 10 倍）</th></tr>
+  <tr><td>低频</td><td>1 μF</td><td>15.9 kΩ</td><td>100 Hz～1 kHz</td></tr>
+  <tr><td>中频</td><td>0.1 μF</td><td>15.9 kΩ</td><td>1 kHz～10 kHz</td></tr>
+  <tr><td>高频</td><td>0.01 μF</td><td>15.9 kΩ</td><td>10 kHz～100 kHz</td></tr>
+</table>
+
+<h3>5.3 运放带来的频率上限</h3>
+
+<p>
+  振荡频率不能超过运放的能力，两个硬约束：
+</p>
+<div class="math">增益带宽积：f_0 · A_u &lt; GBW　⟹　f_0 &lt; GBW/3</div>
+<div class="math">压摆率：2πf_0 U_om &lt; SR</div>
+
+<p>
+  例如 <code>GBW = 1 MHz</code> 的通用运放，文氏桥增益为 3，理论最高 <code>f_0 ≈ 333 kHz</code>；
+  若输出幅度 5 V，<code>SR = 0.5 V/μs</code> 时，
+  <code>f_0 &lt; SR/(2πU_om) = 0.5×10⁶/(2π×5) ≈ 15.9 kHz</code>。
+  压摆率往往先成为瓶颈——这是高频文氏桥必须选高速运放的原因。
+</p>
+<h2>六、四道完整例题</h2>
+
+<h3>例题 1：设计 f₀ = 1 kHz 的选频网络</h3>
+
+<p>
+  <strong>题</strong>：要求文氏桥振荡频率 <code>f_0 = 1 kHz</code>，电容取 <code>C = 10 nF</code>，
+  求 <code>R</code>；若手头只有 E24 系列电阻，实际频率是多少？
+</p>
+
+<p><strong>解</strong>：由 <code>f_0 = 1/(2πRC)</code> 反解</p>
+<div class="math">R = 1/(2π f_0 C) = 1/(2π × 1000 × 10 × 10⁻⁹) = 1/(6.283 × 10⁻⁵) ≈ 15.9 kΩ</div>
+
+<p>
+  E24 系列没有 15.9 kΩ，最接近的是 <code>16 kΩ</code>。实际频率：
+</p>
+<div class="math">f_0' = 1/(2π × 16k × 10n) = 1/(1.0053 × 10⁻³) ≈ 994.7 Hz</div>
+
+<p>
+  相对误差 <code>(994.7 − 1000)/1000 = −0.53%</code>，对音频振荡器完全够用。
+  若要精确 1 kHz，用 E96 系列的 <code>15.8 kΩ</code> 或 <code>15.9 kΩ</code>，误差可降到 0.1% 以内。
+</p>
+
+<div class="tip">
+  <span class="tip-label">R、C 怎么选</span>
+  同样的 <code>f_0</code>，<code>R</code> 和 <code>C</code> 可以互换。取舍原则：<br>
+  · <code>R</code> 太小（几百欧）→ 运放输出电流大，增益误差变大；<br>
+  · <code>R</code> 太大（几兆欧）→ 漏电流、噪声、分布电容影响显著；<br>
+  · <code>C</code> 用<strong>薄膜电容</strong>（涤纶、聚丙烯），温度系数小、损耗低；不要用陶瓷 Y5V 或电解电容，容量随温度漂移会让 <code>f_0</code> 跑掉。<br>
+  工程常用 <code>R = 1 kΩ～100 kΩ、C = 1 nF～1 μF</code>。
+</div>
+
+<h3>例题 2：起振所需的 R_f</h3>
+
+<p>
+  <strong>题</strong>：文氏桥中 <code>R_1 = 10 kΩ</code>。
+  ① 求起振的临界 <code>R_f</code>；② 若取 <code>R_f = 22 kΩ</code>，环路增益是多少？
+  ③ 该电路能否可靠起振？
+</p>
+
+<p><strong>解①</strong>：临界条件是 <code>A = 3</code>，即</p>
+<div class="math">1 + R_f/R_1 = 3　⟹　R_f = 2R_1 = 20 kΩ</div>
+
+<p><strong>解②</strong>：取 22 kΩ 时</p>
+<div class="math">A = 1 + 22/10 = 3.2　，　|AF| = 3.2 × 1/3 = 1.067</div>
+
+<p>
+  <strong>解③</strong>：<code>|AF| = 1.067 &gt; 1</code>，满足起振条件。
+  裕量 6.7%，属于工程常用范围（3%～10%）。起振后幅度增大，
+  稳幅元件把 <code>R_f</code> 从 22 kΩ 压到 20 kΩ，<code>A</code> 回到 3，
+  <code>|AF| = 1</code>，进入等幅振荡。
+</p>
+
+<p>
+  <strong>验算</strong>：若电源为 ±12 V，运放输出饱和电压约 ±10.5 V。
+  稳幅后输出幅度必须低于这个值，否则波形削顶。设计时应让稳幅点对应的幅度
+  比电源轨低 2～3 V，给运放留出线性区。
+</p>
+
+<h3>例题 3：热敏电阻稳幅的定量选型</h3>
+
+<p>
+  <strong>题</strong>：文氏桥取 <code>R = 1.6 kΩ、C = 0.1 μF</code>，<code>R_1 = 1 kΩ</code>。
+  <code>R_f</code> 用 NTC 热敏电阻，25 °C 时 <code>2.2 kΩ</code>，温度系数 <code>−4%/K</code>，
+  热阻 <code>R_th = 1 K/mW</code>。① 求 <code>f_0</code>；② 求稳幅时 <code>R_f</code> 应从 2.2 kΩ 降到多少；
+  ③ 需要温升多少？④ 需要多大功耗与输出幅度？
+</p>
+
+<p><strong>解①</strong>：</p>
+<div class="math">f_0 = 1/(2π × 1.6k × 0.1μ) = 1/(1.005 × 10⁻³) ≈ 995 Hz</div>
+
+<p><strong>解②</strong>：稳幅时 <code>A = 3</code>，即 <code>R_f = 2R_1 = 2.0 kΩ</code>。相对变化</p>
+<div class="math">ΔR/R = (2.0 − 2.2)/2.2 = −9.1%</div>
+
+<p><strong>解③</strong>：温度系数 −4%/K，所需温升</p>
+<div class="math">ΔT = 9.1%/4% = 2.3 K</div>
+
+<p><strong>解④</strong>：热阻 1 K/mW，所需功耗</p>
+<div class="math">P = ΔT/R_th = 2.3 mW</div>
+
+<p>
+  该电流同时流过 <code>R_f</code> 与 <code>R_1</code>，但只有 <code>R_f</code> 是热敏元件；
+  它上面的功耗为 <code>P = I²R_f</code>，正是用来加热自身的功率：
+</p>
+<div class="math">I = √(P/R_f) = √(2.3 mW / 2.2 kΩ) ≈ 1.02 mA</div>
+<div class="math">U_o(rms) = I × (R_f + R_1) = 1.02 mA × 3.2 kΩ ≈ 3.27 V</div>
+
+<p>
+  峰值 <code>3.27 × 1.414 ≈ 4.6 V</code>，±12 V 供电有充足余量，方案可行。
+</p>
+
+<p>
+  <strong>反面验算</strong>：如果沿用例题 2 的 <code>R_f = 22 kΩ、R_1 = 10 kΩ</code>，
+  稳幅电流只有 <code>3.27 V/32 kΩ ≈ 0.1 mA</code>，<code>P ≈ 0.2 mW</code>，
+  温升仅 <code>0.23 K</code>，<code>R_f</code> 只降约 0.9%，远到不了 9.1% 的平衡点。
+  结果就是幅度一路涨到运放限幅，输出变成方波。
+  <strong>热敏电阻稳幅必须核算功耗，不能只看阻值。</strong>
+</p>
+
+<h3>例题 4：判断三个电路能否振荡</h3>
+
+<p><strong>题</strong>：下列三个电路都用了 RC 串并联网络，判断能否产生正弦振荡。</p>
+
+<p>
+  <strong>(a)</strong> 反相放大器 <code>A = −3</code>，RC 网络接在反馈回路中。
+</p>
+<p>
+  <strong>判断</strong>：<code>f_0</code> 处网络相移 <code>0°</code>，反相放大器相移 <code>180°</code>，
+  环路总相移 <code>180°</code>。相位条件是 <code>2nπ</code>，180° 不满足。
+  网络相移范围只有 +90°～−90°，无论频率怎么变，总相移都到不了 0° 或 360°，
+  所以<strong>不能振荡</strong>。
+</p>
+
+<p>
+  <strong>(b)</strong> 同相放大器 <code>R_f = 15 kΩ、R_1 = 10 kΩ</code>，网络接同相端。
+</p>
+<p>
+  <strong>判断</strong>：<code>A = 1 + 15/10 = 2.5</code>，<code>|AF| = 2.5/3 = 0.833 &lt; 1</code>。
+  相位条件满足，但幅度条件不满足，任何扰动都会逐周期衰减，
+  <strong>不能维持振荡</strong>（只能看到逐渐消失的衰减正弦）。
+</p>
+
+<p>
+  <strong>(c)</strong> 同相放大器 <code>R_f = 22 kΩ、R_1 = 10 kΩ</code>，RC 网络误接到反相端。
+</p>
+<p>
+  <strong>判断</strong>：放大器本身是同相（0°），但网络接到反相端后构成<strong>负反馈</strong>，
+  环路等效相移 180°，不满足相位条件，<strong>不能振荡</strong>。
+</p>
+
+<div class="tip">
+  <span class="tip-label">判断三步法</span>
+  ① 找环路：从放大器输入端出发，经放大器、反馈网络回到输入端；<br>
+  ② 算相位：<code>φ_A + φ_F</code> 是否为 <code>2nπ</code>；<br>
+  ③ 算幅度：<code>|A|·|F|</code> 是否 <code>&gt; 1</code>（起振）或 <code>= 1</code>（平衡）。<br>
+  相位不过关直接判死；相位过了再看幅度。两步都过才是振荡器。
+</div>
+
+<h2>七、易错点与速查表</h2>
+
+<h3>七个高频错误</h3>
+<ol>
+  <li><strong>把起振条件写成 |AF| = 1</strong>。等于 1 只能维持，不能从零起振；
+      起振必须严格大于 1。</li>
+  <li><strong>忘记 <code>F = 1/3</code>，直接用 <code>A = 3</code></strong>。
+      正确逻辑是 <code>A·F ≥ 1 → A ≥ 3</code>；若网络参数不对称，<code>F</code> 不再是 1/3，
+      增益要求也要跟着变。</li>
+  <li><strong>把 RC 网络接反相端</strong>。接反相端变成负反馈，相位差 180°，不振。</li>
+  <li><strong>用 <code>f_0 = 1/(2πRC)</code> 时 R、C 取错对象</strong>。
+      式中的 R、C 是<strong>串联臂</strong>与<strong>并联臂</strong>各自的 R、C，
+      两臂必须相等；不是两臂电阻之和。</li>
+  <li><strong>只调一个 R 变频</strong>。必须同步调两个 R（双联电位器），否则 <code>F ≠ 1/3</code>、
+      相位失衡。</li>
+  <li><strong>稳幅方向接反</strong>。NTC 应放在 <code>R_f</code> 位置（幅度↑ → R_f↓ → A↓）；
+      放在 <code>R_1</code> 位置会越振越猛。</li>
+  <li><strong>忽略运放压摆率</strong>。高频、大幅度时正弦波变三角波，甚至停振；
+      先算 <code>2πf_0U_om &lt; SR</code>。</li>
+</ol>
+
+<h3>速查表</h3>
+
+<table>
+  <tr><th>项目</th><th>公式 / 结论</th><th>要点</th></tr>
+  <tr><td>自激条件</td><td>AF = −1，即 1 + AF = 0</td><td>由闭环增益分母为零推出</td></tr>
+  <tr><td>相位平衡</td><td>φ_A + φ_F = 2nπ</td><td>反馈必须同相</td></tr>
+  <tr><td>幅度平衡</td><td>|A|·|F| = 1</td><td>起振时 &gt; 1</td></tr>
+  <tr><td>RC 网络反馈系数</td><td>F = 1/[3 + j(ωRC − 1/ωRC)]</td><td>实部恒为 3</td></tr>
+  <tr><td>谐振频率</td><td>f₀ = 1/(2πRC)</td><td>两臂 R、C 分别相等</td></tr>
+  <tr><td>谐振时</td><td>F = 1/3，φ_F = 0</td><td>幅值最大、相移为零</td></tr>
+  <tr><td>起振增益</td><td>A = 1 + R_f/R_1 ≥ 3</td><td>即 R_f ≥ 2R_1</td></tr>
+  <tr><td>稳幅</td><td>幅度↑ → A↓ → |AF| 回到 1</td><td>NTC 放 R_f，PTC 放 R_1</td></tr>
+  <tr><td>频率调节</td><td>同轴双联电位器 + 切换 C</td><td>两臂 R 必须同步</td></tr>
+  <tr><td>运放限制</td><td>f₀ &lt; GBW/3，2πf₀U_om &lt; SR</td><td>压摆率常是瓶颈</td></tr>
+</table>
+
+<h2>八、Quiz — 考研风格题</h2>
+
+<p>4 道题覆盖频率、起振、稳幅与相位判断。先算再点。</p>
+
+<div class="quiz" id="quiz-container"></div>
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>振荡的本质是自激</strong>：环路增益 <code>AF = −1</code>，
+      拆成相位平衡 <code>φ_A+φ_F = 2nπ</code> 与幅度平衡 <code>|AF| = 1</code>。</li>
+  <li><strong>起振与平衡不是一回事</strong>：起振要 <code>|AF| &gt; 1</code>，
+      稳幅后回到 <code>= 1</code>；中间靠非线性或热敏元件完成过渡。</li>
+  <li><strong>RC 串并联网络的三个数</strong>：<code>F = 1/[3+j(ωRC−1/ωRC)]</code>、
+      谐振时 <code>F = 1/3、φ = 0</code>、<code>f_0 = 1/(2πRC)</code>。</li>
+  <li><strong>文氏桥的增益门槛</strong>：同相放大 <code>A = 1+R_f/R_1 ≥ 3</code>，
+      即 <code>R_f ≥ 2R_1</code>；RC 网络必须接同相端构成正反馈。</li>
+  <li><strong>稳幅的方向</strong>：幅度增大时增益必须减小。NTC 放 <code>R_f</code>、
+      PTC/灯泡放 <code>R_1</code>，并且要核算热敏元件的功耗。</li>
+  <li><strong>调频要同步</strong>：两个 <code>R</code> 用同轴双联电位器一起变，
+      宽频段靠切换 <code>C</code>；高频受 GBW 与压摆率双重限制。</li>
+</ol>
+
+<p>
+  下一课（<strong>Lesson 0029</strong>）把选频网络从 RC 换成 LC 与石英晶体：
+  频率更高、Q 值更大、稳定度从 10⁻³ 提升到 10⁻⁶ 甚至 10⁻⁹。
+  你会发现，"相位平衡 + 幅度平衡"这套判据原封不动，只是网络换了一副面孔。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第八章「波形的产生和信号的转换」，
+  §8.1 正弦波振荡电路的组成与振荡条件、RC 桥式正弦波振荡电路。
+</div>
+
+<div class="ask-agent">
+  文氏桥的 <code>R_f</code> 到底取 20 k 还是 22 k？热敏电阻为什么稳不住幅度？<br>
+  <strong>直接问我</strong>——把你的电源电压、目标频率和负载发我，一起把参数选到可焊的程度。
+</div>
+
+<div class="footer-nav">
+  <a href="./0027-instrumentation-amplifier.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0028 / 0035</span>
+  <a href="./0029-lc-and-crystal-oscillators.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "文氏桥选频网络取 R = 16 kΩ、C = 10 nF，振荡频率约为？",
+    options: [
+      "≈ 500 Hz",
+      "≈ 995 Hz",
+      "≈ 1.59 kHz",
+      "≈ 10 kHz"
+    ],
+    correct: 1,
+    explain: "f₀ = 1/(2πRC) = 1/(2π × 16k × 10n) ≈ 1/(1.005×10⁻³) ≈ 994.7 Hz。若把 R 误当成两臂之和（32 kΩ）会得约 497 Hz，即选项 A 的错误来源。"
+  },
+  {
+    q: "文氏桥中 R_1 = 10 kΩ。为保证可靠起振，R_f 应取下列哪个值？",
+    options: [
+      "10 kΩ",
+      "15 kΩ",
+      "20 kΩ",
+      "22 kΩ"
+    ],
+    correct: 3,
+    explain: "起振要求 A = 1 + R_f/R_1 > 3，即 R_f > 20 kΩ。22 kΩ 对应 A = 3.2、|AF| ≈ 1.067，有 6.7% 裕量。20 kΩ 恰好是临界点，温度稍变就可能停振；15 kΩ 只有 A = 2.5，幅度会衰减。"
+  },
+  {
+    q: "文氏桥进入等幅振荡后，环路增益 |AF| 等于多少？",
+    options: [
+      "0",
+      "略小于 1",
+      "等于 1",
+      "略大于 1"
+    ],
+    correct: 2,
+    explain: "等幅振荡的平衡条件是 |AF| = 1：每轮循环补上的能量恰好等于选频网络与负载消耗的能量。起振阶段才要求 |AF| > 1，靠它把微伏级噪声放大起来；稳幅元件把增益压回 1 后幅度才稳定。"
+  },
+  {
+    q: "把 RC 串并联网络接在反相放大器的反馈回路中（A = −3），电路能否在 f₀ 处振荡？",
+    options: [
+      "能，只要 |AF| = 1",
+      "不能，环路相移 180°，不满足 2nπ",
+      "能，但频率变为 2f₀",
+      "不能，因为 |AF| 太小"
+    ],
+    correct: 1,
+    explain: "反相放大器在 f₀ 处相移 180°，RC 网络相移 0°，环路总相移 180°，不满足相位平衡条件 2nπ。而且 RC 网络相移范围仅 +90°～−90°，任何频率都无法把总相移补到 0° 或 360°，所以这个电路根本不能振荡，与幅度大小无关。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！相位、幅度、稳幅三条线都通了，可以进 LC 与晶体。' :
+        right >= 3 ? '👍 基本掌握。把 f₀ = 1/(2πRC) 和 R_f ≥ 2R_1 再各推一遍。' :
+        '📚 先分清"起振 >1"与"平衡 =1"，再回看例题 4 的三步判断法。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

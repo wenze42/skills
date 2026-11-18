@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0021 — 集成运放中的电流源电路</title>
+<link rel="stylesheet" href="../assets/teach.css">
+<style>
+/* 720 宽视图下的字号补偿，保证手机端可读 */
+.schematic text { font-size: 21px; }
+.schematic .lbl { font-size: 18px; }
+</style>
+</head>
+<body>
+
+<h1>Lesson 0021 — 集成运放中的电流源电路</h1>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0021 / 0023 · 约 50 分钟</p>
+
+<div class="tip">
+  <span class="tip-label">前置知识</span>
+  需要 <a href="./0007-common-emitter-amplifier.html">Lesson 0007（共射放大电路）</a>、
+  <a href="./0008-emitter-bias-and-q-stability.html">Lesson 0008（Q 点稳定）</a>、
+  <a href="./0013-differential-amplifier.html">Lesson 0013（差分放大电路）</a> 和
+  <a href="./0020-opamp-applications-and-oscillators.html">Lesson 0020（运放应用）</a>。
+  这一课把镜头反过来，<strong>拆开运放内部</strong>，看那些“几十千欧、上百千欧”的电阻为什么在芯片里根本不存在。
+</div>
+
+<p>
+  前二十课用的运放一直是“黑盒”：只知道它开环增益极大、输入电阻极大、输出电阻极小。
+  可一旦要解释<strong>这些指标是怎么来的</strong>，就绕不开芯片内部的三样东西——
+  <strong>电流源、差分对、有源负载</strong>。本课讲电流源，下一课讲差分对的四种接法，
+  再下一课把参数与选用收口。
+</p>
+<p>
+  先记住一句贯穿全课的话：<strong>电流源在直流上是个“省电压的电阻”，在交流上却是个“极大的电阻”。</strong>
+  这两个身份分别解决“偏置”和“增益”两个问题，是集成电路设计的核心戏法。
+</p>
+
+<h2>一、为什么集成电路里必须有电流源</h2>
+
+<p>
+  分立电路里，想给三极管设一个 1 mA 的集电极电流，最直接的办法是串一个大电阻
+  <code>R = (V_CC − U_CE)/I_C</code>。这个办法在芯片里立刻撞上三堵墙：
+</p>
+
+<ol>
+  <li><strong>面积墙</strong>。集成电路里做一个 100 kΩ 电阻，需要很长的扩散条；
+      而做一只三极管只占几十平方微米。10 kΩ 以上的电阻在芯片里都算“奢侈品”。</li>
+  <li><strong>电压墙</strong>。电阻上的压降 <code>I_C R</code> 会直接吃掉电源裕度。
+      电源只有 5 V 或 15 V，电阻一大，输出信号还没摆几下就撞到电源轨。</li>
+  <li><strong>稳定性墙</strong>。电阻上的电流 <code>I = (V_CC − U_BE)/R</code> 随电源和温度漂移；
+      差分对要求两管电流<strong>严格相等且恒定</strong>，电阻偏置做不到。</li>
+</ol>
+
+<p>
+  电流源恰好把这三个问题一起解决。以最基本的镜像电流源为例：
+</p>
+
+<ul>
+  <li>它只用两只三极管加一个电阻，面积远小于大电阻；</li>
+  <li>它的<strong>直流等效电阻</strong>只有几伏除以毫安，约几千欧，几乎不占电压裕度；</li>
+  <li>它的<strong>交流等效电阻</strong>是管子的 <code>r_ce</code>，动辄几十千欧到几百千欧。</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">“两副面孔”是理解电流源的关键</span>
+  求静态工作点时，把电流源看成<strong>理想电流源</strong>（内阻无穷大，但两端电压由外电路决定）；
+  求动态增益时，把电流源看成<strong>电阻 r_o</strong>。
+  谁大谁小，取决于你问的是直流还是交流。
+</div>
+
+<h2>二、镜像电流源</h2>
+
+<p>
+  镜像电流源（current mirror）是全部电流源电路的“母版”。它的结构简单到只有两只管子：
+  T1 的集电极和基极短接，接成<strong>二极管</strong>；T2 的基极与 T1 共用；两管发射极接地。
+  电阻 R 把电源电压变成一个参考电流 <code>I_R</code>，T2 的集电极电流则“照镜子”复制这个电流。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" width="100%" height="auto" role="img" aria-label="镜像电流源：T1 集电极与基极短接接成二极管，T2 基极与 T1 相连，两管发射极接地，R 提供参考电流">
+    <text x="360" y="30" text-anchor="middle">+V_CC</text>
+    <line class="wire" x1="120" y1="46" x2="600" y2="46"/>
+
+    <line class="wire" x1="250" y1="46" x2="250" y2="70"/>
+    <rect class="area" x="233" y="70" width="34" height="60" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="284" y="106" class="lbl">R</text>
+    <line class="wire" x1="250" y1="130" x2="250" y2="175"/>
+    <circle class="dot" cx="250" cy="175" r="4"/>
+
+    <line class="wire" x1="250" y1="175" x2="330" y2="175"/>
+    <line class="wire" x1="250" y1="175" x2="250" y2="230"/>
+    <line class="wire" x1="250" y1="230" x2="300" y2="230"/>
+    <circle class="dot" cx="300" cy="230" r="4"/>
+
+    <line class="wire" x1="300" y1="202" x2="300" y2="258" stroke-width="4"/>
+    <line class="wire" x1="300" y1="215" x2="330" y2="188"/>
+    <line class="wire" x1="330" y1="188" x2="330" y2="175"/>
+    <line class="wire" x1="300" y1="245" x2="330" y2="272"/>
+    <polygon points="315,254 331,260 325,277" fill="#1a1a1a"/>
+    <line class="wire" x1="330" y1="272" x2="330" y2="330"/>
+    <text x="286" y="286" text-anchor="end" class="lbl">T1</text>
+
+    <line class="wire" x1="300" y1="230" x2="460" y2="230"/>
+    <circle class="dot" cx="460" cy="230" r="4"/>
+
+    <line class="wire" x1="460" y1="202" x2="460" y2="258" stroke-width="4"/>
+    <line class="wire" x1="460" y1="215" x2="490" y2="188"/>
+    <line class="wire" x1="490" y1="188" x2="490" y2="150"/>
+    <line class="wire" x1="460" y1="245" x2="490" y2="272"/>
+    <polygon points="475,254 491,260 485,277" fill="#1a1a1a"/>
+    <line class="wire" x1="490" y1="272" x2="490" y2="330"/>
+    <text x="518" y="286" class="lbl">T2</text>
+
+    <line class="wire" x1="490" y1="150" x2="490" y2="110"/>
+    <line class="wire" x1="490" y1="110" x2="630" y2="110"/>
+    <circle cx="640" cy="110" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="632" y="92" text-anchor="end" class="lbl">I_C2（输出）</text>
+
+    <line class="wire" x1="330" y1="330" x2="490" y2="330"/>
+    <line class="wire" x1="410" y1="330" x2="410" y2="338"/>
+    <line class="wire" x1="392" y1="338" x2="428" y2="338"/>
+    <line class="wire" x1="400" y1="346" x2="420" y2="346"/>
+    <line class="wire" x1="408" y1="354" x2="412" y2="354"/>
+
+    <line class="wire thin" x1="222" y1="105" x2="222" y2="78"/>
+    <polygon points="215,86 229,86 222,100" fill="#1a1a1a"/>
+    <text x="212" y="104" text-anchor="end" class="lbl">I_R</text>
+    <line class="wire thin" x1="350" y1="216" x2="350" y2="190"/>
+    <polygon points="343,198 357,198 350,212" fill="#1a1a1a"/>
+    <text x="358" y="214" class="lbl">I_C1</text>
+
+    <text x="360" y="374" text-anchor="middle" class="lbl">T1 的 c-b 短接，接成二极管；两管 U_BE 相同，所以 I_C1 = I_C2</text>
+  </svg>
+</div>
+
+<h3>2.1 参考电流与输出电流</h3>
+
+<p>
+  先看左边这一路。R 的上端接 <code>V_CC</code>，下端接 T1 的集电极，而 T1 的集电极又和基极短接，
+  所以 R 下端的电位就是 <code>U_BE</code>。参考电流为：
+</p>
+
+<div class="math">I_R = (V_CC − U_BE) / R</div>
+
+<p>
+  这个电流流入 T1 的集电极节点后要分成两部分：T1 的集电极电流 <code>I_C1</code> 和两管的基极电流
+  <code>2I_B</code>。因此：
+</p>
+
+<div class="math">I_R = I_C1 + 2I_B = I_C1 (1 + 2/β)</div>
+<div class="math">I_C1 = I_R / (1 + 2/β)</div>
+
+<p>
+  两管完全对称、<code>U_BE</code> 相同，所以 <code>I_C2 = I_C1</code>。于是输出电流为：
+</p>
+
+<div class="math">I_C2 = I_R / (1 + 2/β) ≈ I_R　（β 较大时）</div>
+
+<p>
+  误差因子 <code>1/(1+2/β)</code> 的物理含义很直白：参考电流里有 <code>2I_B</code> 被两只管子的基极“截留”了，
+  真正流进 T1 集电极的只有 <code>I_R − 2I_B</code>。β = 100 时误差 2%，β = 50 时误差 4%。
+  这就是为什么镜像电流源的精度<strong>天然受 β 限制</strong>，也是后面要发明威尔逊电流源的原因。
+</p>
+
+<h3>2.2 输出电阻：为什么它“像电流源”</h3>
+
+<p>
+  从 T2 的集电极往右看，输出电阻就是 T2 在恒流区的<strong>集电极-发射极动态电阻</strong> <code>r_ce</code>。
+  它由厄尔利效应（基区宽度调制）决定：
+</p>
+
+<div class="math">r_ce = U_A / I_CQ　（U_A 为厄尔利电压，典型 80~150 V）</div>
+
+<p>
+  注意 <code>r_ce</code> 与 <code>I_CQ</code> 成反比：电流越小，输出电阻越大。
+  1 mA 时约几十千欧，10 μA 时可以到几兆欧——这也解释了为什么微电流源的输出电阻特别高。
+</p>
+
+<h3>例题 1：镜像电流源的完整计算</h3>
+
+<p>
+  电路如上面的镜像电流源。已知 <code>V_CC = 15 V，R = 10 kΩ，β = 100，U_BE = 0.7 V</code>，
+  厄尔利电压 <code>U_A = 100 V</code>。求 <code>I_R、I_C1、I_C2</code> 与输出电阻 <code>R_o</code>，
+  并说明 β 降到 50 时输出电流如何变化。
+</p>
+
+<p><strong>第一步：参考电流</strong></p>
+<div class="math">I_R = (15 − 0.7) / 10 kΩ = 14.3 / 10 kΩ = 1.43 mA</div>
+
+<p><strong>第二步：扣除基极电流</strong></p>
+<div class="math">I_C1 = 1.43 mA / (1 + 2/100) = 1.43 / 1.02 ≈ 1.402 mA</div>
+<div class="math">I_C2 = I_C1 ≈ 1.40 mA</div>
+
+<p><strong>第三步：输出电阻</strong></p>
+<div class="math">r_ce = 100 V / 1.402 mA ≈ 71.3 kΩ　⇒　R_o ≈ 71 kΩ</div>
+
+<p><strong>第四步：β 变化的影响</strong></p>
+<div class="math">β = 50：I_C2 = 1.43 / (1 + 2/50) = 1.43 / 1.04 ≈ 1.375 mA</div>
+
+<p>
+  输出电流从 1.402 mA 掉到 1.375 mA，变化约 1.9%。结论有两条：
+</p>
+<ul>
+  <li><strong>精度受 β 牵制</strong>：镜像电流源的系统误差就是 <code>2/β</code>，换管子、换批次都会让输出电流变。</li>
+  <li><strong>输出电阻只有 r_ce</strong>：71 kΩ 在分立电路里不算小，但对集成运放的第一级来说还不够——
+      下一课的共模抑制比、本课第六节的有源负载，都嫌它小。</li>
+</ul>
+
+<div class="tip">
+  <span class="tip-label">考研常见陷阱</span>
+  题目若给的是 <code>I_R</code> 而不是 <code>V_CC、R</code>，不要再减 <code>U_BE</code>；
+  若题目忽略基极电流（β 很大），直接写 <code>I_C2 ≈ I_R</code> 即可。
+  两种写法都要在答案里说明假设，否则会被扣“近似条件不明”。
+</div>
+
+<h2>三、比例电流源</h2>
+
+<p>
+  镜像电流源的输出电流只能等于参考电流。工程上经常需要“1 mA 的参考、只要 0.1 mA 的输出”，
+  于是给两只管子的发射极各串一个电阻 <code>R1、R2</code>。这就是<strong>比例电流源</strong>。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" width="100%" height="auto" role="img" aria-label="比例电流源：T1 与 T2 发射极分别串 R1 和 R2，通过电阻比设定两管电流之比">
+    <text x="360" y="30" text-anchor="middle">+V_CC</text>
+    <line class="wire" x1="120" y1="46" x2="600" y2="46"/>
+
+    <line class="wire" x1="230" y1="46" x2="230" y2="70"/>
+    <rect class="area" x="213" y="70" width="34" height="60" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="264" y="106" class="lbl">R</text>
+    <line class="wire" x1="230" y1="130" x2="230" y2="175"/>
+    <circle class="dot" cx="230" cy="175" r="4"/>
+
+    <line class="wire" x1="230" y1="175" x2="320" y2="175"/>
+    <line class="wire" x1="230" y1="175" x2="230" y2="230"/>
+    <line class="wire" x1="230" y1="230" x2="290" y2="230"/>
+    <circle class="dot" cx="290" cy="230" r="4"/>
+
+    <line class="wire" x1="290" y1="202" x2="290" y2="258" stroke-width="4"/>
+    <line class="wire" x1="290" y1="215" x2="320" y2="188"/>
+    <line class="wire" x1="320" y1="188" x2="320" y2="175"/>
+    <line class="wire" x1="290" y1="245" x2="320" y2="272"/>
+    <polygon points="305,254 321,260 315,277" fill="#1a1a1a"/>
+    <line class="wire" x1="320" y1="272" x2="320" y2="290"/>
+    <text x="278" y="288" text-anchor="end" class="lbl">T1</text>
+
+    <line class="wire" x1="290" y1="230" x2="470" y2="230"/>
+    <circle class="dot" cx="470" cy="230" r="4"/>
+
+    <line class="wire" x1="470" y1="202" x2="470" y2="258" stroke-width="4"/>
+    <line class="wire" x1="470" y1="215" x2="500" y2="188"/>
+    <line class="wire" x1="500" y1="188" x2="500" y2="150"/>
+    <line class="wire" x1="470" y1="245" x2="500" y2="272"/>
+    <polygon points="485,254 501,260 495,277" fill="#1a1a1a"/>
+    <line class="wire" x1="500" y1="272" x2="500" y2="290"/>
+    <text x="528" y="288" class="lbl">T2</text>
+
+    <rect class="area" x="303" y="290" width="34" height="55" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="296" y="324" text-anchor="end" class="lbl">R1</text>
+    <line class="wire" x1="320" y1="345" x2="320" y2="378"/>
+    <rect class="area" x="483" y="290" width="34" height="55" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="544" y="312" class="lbl">R2</text>
+    <line class="wire" x1="500" y1="345" x2="500" y2="378"/>
+
+    <line class="wire" x1="320" y1="378" x2="500" y2="378"/>
+    <line class="wire" x1="410" y1="378" x2="410" y2="392"/>
+    <line class="wire" x1="392" y1="392" x2="428" y2="392"/>
+    <line class="wire" x1="400" y1="400" x2="420" y2="400"/>
+    <line class="wire" x1="408" y1="408" x2="412" y2="408"/>
+
+    <line class="wire" x1="500" y1="150" x2="500" y2="110"/>
+    <line class="wire" x1="500" y1="110" x2="640" y2="110"/>
+    <circle cx="650" cy="110" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="642" y="92" text-anchor="end" class="lbl">I_C2（输出）</text>
+
+    <line class="wire thin" x1="202" y1="105" x2="202" y2="78"/>
+    <polygon points="195,86 209,86 202,100" fill="#1a1a1a"/>
+    <text x="192" y="104" text-anchor="end" class="lbl">I_R</text>
+    <line class="wire thin" x1="340" y1="325" x2="340" y2="350"/>
+    <polygon points="333,342 347,342 340,356" fill="#1a1a1a"/>
+    <text x="352" y="336" class="lbl">I_E1</text>
+    <line class="wire thin" x1="520" y1="325" x2="520" y2="350"/>
+    <polygon points="513,342 527,342 520,356" fill="#1a1a1a"/>
+    <text x="532" y="336" class="lbl">I_E2</text>
+
+    <text x="360" y="430" text-anchor="middle" class="lbl">两管基极同电位：U_BE1 + I_E1·R1 = U_BE2 + I_E2·R2</text>
+  </svg>
+</div>
+
+<h3>3.1 推导</h3>
+
+<p>
+  两管基极连在一起，沿发射极到地列 KVL：
+</p>
+
+<div class="math">U_BE1 + I_E1 R1 = U_BE2 + I_E2 R2</div>
+
+<p>
+  两管对称、电流相近时 <code>U_BE1 ≈ U_BE2</code>，这一项可以抵消，于是：
+</p>
+
+<div class="math">I_E1 R1 ≈ I_E2 R2　⇒　I_E2 ≈ (R1/R2) · I_E1</div>
+
+<p>
+  又因为 <code>I_E1 ≈ I_C1 ≈ I_R</code>，得到最常用的比例公式：
+</p>
+
+<div class="math">I_C2 ≈ (R1/R2) · I_R</div>
+
+<p>
+  物理意义：<strong>两个发射极电阻上的压降必须相等</strong>（因为两管基极同电位、U_BE 又几乎相同）。
+  电阻大的那一路电流就小，电流比等于电阻的反比。
+</p>
+
+<h3>例题 2：比例电流源</h3>
+
+<p>
+  已知 <code>V_CC = 12 V，R = 20 kΩ，R1 = 1 kΩ，R2 = 4 kΩ，U_BE = 0.7 V</code>，β 很大。
+  求参考电流与输出电流，并验证两管发射极压降是否一致。
+</p>
+
+<p><strong>第一步：参考电流</strong></p>
+<div class="math">I_R = (12 − 0.7) / 20 kΩ = 11.3 / 20 kΩ ≈ 0.565 mA</div>
+
+<p><strong>第二步：按电阻比缩放</strong></p>
+<div class="math">I_C2 ≈ (R1/R2) · I_R = (1 kΩ / 4 kΩ) × 0.565 mA ≈ 0.141 mA</div>
+
+<p><strong>第三步：验证发射极压降</strong></p>
+<div class="math">I_E1 R1 ≈ 0.565 mA × 1 kΩ = 0.565 V</div>
+<div class="math">I_E2 R2 ≈ 0.141 mA × 4 kΩ = 0.564 V</div>
+
+<p>
+  两者几乎相等，说明“基极同电位、U_BE 近似相等”的假设自洽 ✅。
+  输出电流从 0.565 mA 降到 0.141 mA，正好是 1/4，完全由 <code>R1/R2</code> 决定。
+  工程上想得到任意比例的偏置电流，只需调这两个电阻，不必动参考支路。
+</p>
+
+<div class="tip">
+  <span class="tip-label">比例电流源的输出电阻</span>
+  R2 引入了发射极负反馈，输出电阻从 <code>r_ce</code> 提高到
+  <code>r_o ≈ r_ce[1 + g_m(R2 ∥ r_be)]</code>，通常能到几百千欧甚至兆欧。
+  这是“串发射极电阻”的额外红利：既设定了电流比，又提高了恒流特性。
+</div>
+
+<h2>四、微电流源</h2>
+
+<p>
+  运放的输入级只需要几十微安的偏置电流，用镜像电流源想得到 20 μA，参考电阻要大到
+  <code>(15 − 0.7)/20 μA = 715 kΩ</code>，芯片里根本做不下。
+  <strong>微电流源</strong>用一个巧妙的办法绕开大电阻：让 T2 的发射极串一个小电阻 R2，
+  而 T1 的发射极直接接地。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" width="100%" height="auto" role="img" aria-label="微电流源：T1 发射极直接接地，T2 发射极串小电阻 R2，利用两管 U_BE 之差在 R2 上产生很小的电压，从而得到微安级电流">
+    <text x="360" y="30" text-anchor="middle">+V_CC</text>
+    <line class="wire" x1="120" y1="46" x2="600" y2="46"/>
+
+    <line class="wire" x1="230" y1="46" x2="230" y2="70"/>
+    <rect class="area" x="213" y="70" width="34" height="60" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="264" y="106" class="lbl">R</text>
+    <line class="wire" x1="230" y1="130" x2="230" y2="175"/>
+    <circle class="dot" cx="230" cy="175" r="4"/>
+
+    <line class="wire" x1="230" y1="175" x2="320" y2="175"/>
+    <line class="wire" x1="230" y1="175" x2="230" y2="230"/>
+    <line class="wire" x1="230" y1="230" x2="290" y2="230"/>
+    <circle class="dot" cx="290" cy="230" r="4"/>
+
+    <line class="wire" x1="290" y1="202" x2="290" y2="258" stroke-width="4"/>
+    <line class="wire" x1="290" y1="215" x2="320" y2="188"/>
+    <line class="wire" x1="320" y1="188" x2="320" y2="175"/>
+    <line class="wire" x1="290" y1="245" x2="320" y2="272"/>
+    <polygon points="305,254 321,260 315,277" fill="#1a1a1a"/>
+    <line class="wire" x1="320" y1="272" x2="320" y2="378"/>
+    <text x="278" y="300" text-anchor="end" class="lbl">T1</text>
+
+    <line class="wire" x1="290" y1="230" x2="470" y2="230"/>
+    <circle class="dot" cx="470" cy="230" r="4"/>
+
+    <line class="wire" x1="470" y1="202" x2="470" y2="258" stroke-width="4"/>
+    <line class="wire" x1="470" y1="215" x2="500" y2="188"/>
+    <line class="wire" x1="500" y1="188" x2="500" y2="150"/>
+    <line class="wire" x1="470" y1="245" x2="500" y2="272"/>
+    <polygon points="485,254 501,260 495,277" fill="#1a1a1a"/>
+    <line class="wire" x1="500" y1="272" x2="500" y2="290"/>
+    <text x="528" y="300" class="lbl">T2</text>
+
+    <rect class="area" x="483" y="290" width="34" height="55" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="544" y="312" class="lbl">R2</text>
+    <line class="wire" x1="500" y1="345" x2="500" y2="378"/>
+
+    <line class="wire" x1="320" y1="378" x2="500" y2="378"/>
+    <line class="wire" x1="410" y1="378" x2="410" y2="392"/>
+    <line class="wire" x1="392" y1="392" x2="428" y2="392"/>
+    <line class="wire" x1="400" y1="400" x2="420" y2="400"/>
+    <line class="wire" x1="408" y1="408" x2="412" y2="408"/>
+
+    <line class="wire" x1="500" y1="150" x2="500" y2="110"/>
+    <line class="wire" x1="500" y1="110" x2="640" y2="110"/>
+    <circle cx="650" cy="110" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="642" y="92" text-anchor="end" class="lbl">I_C2（μA 级）</text>
+
+    <line class="wire thin" x1="202" y1="105" x2="202" y2="78"/>
+    <polygon points="195,86 209,86 202,100" fill="#1a1a1a"/>
+    <text x="192" y="104" text-anchor="end" class="lbl">I_R</text>
+
+    <text x="268" y="322" text-anchor="end" class="lbl">U_BE1</text>
+    <text x="556" y="278" class="lbl">U_BE2</text>
+
+    <text x="360" y="430" text-anchor="middle" class="lbl">U_BE1 − U_BE2 = I_E2·R2　⇒　I_C2 ≈ (U_T/R2)·ln(I_R/I_C2)</text>
+  </svg>
+</div>
+
+<h3>4.1 推导：为什么 R2 上只有约 100 mV</h3>
+
+<p>
+  两管基极同电位，沿发射极回路列 KVL：
+</p>
+
+<div class="math">U_BE1 = U_BE2 + I_E2 R2　⇒　U_BE1 − U_BE2 = I_E2 R2 ≈ I_C2 R2</div>
+
+<p>
+  三极管的发射结方程是 <code>I_C = I_S exp(U_BE/U_T)</code>，取对数：
+  <code>U_BE = U_T ln(I_C/I_S)</code>。两管是同型号，<code>I_S</code> 相同，相减得：
+</p>
+
+<div class="math">U_BE1 − U_BE2 = U_T ln(I_C1/I_C2)</div>
+
+<p>
+  把两式联立，就得到微电流源的核心方程：
+</p>
+
+<div class="math">I_C2 R2 = U_T ln(I_R/I_C2)　⇒　I_C2 = (U_T/R2) · ln(I_R/I_C2)</div>
+
+<p>
+  这个方程的物理含义是：<strong>R2 上承受的不是 0.7 V 的 U_BE，而只是两管 U_BE 的差值</strong>。
+  <code>U_T = 26 mV</code>（室温），<code>ln(I_R/I_C2)</code> 通常只有 3~5，
+  所以差值只有 <code>26 mV × 4 ≈ 104 mV</code>。
+</p>
+
+<p>
+  对比一下：若把 R2 = 5.1 kΩ 直接接到 0.7 V 上，电流是 <code>0.7/5.1k ≈ 137 μA</code>；
+  而实际上 R2 上只有约 0.1 V，电流就只有 <code>0.1/5.1k ≈ 20 μA</code>。
+  <strong>同样的电阻，电流小了近 7 倍</strong>——这就是微电流源能用“小电阻”做出“微电流”的全部秘密。
+</p>
+
+<div class="tip">
+  <span class="tip-label">为什么不能简单地把 R2 加大</span>
+  公式里 <code>I_C2</code> 与 <code>R2</code> 近似成反比，但 <code>ln(I_R/I_C2)</code> 会随电流减小而增大，
+  起一点点“补偿”作用。所以 R2 加大 10 倍，电流并不会精确减小 10 倍，而是略大于 1/10。
+  这个非线性正是对数关系带来的，出题人常在这里设陷阱。
+</div>
+
+<h3>例题 3：微电流源的迭代求解</h3>
+
+<p>
+  已知 <code>I_R = 1 mA，R2 = 5.1 kΩ，U_T = 26 mV</code>。求输出电流 <code>I_C2</code>，
+  并用 <code>ΔU_BE</code> 验证结果。
+</p>
+
+<p><strong>第一步：写出方程</strong></p>
+<div class="math">I_C2 = (26 mV / 5.1 kΩ) · ln(1 mA / I_C2) = 5.098 μA × ln(1 mA / I_C2)</div>
+
+<p><strong>第二步：迭代</strong>。先猜一个值，代入右边，得到新的值，再代回去：</p>
+
+<table>
+  <tr><th>次数</th><th>猜值 I_C2</th><th>ln(1 mA / I_C2)</th><th>右边算出</th></tr>
+  <tr><td>0</td><td>10.0 μA</td><td>ln 100 = 4.605</td><td>23.5 μA</td></tr>
+  <tr><td>1</td><td>23.5 μA</td><td>ln 42.6 = 3.752</td><td>19.1 μA</td></tr>
+  <tr><td>2</td><td>19.1 μA</td><td>ln 52.4 = 3.958</td><td>20.2 μA</td></tr>
+  <tr><td>3</td><td>20.2 μA</td><td>ln 49.5 = 3.902</td><td>19.9 μA</td></tr>
+  <tr><td>4</td><td>19.9 μA</td><td>ln 50.3 = 3.917</td><td>20.0 μA</td></tr>
+</table>
+
+<p>
+  第 4 次已经稳定在 <strong>20.0 μA</strong>。取 <code>I_C2 ≈ 20 μA</code>。
+</p>
+
+<p><strong>第三步：用 ΔU_BE 验证</strong></p>
+<div class="math">ΔU_BE = U_T ln(I_R/I_C2) = 26 mV × ln(50) = 26 × 3.912 ≈ 101.7 mV</div>
+<div class="math">I_C2 R2 = 20 μA × 5.1 kΩ = 102 mV ✅</div>
+
+<p>
+  两边在 0.3% 以内吻合，说明解正确。输出电流只有 20 μA，而参考电流是 1 mA，
+  比例 1:50；输出电阻 <code>r_ce = U_A/I_C2 = 100 V/20 μA = 5 MΩ</code>，
+  比镜像电流源高两个数量级。
+</p>
+
+<h2>五、威尔逊电流源与多路电流源</h2>
+
+<h3>5.1 威尔逊电流源：用反馈换精度</h3>
+
+<p>
+  镜像电流源有两个不足：电流误差 <code>2/β</code>，输出电阻只有 <code>r_ce</code>。
+  威尔逊电流源（Wilson current source）加了一只 T3，把 T2 的集电极电流“取样”后反馈到 T1 的基极，
+  形成<strong>电流负反馈</strong>，把两个指标同时改善：
+</p>
+
+<div class="math">I_C3 ≈ I_R / (1 + 2/β²) ≈ I_R (1 − 2/β²)</div>
+<div class="math">R_o ≈ β r_ce / 2</div>
+
+<p>
+  误差从 <code>2/β</code> 降到 <code>2/β²</code>，这是平方级的改善。β = 100 时：
+</p>
+
+<div class="math">2/β = 2%　→　2/β² = 0.02%</div>
+
+<p>
+  输出电阻则被放大了约 <code>β/2</code> 倍。若 <code>β = 100，r_ce = 100 kΩ</code>，
+  则 <code>R_o ≈ 5 MΩ</code>。所以威尔逊电流源常用于要求“电流准、恒流特性好”的偏置场合，
+  代价是多用一只管子、少了一点电压裕度（T3 要占掉一个 <code>U_BE</code>）。
+</p>
+
+<div class="tip">
+  <span class="tip-label">威尔逊为什么能提高精度</span>
+  假设某种原因使 <code>I_C3</code> 增大，T3 的发射极电流增大，T2 的集电极电流也随之增大；
+  这个电流通过 T1 的二极管连接反映到基极，使 T1 的 <code>U_BE</code> 下降，
+  从而把 T3 的基极电位拉低，迫使 <code>I_C3</code> 回落。
+  负反馈越强，电流越稳，输出电阻越大。
+</div>
+
+<h3>5.2 多路电流源</h3>
+
+<p>
+  一个运放内部往往需要好几路偏置：输入差分对 20 μA、中间级 200 μA、输出级 1 mA。
+  最省面积的做法是<strong>只用一个参考支路</strong>，再用多个镜像/比例电流源复制出不同的电流。
+</p>
+
+<p>
+  设一个参考支路带 <code>n</code> 个输出管，所有基极连在一起，则参考节点要多提供
+  <code>(n+1)I_B</code> 的基极电流，每个输出电流都会按下面的比例缩小：
+</p>
+
+<div class="math">I_Ck ≈ I_R / [1 + (n+1)/β]</div>
+
+<p>
+  例如 β = 100、n = 3，误差约 4%。路数越多，误差越大。
+  解决办法是加一级<strong>射极跟随器</strong>作为基极电流缓冲，或者在每个输出管发射极串电阻（比例电流源），
+  让各路电流由电阻比决定，而不是靠 β 硬撑。
+</p>
+
+<table>
+  <tr><th>电流源</th><th>输出电流</th><th>输出电阻</th><th>特点</th></tr>
+  <tr><td>镜像</td><td>I_R/(1+2/β)</td><td>r_ce</td><td>最简单，误差 2/β</td></tr>
+  <tr><td>比例</td><td>(R1/R2)·I_R</td><td>r_ce[1+g_m(R2∥r_be)]</td><td>可设定电流比</td></tr>
+  <tr><td>微电流</td><td>(U_T/R2)·ln(I_R/I_C2)</td><td>很高（电流小）</td><td>μA 级，不用大电阻</td></tr>
+  <tr><td>威尔逊</td><td>I_R/(1+2/β²)</td><td>βr_ce/2</td><td>精度高、恒流好</td></tr>
+</table>
+
+<h2>六、有源负载：把电流源当电阻用</h2>
+
+<p>
+  共射电路的电压增益是 <code>A_u = −β R_L′/(R_b + r_be)</code>，其中 <code>R_L′ = R_c ∥ R_L</code>。
+  想提高增益，就要提高 <code>R_c</code>。但 <code>R_c</code> 一大，直流压降 <code>I_CQ R_c</code>
+  就把管子推向饱和，电源电压不够用。
+</p>
+
+<p>
+  电流源再一次解决问题：<strong>它的直流压降只需要保证管子不饱和（约 0.3~1 V），
+  交流等效电阻却可以到几百千欧</strong>。把 <code>R_c</code> 换成电流源，就叫<strong>有源负载</strong>。
+</p>
+
+<div class="circuit">
+  <svg class="schematic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 460" width="100%" height="auto" role="img" aria-label="有源负载共射电路：T1 的集电极负载由电流源代替，电流源直流压降小、交流输出电阻大，从而大幅提高电压增益">
+    <text x="360" y="30" text-anchor="middle">+V_CC</text>
+    <line class="wire" x1="120" y1="46" x2="620" y2="46"/>
+
+    <line class="wire" x1="420" y1="46" x2="420" y2="114"/>
+    <circle cx="420" cy="140" r="26" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line class="wire thin" x1="420" y1="122" x2="420" y2="156"/>
+    <polygon points="412,144 428,144 420,160" fill="#1a1a1a"/>
+    <text x="458" y="132" class="lbl">I_CQ</text>
+    <text x="458" y="158" class="lbl">r_o</text>
+    <line class="wire" x1="420" y1="166" x2="420" y2="250"/>
+
+    <line class="wire" x1="350" y1="282" x2="350" y2="338" stroke-width="4"/>
+    <line class="wire" x1="350" y1="295" x2="380" y2="268"/>
+    <line class="wire" x1="380" y1="268" x2="380" y2="250"/>
+    <line class="wire" x1="350" y1="325" x2="380" y2="352"/>
+    <polygon points="365,334 381,340 375,357" fill="#1a1a1a"/>
+    <line class="wire" x1="380" y1="352" x2="380" y2="400"/>
+    <text x="338" y="360" text-anchor="end" class="lbl">T1</text>
+
+    <line class="wire" x1="380" y1="250" x2="420" y2="250"/>
+    <circle class="dot" cx="420" cy="250" r="4"/>
+    <line class="wire" x1="420" y1="250" x2="600" y2="250"/>
+    <circle cx="612" cy="250" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="604" y="232" text-anchor="end" class="lbl">u_o</text>
+
+    <line class="wire" x1="380" y1="400" x2="600" y2="400"/>
+    <line class="wire" x1="480" y1="400" x2="480" y2="416"/>
+    <line class="wire" x1="462" y1="416" x2="498" y2="416"/>
+    <line class="wire" x1="470" y1="424" x2="490" y2="424"/>
+    <line class="wire" x1="478" y1="432" x2="482" y2="432"/>
+
+    <circle cx="80" cy="310" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="64" y="300" text-anchor="end" class="lbl">u_i</text>
+    <line class="wire" x1="80" y1="310" x2="140" y2="310"/>
+    <rect class="area" x="140" y="296" width="60" height="28" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="170" y="288" text-anchor="middle" class="lbl">R_b</text>
+    <line class="wire" x1="200" y1="310" x2="350" y2="310"/>
+
+    <text x="360" y="450" text-anchor="middle" class="lbl">电流源负载：直流压降小，交流电阻 r_o 大　⇒　A_u = −β(r_o∥R_L)/(R_b+r_be)</text>
+  </svg>
+</div>
+
+<h3>6.1 增益估算</h3>
+
+<p>
+  把电流源等效成 <code>r_o</code>，共射电路的增益仍然是熟公式，只是 <code>R_c</code> 换成了 <code>r_o</code>：
+</p>
+
+<div class="math">A_u = −β (r_o ∥ R_L) / (R_b + r_be) ≈ −g_m (r_o ∥ R_L)</div>
+
+<p>
+  当 <code>r_o ≫ R_L</code> 时，<code>A_u ≈ −g_m r_o</code>。再用 <code>g_m = I_CQ/U_T</code>
+  和 <code>r_o = U_A/I_CQ</code> 代入，会发现一个很有意思的结论：
+</p>
+
+<div class="math">A_u ≈ −g_m r_o = −(I_CQ/U_T)(U_A/I_CQ) = −U_A/U_T</div>
+
+<p>
+  <strong>电流互相约掉了</strong>：有源负载共射级的增益只由厄尔利电压和热电压决定，
+  与工作电流基本无关。取 <code>U_A = 100 V、U_T = 26 mV</code>，增益约 <code>−3850</code>，
+  也就是 72 dB。这就是集成运放单级就能做到很高增益的原因。
+</p>
+
+<h3>例题 4：有源负载共射级的增益</h3>
+
+<p>
+  已知 <code>V_CC = 15 V，I_CQ = 0.5 mA，β = 100，U_A = 100 V，R_b = 0</code>，负载开路。
+  分别求集电极接 <code>R_c = 10 kΩ</code> 和接电流源（<code>r_o = 200 kΩ</code>）时的电压增益，
+  并求增益提高的分贝数。
+</p>
+
+<p><strong>第一步：微变参数</strong></p>
+<div class="math">g_m = I_CQ/U_T = 0.5 mA / 26 mV ≈ 19.2 mS</div>
+<div class="math">r_be = β/g_m = 100 / 19.2 mS ≈ 5.2 kΩ</div>
+
+<p><strong>第二步：电阻负载</strong></p>
+<div class="math">R_L′ = R_c ∥ r_ce = 10 kΩ ∥ 200 kΩ = 9.52 kΩ</div>
+<div class="math">A_u = −g_m R_L′ = −19.2 mS × 9.52 kΩ ≈ −183</div>
+
+<p><strong>第三步：有源负载</strong></p>
+<div class="math">A_u = −g_m r_o = −19.2 mS × 200 kΩ ≈ −3840</div>
+
+<p><strong>第四步：提高的分贝数</strong></p>
+<div class="math">20 lg(3840/183) = 20 lg 21.0 ≈ 26.4 dB</div>
+
+<p>
+  增益提高了约 21 倍（26 dB），而电源电压和静态电流一点没变。
+  若用近似式 <code>−U_A/U_T = −100/0.026 ≈ −3846</code>，与上面的结果相差不到 1%，
+  说明“增益由厄尔利电压决定”这个结论是可靠的。
+</p>
+
+<div class="tip">
+  <span class="tip-label">有源负载的代价</span>
+  输出电阻从 <code>R_c</code> 变成了 <code>r_o</code>，输出节点变成高阻节点。
+  一旦后级输入电阻不够大，增益立刻被“分压”掉：
+  <code>A = −g_m(r_o ∥ R_i,next)</code>。所以有源负载后面必须接高输入电阻的缓冲级（射极跟随器），
+  否则算出来的 3840 只是空载数字。
+</div>
+
+<h2>七、易错点与速查表</h2>
+
+<h3>五个高频错误</h3>
+<ol>
+  <li><strong>把 <code>I_R</code> 直接当成输出电流</strong>。镜像源要扣 <code>2I_B</code>，误差 <code>2/β</code>；
+      β = 50 时这是 4%，不是“可以忽略”。</li>
+  <li><strong>比例电流源的比值写反</strong>。是 <code>I_C2 = (R1/R2)I_R</code>，不是 <code>R2/R1</code>。
+      记法：电阻大的支路电流小。</li>
+  <li><strong>微电流源拿 0.7 V 除以 R2</strong>。R2 上只有两管 <code>U_BE</code> 之差，约 100 mV；
+      用 0.7 V 会把电流算大近 7 倍。</li>
+  <li><strong>把电流源的交流电阻当成无穷大</strong>。直流分析可以当理想电流源，动态分析必须带上 <code>r_o</code>，
+      否则增益、共模抑制比都会算成无穷大。</li>
+  <li><strong>有源负载增益忘记并联后级输入电阻</strong>。高阻节点最怕负载，
+      <code>r_o ∥ R_L</code> 才是实际负载。</li>
+</ol>
+
+<h3>速查表</h3>
+<table>
+  <tr><th>项目</th><th>公式 / 结论</th><th>要点</th></tr>
+  <tr><td>参考电流</td><td>I_R = (V_CC − U_BE)/R</td><td>R 下端电位是 U_BE</td></tr>
+  <tr><td>镜像输出</td><td>I_C2 = I_R/(1+2/β)</td><td>误差 2/β</td></tr>
+  <tr><td>镜像输出电阻</td><td>R_o ≈ r_ce = U_A/I_CQ</td><td>几十 kΩ ~ 几百 kΩ</td></tr>
+  <tr><td>比例输出</td><td>I_C2 ≈ (R1/R2)·I_R</td><td>两发射极压降相等</td></tr>
+  <tr><td>微电流输出</td><td>I_C2 ≈ (U_T/R2)·ln(I_R/I_C2)</td><td>R2 上只有约 100 mV</td></tr>
+  <tr><td>威尔逊</td><td>I ≈ I_R/(1+2/β²)，R_o ≈ βr_ce/2</td><td>精度高、恒流好</td></tr>
+  <tr><td>多路误差</td><td>约 (n+1)/β</td><td>路数越多越不准</td></tr>
+  <tr><td>有源负载增益</td><td>A_u ≈ −g_m r_o ≈ −U_A/U_T</td><td>与电流几乎无关</td></tr>
+</table>
+
+<h2>八、Quiz — 考研风格题</h2>
+
+<p>4 道题覆盖镜像、比例、微电流与有源负载。先动笔算，再点选项。</p>
+
+<div class="quiz" id="quiz-container"></div>
+
+<h2>这一课学到了什么</h2>
+
+<ol>
+  <li><strong>电流源的两个身份</strong>：直流上省电压，交流上提供大电阻；前者管偏置，后者管增益。</li>
+  <li><strong>镜像电流源</strong>：<code>I_C2 = I_R/(1+2/β)</code>，输出电阻只有 <code>r_ce</code>，
+      精度和恒流特性都一般，但它是所有电流源的起点。</li>
+  <li><strong>比例与微电流</strong>：串发射极电阻可以设定电流比；微电流源利用 <code>ΔU_BE</code>
+      只有约 100 mV 这一点，用小电阻做出 μA 级电流。</li>
+  <li><strong>威尔逊电流源</strong>：用一只管子换负反馈，误差降到 <code>2/β²</code>，输出电阻升到 <code>βr_ce/2</code>。</li>
+  <li><strong>有源负载</strong>：把 <code>R_c</code> 换成电流源，增益从 <code>g_m R_c</code> 提到 <code>g_m r_o</code>，
+      本质是用厄尔利电压换增益，典型提高 20~30 dB。</li>
+</ol>
+
+<p>
+  下一课（<strong>Lesson 0022</strong>）把这些电流源装进差分对：
+  用恒流源代替长尾电阻 <code>R_e</code>，共模抑制比能再提高二十多分贝。
+  届时你会看到，本课第五节的“输出电阻”直接决定下一课的 <code>K_CMR</code>。
+</p>
+
+<div class="primary-source">
+  <strong>Primary Source:</strong>
+  童诗白、华成英《模拟电子技术基础》（第六版）第 4 章「集成运算放大电路」，
+  §4.2「集成运放中的电流源电路」与 §4.3「集成运放电路简介」。
+</div>
+
+<div class="ask-agent">
+  微电流源的 ln 方程不会迭代？比例电流源的比值总写反？<br>
+  <strong>直接问我</strong>——把 V_CC、R、β 发我，我陪你把每一路电流算到小数点后两位。
+</div>
+
+<div class="footer-nav">
+  <a href="./0020-opamp-applications-and-oscillators.html">← 上一课</a>
+  <span class="lesson-counter">Lesson 0021 / 0035</span>
+  <a href="./0022-differential-amplifier-configurations.html">下一课 →</a>
+</div>
+
+<script>
+const quizzes = [
+  {
+    q: "镜像电流源中 V_CC = 12 V，R = 15 kΩ，β = 80，U_BE = 0.7 V。输出电流 I_C2 约为？",
+    options: [
+      "0.735 mA",
+      "0.753 mA",
+      "0.368 mA",
+      "1.47 mA"
+    ],
+    correct: 0,
+    explain: "I_R = (12 − 0.7)/15k = 11.3/15k ≈ 0.753 mA；I_C2 = I_R/(1 + 2/β) = 0.753/1.025 ≈ 0.735 mA。0.753 mA 是漏掉 2I_B 的结果；0.368 mA 是把正确结果又除以 2（误当成单端输出的一半）。"
+  },
+  {
+    q: "比例电流源中 I_R = 0.5 mA，R1 = 2 kΩ，R2 = 8 kΩ，β 很大。输出电流 I_C2 约为？",
+    options: [
+      "0.5 mA",
+      "0.25 mA",
+      "0.125 mA",
+      "0.031 mA"
+    ],
+    correct: 2,
+    explain: "两管基极同电位，发射极压降相等：I_E1R1 ≈ I_E2R2，所以 I_C2 ≈ (R1/R2)I_R = (2k/8k) × 0.5 mA = 0.125 mA。电阻大的支路电流小，比值不要写反。"
+  },
+  {
+    q: "微电流源中 I_R = 1 mA，R2 = 5.1 kΩ，U_T = 26 mV。输出电流 I_C2 约为？",
+    options: [
+      "约 20 μA",
+      "约 5 μA",
+      "约 51 μA",
+      "约 200 μA"
+    ],
+    correct: 0,
+    explain: "解 I_C2 = (26 mV/5.1 kΩ)·ln(1 mA/I_C2)。迭代收敛到约 20 μA：26 mV × ln(50) ≈ 101.7 mV，而 20 μA × 5.1 kΩ = 102 mV，两边自洽。注意 R2 上只有约 0.1 V，不是 0.7 V；若用 0.7/5.1k 会得到约 137 μA。"
+  },
+  {
+    q: "关于用电流源代替集电极电阻 R_c 作有源负载，下列说法正确的是？",
+    options: [
+      "电流源的直流压降很大，所以会明显降低输出动态范围",
+      "电流源的直流压降小、交流等效电阻大，因此既节省电压裕度又能大幅提高电压增益",
+      "有源负载只提高输出电阻，对电压增益没有影响",
+      "有源负载的增益只由 R_c 决定，与电流源的 r_o 无关"
+    ],
+    correct: 1,
+    explain: "电流源只需让管子不饱和的很小直流压降，交流等效电阻却是 r_o（几十到几百 kΩ）。用它替代 R_c 后，A_u ≈ −g_m(r_o∥R_L)，增益可提高 20~30 dB。有源负载的代价是输出节点阻抗高，后级负载会分走增益。"
+  }
+];
+
+const container = document.getElementById('quiz-container');
+let userAnswers = new Array(quizzes.length).fill(undefined);
+
+quizzes.forEach((quiz, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz';
+  div.innerHTML = `
+    <div class="quiz-q">Q${i+1}. ${quiz.q}</div>
+    <div class="quiz-options" data-index="${i}">
+      ${quiz.options.map((opt, j) =>
+        `<button class="quiz-option" data-option="${j}">${String.fromCharCode(65+j)}. ${opt}</button>`
+      ).join('')}
+    </div>
+    <div class="quiz-feedback" id="feedback-${i}">点击选项查看答案</div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('quiz-option')) return;
+  const btn = e.target;
+  const optionIdx = parseInt(btn.dataset.option);
+  const quizIdx = parseInt(btn.closest('.quiz-options').dataset.index);
+  const quiz = quizzes[quizIdx];
+
+  const options = btn.closest('.quiz-options').querySelectorAll('.quiz-option');
+  options.forEach((o, j) => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('correct', 'wrong');
+    if (j === quiz.correct) o.classList.add('correct');
+    else if (j === optionIdx) o.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById(`feedback-${quizIdx}`);
+  userAnswers[quizIdx] = optionIdx === quiz.correct;
+  if (optionIdx === quiz.correct) {
+    feedback.innerHTML = `✅ 正确！${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-correct)';
+  } else {
+    feedback.innerHTML = `❌ 不对。正确答案 ${String.fromCharCode(65+quiz.correct)}。${quiz.explain}`;
+    feedback.style.color = 'var(--quiz-wrong)';
+  }
+
+  const answered = userAnswers.filter(v => v !== undefined).length;
+  if (answered === quizzes.length) {
+    setTimeout(() => {
+      const right = userAnswers.filter(v => v).length;
+      const msg = right === quizzes.length ?
+        '🎉 全对！镜像、比例、微电流、有源负载都拿下了，可以去拆差分对了。' :
+        right >= 3 ? '👍 基本掌握。重点回看微电流源的 ln 方程和比例电流源的比值方向。' :
+        '📚 先把四个电流源公式各写一遍，再从例题 1 重算到例题 4。';
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 2rem; padding: 1.25rem; background: var(--accent-light); border-radius: 6px; text-align: center; font-size: 1.1em;';
+      summary.innerHTML = `<strong>📊 诊断结果：${right}/${quizzes.length}</strong><br><br>${msg}`;
+      container.after(summary);
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>
