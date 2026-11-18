@@ -418,14 +418,32 @@ th { background: var(--code-bg); font-weight: 600; }
 <div class="math">U_om = min(7.7 − 0.3, 1.44 mA × 3 kΩ) = min(7.4 V, 4.3 V) = 4.3 V</div>
 
 <p>
-  结论：输入信号逐渐加大时，<strong>先出现截止失真</strong>——因为向上摆的余量（4.3 V）小于向下摆的余量（7.4 V）。
-  要扩大动态范围，应把 Q 点下移（增大 <code>R_b</code>），让两个余量接近相等。
+  结论：输入信号逐渐加大时，<strong>先出现截止失真</strong>——因为向上的余量只有 4.3 V，
+  向下的余量却有 7.4 V。
+</p>
+
+<p>
+  但要注意方向别搞反：这里 Q 点的问题<strong>不是"偏高"</strong>，恰恰是 <code>I_CQ</code>
+  相对负载线中点偏<strong>低</strong>（1.44 mA &lt; 平衡点 1.95 mA），
+  所以它离截止端太近、离饱和端太远。
+  要把两侧余量拉平，必须<strong>增大 <code>I_CQ</code></strong> → <strong>减小 <code>R_b</code></strong>
+  → Q 点沿负载线<strong>上移</strong>（电流变大、管压降变小）。
+</p>
+
+<p><strong>平衡点怎么算</strong>：令两侧余量相等</p>
+<div class="math">I_CQ · 3kΩ = U_CEQ − 0.3　且　U_CEQ = 12 − 3kΩ · I_CQ</div>
+<p>
+  解得 <code>I_CQ = 1.95 mA，U_CEQ = 6.15 V</code>，对应
+  <code>R_b = (12 − 0.7)/(1.95 mA / 60) ≈ 348 kΩ</code>，此时 <code>U_om = 5.85 V</code>，为最大。
 </p>
 
 <div class="tip">
   <span class="tip-label">第二问常见变体</span>
-  若 <code>R_b</code> 改为 300 kΩ：<code>I_BQ = 37.7 μA，I_CQ = 2.26 mA，U_CEQ = 5.2 V</code>，
-  Q 点上移、余量变小，<strong>更易饱和失真</strong>。这类"改一个电阻，Q 怎么动"是选择题常客。
+  若 <code>R_b</code> 改为 300 kΩ：<code>I_BQ = 37.7 μA，I_CQ = 2.26 mA，U_CEQ = 5.2 V</code>。
+  Q 点上移后，向上余量 <code>2.26 × 3 = 6.8 V</code>，向下余量 <code>5.2 − 0.3 = 4.9 V</code>，
+  改为<strong>先撞饱和</strong>，<code>U_om = 4.9 V</code>。
+  比原来的 4.3 V 略大——因为 2.26 mA 比 1.44 mA 更接近中点 1.95 mA。
+  这三种 <code>R_b</code> 的关系是：<strong>470 kΩ 太低（截止先到）→ 300 kΩ 略高（饱和先到）→ 348 kΩ 刚好</strong>。
 </div>
 
 <h2>六、易错点与速查表</h2>
