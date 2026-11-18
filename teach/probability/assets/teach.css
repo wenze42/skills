@@ -258,3 +258,26 @@ th {
   .quiz { page-break-inside: avoid; }
   a { border-bottom: none; color: inherit; text-decoration: underline; }
 }
+
+/* 状态分解图：分组框（此前缺失定义，导致 fill 退回黑色） */
+.schematic .circle-faint {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1.2;
+  stroke-dasharray: 5 4;
+}
+.schematic .circle-type1 {
+  fill: var(--accent-light);
+  stroke: var(--accent);
+  stroke-width: 1.6;
+}
+.schematic .circle-type2 {
+  fill: #fdf3e3;
+  stroke: #c2710c;
+  stroke-width: 1.6;
+}
+.schematic .circle-type3 {
+  fill: #fde8f3;
+  stroke: #c2367c;
+  stroke-width: 1.6;
+}
