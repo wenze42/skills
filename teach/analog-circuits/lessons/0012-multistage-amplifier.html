@@ -121,7 +121,7 @@ th { background: var(--code-bg); font-weight: 600; }
 <body>
 
 <h1>Lesson 0012 — 多级放大电路</h1>
-<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0012 / 0020 · 约 35 分钟</p>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0012 / 0035 · 约 35 分钟</p>
 
 <div class="tip">
   <span class="tip-label">前置知识</span>
@@ -161,9 +161,9 @@ th { background: var(--code-bg); font-weight: 600; }
 <div class="circuit">
   <svg class="schematic" viewBox="0 0 520 340" role="img" aria-label="两级阻容耦合共射放大电路：C1 输入耦合、C2 级间耦合、C3 输出耦合，各级发射极电阻并联旁路电容">
     <title>两级阻容耦合共射放大电路</title>
-    <line class="wire" x1="60" y1="34" x2="460" y2="34"/>
+    <line class="wire" x1="110" y1="34" x2="400" y2="34"/>
     <text x="260" y="24" text-anchor="middle" class="lbl">+V_CC</text>
-    <line class="wire" x1="60" y1="300" x2="470" y2="300"/>
+    <line class="wire" x1="185" y1="300" x2="470" y2="300"/>
     <line class="wire" x1="265" y1="300" x2="265" y2="310"/>
     <line class="wire" x1="247" y1="310" x2="283" y2="310"/>
     <line class="wire" x1="254" y1="319" x2="276" y2="319"/>
@@ -188,29 +188,30 @@ th { background: var(--code-bg); font-weight: 600; }
     <line class="wire" x1="185" y1="95" x2="215" y2="95"/>
     <line class="wire" x1="160" y1="145" x2="185" y2="165"/>
     <line class="wire" x1="185" y1="165" x2="185" y2="190"/>
-    <polygon points="178,163 191,172 185,165" fill="#1a1a1a"/>
+    <polygon points="180,161 168,157 174,150" fill="#1a1a1a"/>
     <text x="150" y="176" text-anchor="end" class="lbl">Q1</text>
 
     <line class="wire" x1="215" y1="34" x2="215" y2="48"/>
     <rect class="area" x="203" y="48" width="24" height="47" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
-    <text x="238" y="70" class="lbl">R_c1</text>
+    <text x="196" y="70" text-anchor="end" class="lbl">R_c1</text>
     <circle class="dot" cx="215" cy="95" r="4"/>
 
     <rect class="area" x="173" y="190" width="24" height="48" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
     <line class="wire" x1="185" y1="238" x2="185" y2="300"/>
     <text x="160" y="222" text-anchor="end" class="lbl">R_e1</text>
     <circle class="dot" cx="185" cy="190" r="4"/>
-    <line class="wire" x1="185" y1="190" x2="232" y2="190"/>
-    <line class="wire" x1="232" y1="190" x2="258" y2="190"/>
-    <line class="wire" x1="232" y1="199" x2="258" y2="199"/>
-    <line class="wire" x1="245" y1="199" x2="245" y2="300"/>
-    <text x="264" y="190" class="lbl">C_e1</text>
+    <line class="wire" x1="185" y1="190" x2="226" y2="190"/>
+    <line class="wire" x1="226" y1="176" x2="226" y2="204"/>
+    <line class="wire" x1="236" y1="176" x2="236" y2="204"/>
+    <line class="wire" x1="236" y1="190" x2="252" y2="190"/>
+    <line class="wire" x1="252" y1="190" x2="252" y2="300"/>
+    <text x="231" y="170" text-anchor="middle" class="lbl">C_e1</text>
 
     <line class="wire" x1="215" y1="95" x2="252" y2="95"/>
     <line class="wire" x1="252" y1="78" x2="252" y2="112"/>
     <line class="wire" x1="260" y1="78" x2="260" y2="112"/>
     <line class="wire" x1="260" y1="95" x2="310" y2="95"/>
-    <text x="240" y="74" class="lbl">C2</text>
+    <text x="256" y="70" text-anchor="middle" class="lbl">C2</text>
 
     <line class="wire" x1="310" y1="34" x2="310" y2="48"/>
     <rect class="area" x="298" y="48" width="24" height="42" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
@@ -225,7 +226,7 @@ th { background: var(--code-bg); font-weight: 600; }
     <line class="wire" x1="370" y1="95" x2="400" y2="95"/>
     <line class="wire" x1="345" y1="145" x2="370" y2="165"/>
     <line class="wire" x1="370" y1="165" x2="370" y2="190"/>
-    <polygon points="363,163 376,172 370,165" fill="#1a1a1a"/>
+    <polygon points="365,161 353,157 359,150" fill="#1a1a1a"/>
     <text x="335" y="176" text-anchor="end" class="lbl">Q2</text>
 
     <line class="wire" x1="400" y1="34" x2="400" y2="48"/>
@@ -237,17 +238,18 @@ th { background: var(--code-bg); font-weight: 600; }
     <line class="wire" x1="370" y1="238" x2="370" y2="300"/>
     <text x="345" y="222" text-anchor="end" class="lbl">R_e2</text>
     <circle class="dot" cx="370" cy="190" r="4"/>
-    <line class="wire" x1="370" y1="190" x2="415" y2="190"/>
-    <line class="wire" x1="415" y1="190" x2="441" y2="190"/>
-    <line class="wire" x1="415" y1="199" x2="441" y2="199"/>
-    <line class="wire" x1="428" y1="199" x2="428" y2="300"/>
-    <text x="447" y="190" class="lbl">C_e2</text>
+    <line class="wire" x1="370" y1="190" x2="411" y2="190"/>
+    <line class="wire" x1="411" y1="176" x2="411" y2="204"/>
+    <line class="wire" x1="421" y1="176" x2="421" y2="204"/>
+    <line class="wire" x1="421" y1="190" x2="437" y2="190"/>
+    <line class="wire" x1="437" y1="190" x2="437" y2="300"/>
+    <text x="416" y="170" text-anchor="middle" class="lbl">C_e2</text>
 
     <line class="wire" x1="400" y1="95" x2="437" y2="95"/>
     <line class="wire" x1="437" y1="78" x2="437" y2="112"/>
     <line class="wire" x1="445" y1="78" x2="445" y2="112"/>
     <line class="wire" x1="445" y1="95" x2="470" y2="95"/>
-    <text x="452" y="70" class="lbl">C3</text>
+    <text x="441" y="132" text-anchor="middle" class="lbl">C3</text>
     <line class="wire" x1="470" y1="95" x2="470" y2="120"/>
     <rect class="area" x="458" y="120" width="24" height="48" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
     <text x="492" y="150" class="lbl">R_L</text>
@@ -358,9 +360,9 @@ th { background: var(--code-bg); font-weight: 600; }
     <text x="390" y="70" text-anchor="middle">末级</text>
     <text x="390" y="100" text-anchor="middle">A_u2</text>
     <text x="390" y="126" text-anchor="middle" class="lbl">R_o = R_o2</text>
-    <line class="wire" x1="480" y1="90" x2="508" y2="90"/>
-    <polygon points="508,84 508,96 520,90" fill="#1a1a1a"/>
-    <text x="482" y="78" class="lbl">u_o</text>
+    <line class="wire" x1="480" y1="90" x2="500" y2="90"/>
+    <polygon points="500,84 500,96 512,90" fill="#1a1a1a"/>
+    <text x="486" y="76" class="lbl">u_o</text>
     <text x="294" y="70" text-anchor="end" class="lbl">R_o1</text>
     <text x="306" y="112" class="lbl">R_i2</text>
   </svg>

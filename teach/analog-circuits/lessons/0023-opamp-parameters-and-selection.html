@@ -393,17 +393,14 @@ th {
     <text x="360" y="152" text-anchor="middle" class="lbl">A_od</text>
     <text x="360" y="178" text-anchor="middle" class="lbl">u_id</text>
     <line class="wire" x1="360" y1="124" x2="360" y2="80"/>
-    <line class="wire" x1="360" y1="80" x2="520" y2="80"/>
+    <line class="wire" x1="360" y1="80" x2="480" y2="80"/>
     <line class="wire" x1="360" y1="196" x2="360" y2="240"/>
-    <line class="wire" x1="360" y1="240" x2="520" y2="240"/>
+    <line class="wire" x1="360" y1="240" x2="620" y2="240"/>
 
-    <rect class="area" x="506" y="120" width="28" height="80" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
-    <line class="wire" x1="520" y1="80" x2="520" y2="120"/>
-    <line class="wire" x1="520" y1="200" x2="520" y2="240"/>
-    <text x="550" y="166" class="lbl">r_o</text>
+    <rect class="area" x="480" y="66" width="60" height="28" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="510" y="58" text-anchor="middle" class="lbl">r_o</text>
 
-    <line class="wire" x1="520" y1="80" x2="620" y2="80"/>
-    <line class="wire" x1="520" y1="240" x2="620" y2="240"/>
+    <line class="wire" x1="540" y1="80" x2="620" y2="80"/>
     <circle cx="630" cy="80" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
     <circle cx="630" cy="240" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
     <text x="648" y="86" class="lbl">+</text>
@@ -572,10 +569,10 @@ th {
     <text x="80" y="222" class="lbl" style="fill:var(--accent)">理想</text>
     <text x="140" y="222" class="lbl">实际</text>
 
-    <text x="80" y="244" class="lbl">高频 / 大信号：斜率被 SR 卡住，输出变三角波（实线斜率上限 = SR）</text>
+    <text x="80" y="244" class="lbl">高频 / 大信号：斜率被 SR 卡住，同一频率下幅度被压缩成三角波（实线斜率 = SR）</text>
     <line class="wire thin" x1="80" y1="330" x2="660" y2="330"/>
     <path d="M80,330 Q110,260 140,330 T200,330 T260,330 T320,330 T380,330 T440,330 T500,330 T560,330 T620,330" fill="none" style="stroke:var(--accent);stroke-dasharray:6 4;stroke-width:2"/>
-    <path class="wire" d="M80,365 L125,295 L170,365 L215,295 L260,365 L305,295 L350,365 L395,295 L440,365 L485,295 L530,365 L575,295 L620,365" style="stroke-width:3"/>
+    <path class="wire" d="M80,330 L110,308 L140,330 L170,352 L200,330 L230,308 L260,330 L290,352 L320,330 L350,308 L380,330 L410,352 L440,330 L470,308 L500,330 L530,352 L560,330 L590,308 L620,330" style="stroke-width:3"/>
 
     <line class="wire thin" x1="80" y1="390" x2="660" y2="390" style="stroke:var(--border)"/>
     <text x="80" y="416" class="lbl">判据：2πf·U_om ≤ SR　⇒　f_p = SR/(2πU_om)</text>

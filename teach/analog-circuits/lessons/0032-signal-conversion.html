@@ -555,8 +555,8 @@ th {
     <circle class="dot" cx="200" cy="136" r="4"/>
 
     <line class="wire" x1="200" y1="136" x2="200" y2="180"/>
-    <polygon points="178,214 222,214 200,184" fill="#fff" stroke="#1a1a1a" stroke-width="2.2"/>
-    <line class="wire" x1="178" y1="184" x2="222" y2="184"/>
+    <polygon points="178,184 222,184 200,214" fill="#fff" stroke="#1a1a1a" stroke-width="2.2"/>
+    <line class="wire" x1="178" y1="214" x2="222" y2="214"/>
     <line class="wire" x1="200" y1="214" x2="200" y2="242"/>
     <line class="wire" x1="175" y1="242" x2="225" y2="242"/>
     <line class="wire" x1="184" y1="251" x2="216" y2="251"/>
@@ -574,7 +574,7 @@ th {
     <text x="330" y="39" text-anchor="middle" class="lbl">R_f</text>
     <polyline class="wire" points="370,60 460,60 460,170"/>
     <circle class="dot" cx="460" cy="170" r="4"/>
-    <polygon points="240,52 240,64 226,58" fill="#1a1a1a"/>
+    <polygon points="240,52 240,64 254,58" fill="#1a1a1a"/>
     <text x="238" y="46" text-anchor="middle" class="lbl">I_S</text>
 
     <line class="wire" x1="280" y1="206" x2="230" y2="206"/>
@@ -662,8 +662,8 @@ th {
     <circle class="dot" cx="150" cy="100" r="4"/>
 
     <line class="wire" x1="330" y1="140" x2="380" y2="140"/>
-    <polygon points="380,126 380,154 408,140" fill="#fff" stroke="#1a1a1a" stroke-width="2.2"/>
-    <line class="wire" x1="408" y1="126" x2="408" y2="154"/>
+    <polygon points="408,126 408,154 380,140" fill="#fff" stroke="#1a1a1a" stroke-width="2.2"/>
+    <line class="wire" x1="380" y1="126" x2="380" y2="154"/>
     <line class="wire" x1="408" y1="140" x2="500" y2="140"/>
     <text x="394" y="118" text-anchor="middle" class="lbl">D_1</text>
     <circle class="dot" cx="470" cy="140" r="4"/>
@@ -714,7 +714,7 @@ th {
       流出，于是输出被拉负，<code>D_1</code> 正向导通，反馈闭环成立。虚地使
       <code>I = u_i/R_1 = −u_o/R_f</code>，得 <code>u_o = −(R_f/R_1)u_i</code>。</li>
   <li><strong><code>u_i &lt; 0</code></strong>：运放输出要变正，<code>D_1</code> 反偏截止，反馈断开；
-      <code>D_2</code> 导通，把运放输出钳在 <code>−0.7 V</code> 附近（不再往负饱和跑），
+      <code>D_2</code> 导通，把运放输出钳在 <code>+0.7 V</code> 附近（不再往正饱和跑），
       负载 <code>R_L</code> 上没有电流，<code>u_o ≈ 0</code>。</li>
 </ol>
 
@@ -739,17 +739,17 @@ th {
 
     <text x="24" y="216" class="lbl">u_o</text>
     <line class="wire thin" x1="90" y1="240" x2="660" y2="240"/>
-    <line class="wire thin ideal" x1="90" y1="190" x2="90" y2="330"/>
+    <line class="wire thin ideal" x1="90" y1="190" x2="90" y2="300"/>
     <text x="82" y="196" text-anchor="end" class="lbl">+0.1</text>
-    <text x="82" y="336" text-anchor="end" class="lbl">−0.1</text>
+    <text x="82" y="296" text-anchor="end" class="lbl">−0.1</text>
 
-    <path d="M90,240 L150,240 Q180,290 210,240 Q240,190 270,240 Q300,290 330,240 L390,240 Q420,290 450,240 Q480,190 510,240 Q540,290 570,240 L630,240"
+    <path d="M90,240 Q120,290 150,240 L210,240 Q240,290 270,240 L330,240 Q360,290 390,240 L450,240 Q480,290 510,240 L570,240 Q600,290 630,240 L700,240"
           fill="none" style="stroke:var(--accent)" stroke-width="2.5"/>
 
     <line class="wire thin ideal" x1="150" y1="240" x2="150" y2="100"/>
     <line class="wire thin ideal" x1="390" y1="240" x2="390" y2="100"/>
 
-    <text x="360" y="352" text-anchor="middle" class="lbl">图 32-5　半波输出：保留了负半周（因反相输入），正半周被切掉</text>
+    <text x="360" y="352" text-anchor="middle" class="lbl">图 32-5　半波输出：把正半周翻成负半周输出，负半周被切掉</text>
   </svg>
 </div>
 
@@ -811,8 +811,8 @@ th {
     <circle class="dot" cx="120" cy="100" r="4"/>
 
     <line class="wire" x1="240" y1="130" x2="280" y2="130"/>
-    <polygon points="280,116 280,144 305,130" fill="#fff" stroke="#1a1a1a" stroke-width="2.2"/>
-    <line class="wire" x1="305" y1="116" x2="305" y2="144"/>
+    <polygon points="305,116 305,144 280,130" fill="#fff" stroke="#1a1a1a" stroke-width="2.2"/>
+    <line class="wire" x1="280" y1="116" x2="280" y2="144"/>
     <line class="wire" x1="305" y1="130" x2="345" y2="130"/>
     <text x="292" y="108" text-anchor="middle" class="lbl">D_1</text>
     <circle class="dot" cx="345" cy="130" r="4"/>
@@ -826,8 +826,8 @@ th {
 
     <line class="wire" x1="240" y1="130" x2="240" y2="225"/>
     <line class="wire" x1="240" y1="225" x2="215" y2="225"/>
-    <polygon points="190,211 190,239 215,225" fill="#fff" stroke="#1a1a1a" stroke-width="2.2"/>
-    <line class="wire" x1="215" y1="211" x2="215" y2="239"/>
+    <polygon points="215,211 215,239 190,225" fill="#fff" stroke="#1a1a1a" stroke-width="2.2"/>
+    <line class="wire" x1="190" y1="211" x2="190" y2="239"/>
     <line class="wire" x1="190" y1="225" x2="120" y2="225"/>
     <line class="wire" x1="120" y1="225" x2="120" y2="100"/>
     <text x="202" y="256" text-anchor="middle" class="lbl">D_2</text>
@@ -841,7 +841,7 @@ th {
     <line class="wire" x1="345" y1="130" x2="345" y2="110"/>
     <line class="wire" x1="345" y1="110" x2="375" y2="110"/>
     <rect class="area" x="375" y="96" width="50" height="28" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
-    <text x="400" y="88" text-anchor="middle" class="lbl">R</text>
+    <text x="400" y="88" text-anchor="middle" class="lbl">R/2</text>
     <line class="wire" x1="425" y1="110" x2="430" y2="110"/>
     <circle class="dot" cx="430" cy="110" r="4"/>
 
@@ -856,7 +856,7 @@ th {
     <line class="wire" x1="430" y1="45" x2="430" y2="55"/>
     <rect class="area" x="416" y="55" width="28" height="40" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
     <line class="wire" x1="430" y1="95" x2="430" y2="110"/>
-    <text x="458" y="60" text-anchor="middle" class="lbl">R/2</text>
+    <text x="458" y="60" text-anchor="middle" class="lbl">R</text>
 
     <line class="wire" x1="550" y1="130" x2="600" y2="130"/>
     <circle class="dot" cx="600" cy="130" r="4"/>
@@ -948,15 +948,9 @@ th {
     <text x="216" y="180" class="lbl">+</text>
     <text x="252" y="156" text-anchor="middle" class="lbl">A</text>
 
-    <circle cx="40" cy="120" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
-    <text x="31" y="108" text-anchor="end" class="lbl">u_i</text>
-    <line class="wire" x1="40" y1="120" x2="200" y2="120"/>
-
-    <line class="wire" x1="200" y1="180" x2="150" y2="180"/>
-    <line class="wire" x1="150" y1="180" x2="150" y2="220"/>
-    <line class="wire" x1="125" y1="220" x2="175" y2="220"/>
-    <line class="wire" x1="134" y1="229" x2="166" y2="229"/>
-    <line class="wire" x1="143" y1="238" x2="157" y2="238"/>
+    <circle cx="40" cy="180" r="5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="31" y="168" text-anchor="end" class="lbl">u_i</text>
+    <line class="wire" x1="40" y1="180" x2="200" y2="180"/>
 
     <line class="wire" x1="310" y1="150" x2="350" y2="150"/>
     <polygon points="350,136 350,164 378,150" fill="#fff" stroke="#1a1a1a" stroke-width="2.2"/>

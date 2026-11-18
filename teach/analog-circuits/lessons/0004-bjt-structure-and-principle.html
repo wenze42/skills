@@ -258,25 +258,25 @@ th { background: var(--code-bg); font-weight: 600; }
 <div class="circuit">
   <svg class="schematic" viewBox="0 0 520 240" role="img" aria-label="NPN 管内载流子从发射区经基区到集电区的传输过程">
     <title>载流子传输：发射结注入 → 基区扩散（少量复合）→ 集电结收集</title>
-    <rect class="area" x="40" y="60" width="90" height="90" stroke="#1a1a1a" stroke-width="2.5"/>
-    <rect class="area" x="130" y="60" width="140" height="90" stroke="#1a1a1a" stroke-width="2.5"/>
-    <rect class="area" x="270" y="60" width="100" height="90" stroke="#1a1a1a" stroke-width="2.5"/>
-    <text x="85" y="128" text-anchor="middle" class="lbl">N 发射区</text>
-    <text x="200" y="128" text-anchor="middle" class="lbl">P 基区</text>
-    <text x="320" y="128" text-anchor="middle" class="lbl">N 集电区</text>
+    <rect class="area" x="40" y="60" width="135" height="90" stroke="#1a1a1a" stroke-width="2.5"/>
+    <rect class="area" x="175" y="60" width="60" height="90" stroke="#1a1a1a" stroke-width="2.5"/>
+    <rect class="area" x="235" y="60" width="135" height="90" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="107" y="128" text-anchor="middle" class="lbl">N 发射区</text>
+    <text x="205" y="128" text-anchor="middle" class="lbl">P 基区</text>
+    <text x="302" y="128" text-anchor="middle" class="lbl">N 集电区</text>
 
     <text x="200" y="46" text-anchor="middle" class="lbl">电子流的方向（E → B → C）</text>
     <line class="wire thin ideal" x1="52" y1="82" x2="356" y2="82"/>
     <polygon points="356,76 356,88 370,82" style="fill:var(--accent)"/>
 
-    <line class="wire thin" x1="130" y1="60" x2="130" y2="150" stroke-dasharray="5 4" style="stroke:var(--accent)"/>
-    <line class="wire thin" x1="270" y1="60" x2="270" y2="150" stroke-dasharray="5 4" style="stroke:var(--accent)"/>
-    <text x="128" y="172" text-anchor="middle" class="lbl">发射结正偏</text>
-    <text x="272" y="172" text-anchor="middle" class="lbl">集电结反偏</text>
+    <line class="wire thin" x1="175" y1="60" x2="175" y2="150" stroke-dasharray="5 4" style="stroke:var(--accent)"/>
+    <line class="wire thin" x1="235" y1="60" x2="235" y2="150" stroke-dasharray="5 4" style="stroke:var(--accent)"/>
+    <text x="171" y="172" text-anchor="end" class="lbl">发射结正偏</text>
+    <text x="239" y="172" class="lbl">集电结反偏</text>
 
-    <line class="wire thin" x1="200" y1="150" x2="200" y2="198"/>
-    <polygon points="194,198 206,198 200,212" fill="#1a1a1a"/>
-    <text x="214" y="204" class="lbl">基区复合 → 形成 I_B（很小）</text>
+    <line class="wire thin" x1="205" y1="150" x2="205" y2="198"/>
+    <polygon points="199,198 211,198 205,212" fill="#1a1a1a"/>
+    <text x="219" y="204" class="lbl">基区复合 → 形成 I_B（很小）</text>
   </svg>
 </div>
 

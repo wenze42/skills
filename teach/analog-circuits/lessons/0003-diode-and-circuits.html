@@ -177,13 +177,11 @@ th { background: var(--code-bg); font-weight: 600; }
     <text x="126" y="30" class="lbl">I</text>
     <text x="132" y="182" text-anchor="end" class="lbl">0</text>
 
-    <path class="wire ideal" d="M60,160 L140,160 L140,50"/>
-    <path class="wire" d="M60,166 C110,167 150,166 172,160 C188,153 195,128 199,96 C203,68 205,56 206,48"/>
+    <path class="wire" d="M60,166 C110,167 150,166 172,163 C182,160 187,150 191,128 C196,100 202,70 206,46"/>
     <line class="wire thin" x1="206" y1="158" x2="206" y2="168"/>
     <text x="214" y="190" text-anchor="middle" class="lbl">0.7 V</text>
 
-    <text x="252" y="66" class="lbl">实际（硅）</text>
-    <text x="66" y="200" class="lbl">理想（蓝虚线）</text>
+    <text x="218" y="62" class="lbl">实际（硅）</text>
   </svg>
 </div>
 
@@ -303,7 +301,7 @@ th { background: var(--code-bg); font-weight: 600; }
   <span class="tip-label">四步分析法</span>
   <ol>
     <li><strong>拆</strong>：把所有二极管从电路里拔掉，用<strong>开路</strong>代替，分别算出每个二极管两端的开路电压 U_D（= 阳极电压 − 阴极电压）。</li>
-    <li><strong>判</strong>：U_D &gt; 0.7 V → 正向偏置，记为「候选导通」；U_D &lt; 0.7 V → 反向偏置，判为<strong>截止</strong>。</li>
+    <li><strong>判</strong>：U_D &gt; 0.7 V → 正向偏置，记为「候选导通」；U_D &lt; 0.7 V → 正向电压不足以导通，判为<strong>截止</strong>。</li>
     <li><strong>定优先级</strong>：多个候选导通时，<strong>U_D 最大的先导通</strong>；它导通后会改变其他二极管的 U_D，必须重新计算。</li>
     <li><strong>求解</strong>：导通的用 0.7 V 电压源代替，截止的用开路代替，再用 KVL / KCL 解线性电路。</li>
   </ol>
@@ -466,7 +464,7 @@ th { background: var(--code-bg); font-weight: 600; }
     <line class="wire" x1="250" y1="90" x2="250" y2="136"/>
     <line class="wire" x1="222" y1="136" x2="278" y2="136"/>
     <polygon points="224,184 276,184 250,138" fill="#1a1a1a"/>
-    <text x="296" y="168" class="lbl">D</text>
+    <text x="206" y="168" text-anchor="end" class="lbl">D</text>
     <line class="wire" x1="250" y1="184" x2="250" y2="214"/>
     <line class="wire" x1="228" y1="214" x2="272" y2="214"/>
     <line class="wire" x1="237" y1="225" x2="263" y2="225"/>
@@ -490,8 +488,8 @@ th { background: var(--code-bg); font-weight: 600; }
     <text x="62" y="154" class="lbl" text-anchor="end">0</text>
     <text x="62" y="194" class="lbl" text-anchor="end">−V_p</text>
 
-    <path class="wire ideal" d="M80,150 q20,-40 40,0 q20,40 40,0 q20,-40 40,0 q20,40 40,0"/>
-    <path class="wire" d="M80,110 q20,-40 40,0 q20,40 40,0 q20,-40 40,0 q20,40 40,0" style="stroke:var(--accent)"/>
+    <path class="wire ideal" d="M80,150 q20,-80 40,0 q20,80 40,0 q20,-80 40,0 q20,80 40,0"/>
+    <path class="wire" d="M80,110 q20,-80 40,0 q20,80 40,0 q20,-80 40,0 q20,80 40,0" style="stroke:var(--accent)"/>
 
     <line class="wire ideal" x1="314" y1="100" x2="334" y2="100"/>
     <text x="342" y="106" class="lbl">v_i</text>
@@ -610,6 +608,7 @@ th { background: var(--code-bg); font-weight: 600; }
     <line class="wire" x1="230" y1="188" x2="230" y2="230"/>
     <circle class="dot" cx="230" cy="70" r="4"/>
     <circle class="dot" cx="230" cy="230" r="4"/>
+    <text x="258" y="158" class="lbl">R</text>
 
     <line class="wire" x1="130" y1="150" x2="130" y2="330"/>
     <line class="wire" x1="330" y1="150" x2="330" y2="330"/>
@@ -673,7 +672,7 @@ th { background: var(--code-bg); font-weight: 600; }
     <line class="wire" x1="50" y1="90" x2="78" y2="90"/>
     <rect class="area" x="78" y="72" width="66" height="36" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
     <text x="111" y="62" text-anchor="middle" class="lbl">R</text>
-    <line class="wire" x1="144" y1="90" x2="330" y2="90"/>
+    <line class="wire" x1="144" y1="90" x2="383" y2="90"/>
     <circle class="dot" cx="240" cy="90" r="4"/>
     <circle cx="392" cy="90" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
     <text x="406" y="96" class="lbl">U_O</text>
@@ -747,10 +746,10 @@ const quizzes = [
       "两个都导通，总压降 1.4V，I = 8.6mA",
       "只有 D1 导通，总压降 0.7V，I = 9.3mA",
       "两个都截止，I = 0",
-      "两个都导通，总压降 1.4V，I = 10mA"
+      "两个都导通，总压降 2.0V，I = 8.0mA"
     ],
     correct: 0,
-    explain: "判据只有一条：<b>阳极电位 − 阴极电位 &gt; 0.7V 才导通</b>（反之截止）。两个管子方向一致，先假设都导通：每个降 0.7V，共 1.4V；R 上剩 10 − 1.4 = 8.6V，I = 8.6V ÷ 1kΩ = 8.6mA &gt; 0，与假设自洽，成立。反证：若 D1 截止，则回路无电流，D1 两端 = 10V ≫ 0.7V，必然导通，矛盾；若 D2 截止，则无电流，D1 导通后 D2 阳极 = 9.3V、阴极 = 0V，9.3V ≫ 0.7V，D2 也必然导通，矛盾。所以两个都导通，答案 A。注意 8.6mA 是 R 上的电压除以 R，不是 10V/1kΩ。"
+    explain: "判据只有一条：<b>阳极电位 − 阴极电位 &gt; 0.7V 才导通</b>（反之截止）。两个管子方向一致，先假设都导通：每个降 0.7V，共 1.4V；R 上剩 10 − 1.4 = 8.6V，I = 8.6V ÷ 1kΩ = 8.6mA &gt; 0，与假设自洽，成立。反证：若假设两个都截止，则回路无电流，R 上无压降，D1 阳极 = 10V、其阴极经 D2 接 GND ≈ 0V，U_D1 = 10V ≫ 0.7V，与截止矛盾；同理 D2 也必然导通。所以两个都导通，答案 A。注意 8.6mA 是 R 上的电压除以 R，不是 10V/1kΩ。"
   },
   {
     q: "桥式全波整流电路，变压器副边电压有效值 V₂ = 10V，求输出平均电压 V_O 和二极管最大反向电压 U_RM。",

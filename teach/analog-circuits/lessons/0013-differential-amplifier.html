@@ -121,7 +121,7 @@ th { background: var(--code-bg); font-weight: 600; }
 <body>
 
 <h1>Lesson 0013 — 差分放大电路</h1>
-<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0013 / 0020 · 约 40 分钟</p>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0013 / 0035 · 约 40 分钟</p>
 
 <div class="tip">
   <span class="tip-label">前置知识</span>
@@ -159,9 +159,9 @@ th { background: var(--code-bg); font-weight: 600; }
 <div class="circuit">
   <svg class="schematic" viewBox="0 0 520 340" role="img" aria-label="长尾式差分放大电路：两管完全对称，发射极共接长尾电阻 Re 到负电源">
     <title>长尾式差分放大电路</title>
-    <line class="wire" x1="60" y1="34" x2="460" y2="34"/>
+    <line class="wire" x1="175" y1="34" x2="345" y2="34"/>
     <text x="260" y="24" text-anchor="middle" class="lbl">+V_CC</text>
-    <line class="wire" x1="90" y1="290" x2="420" y2="290"/>
+    <line class="wire" x1="200" y1="290" x2="300" y2="290"/>
     <text x="260" y="316" text-anchor="middle" class="lbl">−V_EE</text>
 
     <text x="20" y="138" class="lbl">u_i1</text>
@@ -175,7 +175,7 @@ th { background: var(--code-bg); font-weight: 600; }
     <line class="wire" x1="175" y1="105" x2="175" y2="98"/>
     <line class="wire" x1="150" y1="170" x2="175" y2="195"/>
     <line class="wire" x1="175" y1="195" x2="175" y2="205"/>
-    <polygon points="168,170 180,178 175,195" fill="#1a1a1a"/>
+    <polygon points="172,192 161,188 168,181" fill="#1a1a1a"/>
     <text x="140" y="196" text-anchor="end" class="lbl">T1</text>
 
     <line class="wire" x1="175" y1="34" x2="175" y2="48"/>
@@ -194,7 +194,7 @@ th { background: var(--code-bg); font-weight: 600; }
     <line class="wire" x1="345" y1="105" x2="345" y2="98"/>
     <line class="wire" x1="370" y1="170" x2="345" y2="195"/>
     <line class="wire" x1="345" y1="195" x2="345" y2="205"/>
-    <polygon points="352,170 340,178 345,195" fill="#1a1a1a"/>
+    <polygon points="348,192 359,188 352,181" fill="#1a1a1a"/>
     <text x="380" y="196" class="lbl">T2</text>
 
     <line class="wire" x1="345" y1="34" x2="345" y2="48"/>
@@ -242,7 +242,7 @@ th { background: var(--code-bg); font-weight: 600; }
 </div>
 
 <div class="circuit">
-  <svg class="schematic" viewBox="0 0 520 240" role="img" aria-label="共模与差模信号分解示意：两个输入可分解为同向的共模分量与反向的差模分量">
+  <svg class="schematic" viewBox="0 0 520 268" role="img" aria-label="共模与差模信号分解示意：两个输入可分解为同向的共模分量与反向的差模分量">
     <title>共模与差模信号的分解</title>
     <text x="85" y="40" text-anchor="middle" class="lbl">共模分量</text>
     <text x="255" y="40" text-anchor="middle" class="lbl">差模分量</text>
@@ -260,23 +260,23 @@ th { background: var(--code-bg); font-weight: 600; }
     <polygon points="93,124 107,124 100,110" fill="#1a1a1a"/>
     <text x="114" y="104" class="lbl">U_ic</text>
 
-    <text x="178" y="196" class="lbl">+</text>
+    <text x="178" y="170" class="lbl">+</text>
 
-    <line class="wire" x1="240" y1="190" x2="240" y2="132"/>
-    <polygon points="233,138 247,138 240,124" fill="#1a1a1a"/>
-    <text x="226" y="118" text-anchor="end" class="lbl">+U_id/2</text>
-    <line class="wire" x1="270" y1="190" x2="270" y2="240"/>
-    <polygon points="263,234 277,234 270,248" fill="#1a1a1a"/>
-    <text x="284" y="236" class="lbl">−U_id/2</text>
+    <line class="wire" x1="240" y1="190" x2="240" y2="160"/>
+    <polygon points="233,166 247,166 240,152" fill="#1a1a1a"/>
+    <text x="240" y="140" text-anchor="middle" class="lbl">+U_id/2</text>
+    <line class="wire" x1="270" y1="190" x2="270" y2="220"/>
+    <polygon points="263,214 277,214 270,228" fill="#1a1a1a"/>
+    <text x="286" y="218" class="lbl">−U_id/2</text>
 
-    <text x="348" y="196" class="lbl">=</text>
+    <text x="348" y="170" class="lbl">=</text>
 
-    <line class="wire" x1="415" y1="190" x2="415" y2="112"/>
-    <polygon points="408,118 422,118 415,104" fill="#1a1a1a"/>
-    <text x="400" y="98" text-anchor="end" class="lbl">U_i1</text>
-    <line class="wire" x1="445" y1="190" x2="445" y2="152"/>
-    <polygon points="438,158 452,158 445,144" fill="#1a1a1a"/>
-    <text x="459" y="138" class="lbl">U_i2</text>
+    <line class="wire" x1="415" y1="190" x2="415" y2="88"/>
+    <polygon points="408,94 422,94 415,80" fill="#1a1a1a"/>
+    <text x="402" y="74" text-anchor="end" class="lbl">U_i1</text>
+    <line class="wire" x1="445" y1="190" x2="445" y2="148"/>
+    <polygon points="438,154 452,154 445,140" fill="#1a1a1a"/>
+    <text x="459" y="134" class="lbl">U_i2</text>
   </svg>
 </div>
 

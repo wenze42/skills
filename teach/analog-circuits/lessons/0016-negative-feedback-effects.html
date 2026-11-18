@@ -279,7 +279,7 @@ th { background: var(--code-bg); font-weight: 600; }
 </ul>
 
 <div class="circuit">
-  <svg class="schematic" viewBox="0 0 520 410" role="img">
+  <svg class="schematic" viewBox="0 0 520 452" role="img">
     <title>四种反馈组态对输入电阻与输出电阻的影响示意</title>
     <text x="14" y="26" class="lbl">① 串联负反馈 → R_i 增大</text>
     <line class="wire" x1="40" y1="72" x2="130" y2="72"/>
@@ -288,36 +288,38 @@ th { background: var(--code-bg); font-weight: 600; }
     <text x="202" y="78" text-anchor="middle">A</text>
     <line class="wire" x1="262" y1="72" x2="340" y2="72"/>
     <polygon points="340,66 340,78 352,72" fill="#1a1a1a"/>
-    <text x="40" y="112" class="lbl">R_if = (1+AF)·R_i　↑</text>
-    <text x="290" y="112" class="lbl">R_of = R_o</text>
+    <text x="40" y="112" class="lbl">R_if = (1+AF)·R_i（增大）</text>
+    <text x="290" y="112" class="lbl">R_of = R_o（不变）</text>
 
-    <text x="14" y="141" class="lbl">② 并联负反馈 → R_i 减小</text>
-    <line class="wire" x1="40" y1="187" x2="130" y2="187"/>
-    <polygon points="130,181 130,193 142,187" fill="#1a1a1a"/>
-    <rect class="area" x="142" y="163" width="120" height="48" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
-    <text x="202" y="193" text-anchor="middle">A</text>
-    <line class="wire" x1="262" y1="187" x2="340" y2="187"/>
-    <polygon points="340,181 340,193 352,187" fill="#1a1a1a"/>
-    <text x="40" y="227" class="lbl">R_if = R_i / (1+AF)　↓</text>
-    <text x="290" y="227" class="lbl">R_of = R_o</text>
+    <text x="14" y="134" class="lbl">② 并联负反馈 → R_i 减小</text>
+    <line class="wire" x1="40" y1="180" x2="130" y2="180"/>
+    <polygon points="130,174 130,186 142,180" fill="#1a1a1a"/>
+    <rect class="area" x="142" y="156" width="120" height="48" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="202" y="186" text-anchor="middle">A</text>
+    <line class="wire" x1="262" y1="180" x2="340" y2="180"/>
+    <polygon points="340,174 340,186 352,180" fill="#1a1a1a"/>
+    <text x="40" y="220" class="lbl">R_if = R_i/(1+AF)（减小）</text>
+    <text x="290" y="220" class="lbl">R_of = R_o（不变）</text>
 
-    <text x="14" y="256" class="lbl">③ 电压负反馈 → R_o 减小</text>
-    <line class="wire" x1="40" y1="302" x2="130" y2="302"/>
-    <polygon points="130,296 130,308 142,302" fill="#1a1a1a"/>
-    <rect class="area" x="142" y="278" width="120" height="48" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
-    <text x="202" y="308" text-anchor="middle">A</text>
-    <line class="wire" x1="262" y1="302" x2="340" y2="302"/>
-    <polygon points="340,296 340,308 352,302" fill="#1a1a1a"/>
-    <text x="40" y="342" class="lbl">R_if = R_i</text>
-    <text x="290" y="342" class="lbl">R_of = R_o/(1+AF)　↓</text>
+    <text x="14" y="242" class="lbl">③ 电压负反馈 → R_o 减小</text>
+    <line class="wire" x1="40" y1="288" x2="130" y2="288"/>
+    <polygon points="130,282 130,294 142,288" fill="#1a1a1a"/>
+    <rect class="area" x="142" y="264" width="120" height="48" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="202" y="294" text-anchor="middle">A</text>
+    <line class="wire" x1="262" y1="288" x2="340" y2="288"/>
+    <polygon points="340,282 340,294 352,288" fill="#1a1a1a"/>
+    <text x="40" y="328" class="lbl">R_if = R_i（不变）</text>
+    <text x="290" y="328" class="lbl">R_of = R_o/(1+AF)（减小）</text>
 
-    <text x="14" y="371" class="lbl">④ 电流负反馈 → R_o 增大</text>
-    <line class="wire" x1="40" y1="400" x2="130" y2="400"/>
-    <polygon points="130,394 130,406 142,400" fill="#1a1a1a"/>
-    <rect class="area" x="142" y="376" width="120" height="48" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
-    <text x="202" y="406" text-anchor="middle">A</text>
-    <line class="wire" x1="262" y1="400" x2="340" y2="400"/>
-    <polygon points="340,394 340,406 352,400" fill="#1a1a1a"/>
+    <text x="14" y="350" class="lbl">④ 电流负反馈 → R_o 增大</text>
+    <line class="wire" x1="40" y1="396" x2="130" y2="396"/>
+    <polygon points="130,390 130,402 142,396" fill="#1a1a1a"/>
+    <rect class="area" x="142" y="372" width="120" height="48" rx="6" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="202" y="402" text-anchor="middle">A</text>
+    <line class="wire" x1="262" y1="396" x2="340" y2="396"/>
+    <polygon points="340,390 340,402 352,396" fill="#1a1a1a"/>
+    <text x="40" y="436" class="lbl">R_if = R_i（不变）</text>
+    <text x="290" y="436" class="lbl">R_of = (1+AF)·R_o（增大）</text>
   </svg>
 </div>
 

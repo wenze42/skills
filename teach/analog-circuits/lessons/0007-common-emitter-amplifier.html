@@ -159,7 +159,7 @@ th { background: var(--code-bg); font-weight: 600; }
 
     <line class="wire" x1="390" y1="40" x2="390" y2="58"/>
     <rect class="area" x="373" y="58" width="34" height="52" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
-    <text x="418" y="90" class="lbl">R_c</text>
+    <text x="360" y="90" text-anchor="end" class="lbl">R_c</text>
     <line class="wire" x1="390" y1="110" x2="390" y2="134"/>
     <circle class="dot" cx="390" cy="134" r="4"/>
 
@@ -271,8 +271,8 @@ th { background: var(--code-bg); font-weight: 600; }
     <line class="wire" x1="453" y1="272" x2="487" y2="272"/>
     <line class="wire" x1="462" y1="282" x2="478" y2="282"/>
     <circle cx="500" cy="140" r="4.5" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
-    <text x="506" y="126" class="lbl">u_o</text>
-    <text x="410" y="126" text-anchor="end" class="lbl">C₂ 短路</text>
+    <text x="500" y="124" text-anchor="middle" class="lbl">u_o</text>
+    <text x="438" y="132" text-anchor="middle" class="lbl">C₂ 短路</text>
     <text x="260" y="308" text-anchor="middle" class="lbl">交流通路里，R_c 与 R_L 并联在集电极与地之间</text>
   </svg>
 </div>
@@ -306,8 +306,9 @@ th { background: var(--code-bg); font-weight: 600; }
 </div>
 
 <div class="circuit">
-  <svg class="schematic" viewBox="0 0 520 300" role="img" aria-label="共射电路的微变等效电路：r_be 接在基极与发射极之间，受控电流源 βib 从集电极流向发射极">
-    <line class="wire" x1="60" y1="250" x2="480" y2="250"/>
+  <svg class="schematic" viewBox="0 0 520 170" role="img" aria-label="共射电路的微变等效电路：r_be 接在基极与发射极之间，受控电流源 βib 从集电极流向发射极">
+  <g transform="translate(0,-132)">
+    <line class="wire" x1="55" y1="250" x2="480" y2="250"/>
     <line class="wire thin" x1="270" y1="250" x2="270" y2="264"/>
     <line class="wire thin" x1="248" y1="264" x2="292" y2="264"/>
     <line class="wire thin" x1="256" y1="274" x2="284" y2="274"/>
@@ -325,7 +326,7 @@ th { background: var(--code-bg); font-weight: 600; }
     <text x="108" y="158" class="lbl">B</text>
     <line class="wire" x1="120" y1="170" x2="120" y2="186"/>
     <rect class="area" x="104" y="186" width="32" height="48" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
-    <text x="96" y="214" text-anchor="end" class="lbl">R_b</text>
+    <text x="142" y="214" class="lbl">R_b</text>
     <line class="wire" x1="120" y1="234" x2="120" y2="250"/>
 
     <line class="wire" x1="120" y1="170" x2="220" y2="170"/>
@@ -341,7 +342,7 @@ th { background: var(--code-bg); font-weight: 600; }
     <circle cx="330" cy="210" r="28" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
     <polygon points="330,230 324,214 336,214" fill="#1a1a1a"/>
     <line class="wire" x1="330" y1="238" x2="330" y2="250"/>
-    <text x="366" y="206" class="lbl">βi_b</text>
+    <text x="330" y="162" text-anchor="middle" class="lbl">βi_b</text>
 
     <line class="wire" x1="330" y1="170" x2="500" y2="170"/>
     <circle class="dot" cx="400" cy="170" r="4"/>
@@ -360,6 +361,7 @@ th { background: var(--code-bg); font-weight: 600; }
     <text x="502" y="156" text-anchor="end" class="lbl">u_o</text>
     <text x="404" y="158" class="lbl">C</text>
     <text x="250" y="292" text-anchor="middle" class="lbl">受控源 βi_b 从 C 流向 E，方向不能画反；R_c 与 R_L 并联</text>
+  </g>
   </svg>
 </div>
 
@@ -551,7 +553,7 @@ const quizzes = [
       "A_u ≈ −80"
     ],
     correct: 0,
-    explain: "I_BQ = 56.5 μA → I_CQ = 2.26 mA → I_EQ ≈ 2.32 mA；r_be = 200 + 41×26/2.32 ≈ 660 Ω；R_L′ = 2 kΩ；A_u = −40×2000/660 ≈ −121。C 是漏并 R_L（得 −182），B 是丢负号。"
+    explain: "I_BQ = 56.5 μA → I_CQ = 2.26 mA → I_EQ ≈ 2.32 mA；r_be = 200 + 41×26/2.32 ≈ 660 Ω；R_L′ = 2 kΩ；A_u = −40×2000/660 ≈ −121。C 是没并 R_L（只用 R_c，得 −182），B 是丢负号。"
   },
   {
     q: "共射放大电路中，输出电压 u_o 与输入电压 u_i 的相位关系是？",

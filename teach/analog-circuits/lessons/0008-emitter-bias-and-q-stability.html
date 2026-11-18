@@ -121,7 +121,7 @@ th { background: var(--code-bg); font-weight: 600; }
 <body>
 
 <h1>Lesson 0008 — 分压式偏置与 Q 点稳定</h1>
-<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0008 / 0020 · 约 35 分钟</p>
+<p style="color: var(--text-light); font-size: 0.9em;">模拟电子电路 · Lesson 0008 / 0035 · 约 35 分钟</p>
 
 <div class="tip">
   <span class="tip-label">前置知识</span>
@@ -160,8 +160,8 @@ th { background: var(--code-bg); font-weight: 600; }
 <div class="circuit">
   <svg class="schematic" viewBox="0 0 460 370" role="img">
     <title>固定偏置共射电路：基极电阻从 V_CC 直接取电流</title>
-    <line class="wire" x1="130" y1="40" x2="380" y2="40"/>
-    <text x="255" y="28" text-anchor="middle">+V_CC</text>
+    <line class="wire" x1="245" y1="40" x2="350" y2="40"/>
+    <text x="297" y="28" text-anchor="middle">+V_CC</text>
 
     <line class="wire" x1="250" y1="40" x2="250" y2="62"/>
     <rect class="area" x="234" y="62" width="32" height="56" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
@@ -177,14 +177,11 @@ th { background: var(--code-bg); font-weight: 600; }
     <text x="392" y="96" class="lbl">R_c</text>
 
     <line class="wire" x1="300" y1="198" x2="345" y2="228"/>
-    <polygon points="336,228 345,222 341,236" fill="#1a1a1a"/>
-    <line class="wire" x1="345" y1="228" x2="345" y2="250"/>
-    <rect class="area" x="329" y="250" width="32" height="52" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
-    <line class="wire" x1="345" y1="302" x2="345" y2="320"/>
+    <polygon points="338,224 324,221 330,212" fill="#1a1a1a"/>
+    <line class="wire" x1="345" y1="228" x2="345" y2="320"/>
     <line class="wire thin" x1="321" y1="320" x2="369" y2="320"/>
     <line class="wire thin" x1="330" y1="329" x2="360" y2="329"/>
     <line class="wire thin" x1="339" y1="338" x2="351" y2="338"/>
-    <text x="392" y="282" class="lbl">R_e</text>
     <text x="268" y="232" class="lbl">T</text>
     <text x="345" y="360" text-anchor="middle" class="lbl">GND</text>
   </svg>
@@ -224,7 +221,7 @@ th { background: var(--code-bg); font-weight: 600; }
 <div class="circuit">
   <svg class="schematic" viewBox="0 0 520 410" role="img">
     <title>分压式射极偏置电路：R_b1 与 R_b2 分压固定基极电位，R_e 引入直流负反馈，C_e 旁路</title>
-    <line class="wire" x1="200" y1="40" x2="440" y2="40"/>
+    <line class="wire" x1="200" y1="40" x2="345" y2="40"/>
     <text x="210" y="28" text-anchor="start">+V_CC</text>
 
     <line class="wire" x1="230" y1="40" x2="230" y2="70"/>
@@ -242,12 +239,12 @@ th { background: var(--code-bg); font-weight: 600; }
     <line class="wire thin" x1="300" y1="200" x2="300" y2="260"/>
     <line class="wire" x1="300" y1="212" x2="345" y2="182"/>
     <line class="wire" x1="300" y1="248" x2="345" y2="278"/>
-    <polygon points="336,278 345,272 341,286" fill="#1a1a1a"/>
+    <polygon points="338,274 324,271 330,262" fill="#1a1a1a"/>
 
     <line class="wire" x1="345" y1="40" x2="345" y2="120"/>
     <rect class="area" x="329" y="120" width="32" height="52" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
     <line class="wire" x1="345" y1="172" x2="345" y2="182"/>
-    <text x="392" y="150" class="lbl">R_c</text>
+    <text x="322" y="150" text-anchor="end" class="lbl">R_c</text>
 
     <circle class="dot" cx="345" cy="182" r="4"/>
     <line class="wire" x1="345" y1="182" x2="400" y2="182"/>
@@ -266,11 +263,11 @@ th { background: var(--code-bg); font-weight: 600; }
     <circle class="dot" cx="345" cy="290" r="4"/>
     <line class="wire" x1="345" y1="290" x2="420" y2="290"/>
     <line class="wire" x1="420" y1="290" x2="420" y2="302"/>
-    <line class="wire x thin" x1="400" y1="302" x2="440" y2="302"/>
-    <line class="wire x thin" x1="400" y1="314" x2="440" y2="314"/>
+    <line class="wire thin" x1="400" y1="302" x2="440" y2="302"/>
+    <line class="wire thin" x1="400" y1="314" x2="440" y2="314"/>
     <line class="wire" x1="420" y1="314" x2="420" y2="350"/>
     <line class="wire" x1="420" y1="350" x2="345" y2="350"/>
-    <text x="442" y="316" class="lbl">C_e</text>
+    <text x="448" y="312" class="lbl">C_e</text>
 
     <line class="wire" x1="230" y1="230" x2="300" y2="230"/>
     <circle class="dot" cx="230" cy="230" r="4"/>
@@ -382,8 +379,8 @@ th { background: var(--code-bg); font-weight: 600; }
 
 <p><strong>第五步：温度稳定性验证</strong>（这一步是把「懂了」变成「证了」）</p>
 <ul>
-  <li>若 β 由 50 变为 100：I<sub>B</sub> 减半，但 U<sub>B</sub> 仍 ≈ 3 V（因为 I<sub>2</sub> ≫ I<sub>B</sub>），
-      于是 U<sub>E</sub>、I<sub>CQ</sub> 几乎不变（精确计算约 2.36 mA，变化 &lt; 3%）。</li>
+  <li>若 β 由 50 变为 100：近似法下 I_CQ 仍在 2.3 mA 附近；用精确式（I_B 在 R_b1∥R_b2 上产生压降）
+      I_CQ 由 1.97 mA 升到 2.12 mA，仅约 +8%，远小于固定偏置的 +100%。</li>
   <li>若 U<sub>BE</sub> 因升温降为 0.65 V：U<sub>E</sub> = 2.35 V，I<sub>CQ</sub> = 2.35 mA，变化 +2%。</li>
   <li>对比第一节的固定偏置：β 翻倍时 I<sub>C</sub> 直接翻倍。这就是「稳定」的量化含义。</li>
 </ul>
@@ -421,7 +418,7 @@ th { background: var(--code-bg); font-weight: 600; }
     <line class="wire" x1="330" y1="120" x2="330" y2="88"/>
     <circle cx="330" cy="72" r="16" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
     <line class="wire thin" x1="322" y1="62" x2="330" y2="74"/>
-    <polygon points="321,61 330,66 330,78" fill="#1a1a1a"/>
+    <polygon points="329,73 319,69 327,63" fill="#1a1a1a"/>
     <line class="wire" x1="330" y1="56" x2="330" y2="40"/>
     <line class="wire" x1="330" y1="40" x2="430" y2="40"/>
     <text x="352" y="66" class="lbl">βi_b</text>
@@ -463,7 +460,7 @@ th { background: var(--code-bg); font-weight: 600; }
     <line class="wire" x1="330" y1="120" x2="330" y2="88"/>
     <circle cx="330" cy="72" r="16" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
     <line class="wire thin" x1="322" y1="62" x2="330" y2="74"/>
-    <polygon points="321,61 330,66 330,78" fill="#1a1a1a"/>
+    <polygon points="329,73 319,69 327,63" fill="#1a1a1a"/>
     <line class="wire" x1="330" y1="56" x2="330" y2="40"/>
     <line class="wire" x1="330" y1="40" x2="430" y2="40"/>
     <text x="352" y="66" class="lbl">βi_b</text>
@@ -512,8 +509,8 @@ th { background: var(--code-bg); font-weight: 600; }
   </tr>
   <tr>
     <td>输入电阻 R<sub>i</sub></td>
-    <td>R<sub>b1</sub>∥R<sub>b2</sub>∥[r<sub>be</sub>+(1+β)R<sub>e</sub>] ≈ 15 kΩ（较大）</td>
-    <td>R<sub>b1</sub>∥R<sub>b2</sub>∥r<sub>be</sub> ≈ 0.86 kΩ（小）</td>
+    <td>R<sub>b1</sub>∥R<sub>b2</sub>∥[r<sub>be</sub>+(1+β)R<sub>e</sub>] ≈ 7.5k∥51.9k ≈ 6.5 kΩ（较大）</td>
+    <td>R<sub>b1</sub>∥R<sub>b2</sub>∥r<sub>be</sub> ≈ 7.5k∥0.88k ≈ 0.79 kΩ（小）</td>
   </tr>
   <tr>
     <td>输出电阻 R<sub>o</sub></td>

@@ -787,10 +787,10 @@ th {
 
 <p><strong>第三步：单端输出</strong></p>
 <div class="math">A_c ≈ −R_c/(2R_e) = −10 kΩ / 20 kΩ = −0.5</div>
-<div class="math">K_CMR = 277.8 / 0.5 = 555.6　⇒　20 lg 555.6 ≈ 54.9 dB</div>
+<div class="math">K_CMR = 138.9 / 0.5 = 277.8　⇒　20 lg 277.8 ≈ 48.9 dB</div>
 
 <p>
-  两者差了整整 40 dB。原因不是双端输出“更对称”，而是它的共模误差只来自<strong>失配量</strong>，
+  两者差了 46 dB。原因不是双端输出“更对称”，而是它的共模误差只来自<strong>失配量</strong>，
   单端输出的共模误差却来自<strong>整个 R_c</strong>。这也说明：
 </p>
 
@@ -895,8 +895,8 @@ th {
 
 <p><strong>第一步：单端输出</strong></p>
 <div class="math">A_c = −R_c/(2r_o) = −10 kΩ / 400 kΩ = −0.025</div>
-<div class="math">K_CMR = 277.8 / 0.025 = 11 112　⇒　80.9 dB</div>
-<div class="math">提高量 = 80.9 − 54.9 = 26.0 dB</div>
+<div class="math">K_CMR = 138.9 / 0.025 = 5 556　⇒　74.9 dB</div>
+<div class="math">提高量 = 74.9 − 48.9 = 26.0 dB</div>
 
 <p><strong>第二步：双端输出</strong></p>
 <div class="math">A_c = −ΔR_c/(2r_o) = −100 Ω / 400 kΩ = −0.00025</div>
@@ -908,7 +908,7 @@ th {
 
 <p>
   两种输出的提高量完全一样，都是 26 dB。这说明<strong>恒流源改善的是共模负反馈的强度</strong>，
-  与输出取单端还是双端无关；单端与双端之间那 40 dB 的差距来自失配，是另一条独立的分辨率。
+  与输出取单端还是双端无关；单端与双端之间那 46 dB 的差距来自失配，是另一条独立的分辨率。
   把两条叠加起来，恒流源 + 双端输出 + 良好匹配，才能做到 120 dB 量级的共模抑制。
 </p>
 
@@ -981,9 +981,10 @@ th {
       即 <code>2R_c</code>；只有单端输出才是 <code>R_c</code>。</li>
   <li><strong>双端输出共模抑制当成“靠 R_e”</strong>。理想对称时 <code>A_c = 0</code>；
       实际由 <code>ΔR_c</code> 决定，<code>A_c ≈ −ΔR_c/(2R_E)</code>。</li>
-  <li><strong>算 K_CMR 时用错 <code>A_d</code></strong>。单端输出的 <code>A_d</code> 是双端的一半，
-      而 <code>A_c</code> 不变，所以单端输出的 K_CMR 也是双端（对称理想情况）的一半，
-      但在失配模型下两者差 40 dB，别混用。</li>
+  <li><strong>算 K_CMR 时用错 <code>A_d</code></strong>。K_CMR 必须用<strong>该接法自己的</strong>
+      <code>A_d</code>：单端输出的 <code>A_d</code> 是双端的一半，<code>A_c</code> 却大了 100 倍
+      （<code>−0.5</code> 对 <code>−0.005</code>），所以同一失配下单端比双端低约 46 dB。
+      不能拿双端的 <code>A_d</code> 去除以单端的 <code>A_c</code>。</li>
   <li><strong>把恒流源的直流电阻当成 <code>r_o</code></strong>。直流分析时恒流源两端电压由外电路决定，
       交流分析才用 <code>r_o</code> 计算 <code>A_c</code>。</li>
 </ol>

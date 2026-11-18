@@ -471,9 +471,10 @@ th {
     <line class="wire" x1="520" y1="112" x2="520" y2="132"/>
     <rect class="area" x="506" y="132" width="28" height="48" rx="3" stroke="#1a1a1a" stroke-width="2.5"/>
     <text x="556" y="162" class="lbl">R_f</text>
-    <line class="wire" x1="520" y1="180" x2="520" y2="220"/>
+    <line class="wire" x1="520" y1="180" x2="600" y2="180"/>
+    <line class="wire" x1="600" y1="180" x2="600" y2="220"/>
     <line class="wire" x1="566" y1="220" x2="606" y2="220"/>
-    <circle class="dot" cx="606" cy="220" r="4"/>
+    <circle class="dot" cx="600" cy="220" r="4"/>
 
     <circle class="dot" cx="400" cy="244" r="4"/>
     <line class="wire" x1="400" y1="244" x2="400" y2="330"/>
@@ -636,7 +637,7 @@ th {
     <line class="wire" x1="196" y1="216" x2="196" y2="210"/>
     <line class="wire" x1="160" y1="210" x2="196" y2="210"/>
 
-    <text x="196" y="136" text-anchor="middle" class="lbl">同电位</text>
+    <text x="178" y="140" text-anchor="end" class="lbl">同电位</text>
     <text x="196" y="252" text-anchor="middle" style="fill:var(--accent); font-size:15px;">i_G = 0</text>
 
     <polygon points="440,76 440,132 500,104" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
@@ -659,10 +660,8 @@ th {
     <line class="wire" x1="500" y1="210" x2="536" y2="210"/>
 
     <line class="wire" x1="536" y1="150" x2="536" y2="164" stroke-width="2.5" style="stroke:var(--accent)"/>
-    <polygon points="536,146 531,156 541,156" fill="#2b6cb0" stroke="none"/>
+    <polygon points="536,162 531,152 541,152" fill="#2b6cb0" stroke="none"/>
     <text x="586" y="156" class="lbl">i_G = u_d / R_G</text>
-    <line class="wire" x1="536" y1="216" x2="536" y2="210" stroke-width="2.5" style="stroke:var(--accent)"/>
-    <polygon points="536,220 531,210 541,210" fill="#2b6cb0" stroke="none"/>
 
     <text x="180" y="284" text-anchor="middle" class="lbl">共模被 R_G 两端的同电位抵消</text>
     <text x="540" y="284" text-anchor="middle" class="lbl">差模电流 i_G 在 R 上产生放大的压差</text>
@@ -975,7 +974,7 @@ th {
 
     <line class="wire" x1="176" y1="156" x2="176" y2="214"/>
     <circle class="dot" cx="176" cy="156" r="4"/>
-    <polygon points="176,262 171,250 181,250" fill="#1a1a1a" stroke="none"/>
+    <polygon points="176,208 171,196 181,196" fill="#1a1a1a" stroke="none"/>
 
     <rect class="area" x="128" y="214" width="96" height="52" rx="4" stroke="#1a1a1a" stroke-width="2.5"/>
     <text x="176" y="238" text-anchor="middle" class="lbl">−A_r</text>
@@ -985,7 +984,6 @@ th {
     <line class="wire" x1="86" y1="240" x2="86" y2="148"/>
     <polygon points="86,144 81,156 91,156" fill="#1a1a1a" stroke="none"/>
     <text x="42" y="196" class="lbl">R_LR</text>
-    <line class="wire" x1="86" y1="176" x2="86" y2="196" stroke-width="2.5" style="stroke:var(--accent)"/>
 
     <text x="360" y="286" text-anchor="middle" class="lbl">1 mV 心电信号 × 1000 = 1 V；1 V 共模需被压到 5 mV 以下 → CMRR &gt; 106 dB</text>
   </svg>
