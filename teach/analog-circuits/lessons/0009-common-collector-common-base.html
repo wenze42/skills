@@ -145,10 +145,22 @@ th { background: var(--code-bg); font-weight: 600; }
 </p>
 
 <table>
-  <tr><th>组态</th><th>输入</th><th>输出</th><th>公共端</th><th>一句话性格</th></tr>
-  <tr><td><strong>共射 CE</strong></td><td>基极 b</td><td>集电极 c</td><td>射极 e</td><td>反相、电压增益大</td></tr>
-  <tr><td><strong>共集 CC</strong></td><td>基极 b</td><td>射极 e</td><td>集电极 c</td><td>同相、电压增益≈1、Ri 大 Ro 小</td></tr>
-  <tr><td><strong>共基 CB</strong></td><td>射极 e</td><td>集电极 c</td><td>基极 b</td><td>同相、电压增益大、Ri 极小、频带宽</td></tr>
+  <tr><th>组态</th><th>信号怎么走（输入 → 输出）</th><th>结论</th></tr>
+  <tr>
+    <td><strong>共射 CE</strong><br><span style="color:#6b7280;font-size:0.88em">公共端：射极 e</span></td>
+    <td>b 进 → <strong>c 出</strong>（e 交流接地）</td>
+    <td><strong>反相</strong>，电压增益大（几十~几百），R<sub>i</sub> 中、R<sub>o</sub> 中</td>
+  </tr>
+  <tr>
+    <td><strong>共集 CC</strong><br><span style="color:#6b7280;font-size:0.88em">公共端：集电极 c</span></td>
+    <td>b 进 → <strong>e 出</strong>（c 交流接地）</td>
+    <td><strong>同相</strong>，电压增益 <strong>≈1</strong>，R<sub>i</sub> 大、R<sub>o</sub> 小</td>
+  </tr>
+  <tr>
+    <td><strong>共基 CB</strong><br><span style="color:#6b7280;font-size:0.88em">公共端：基极 b</span></td>
+    <td>e 进 → <strong>c 出</strong>（b 交流接地）</td>
+    <td><strong>同相</strong>，电压增益大，R<sub>i</sub> 极小、频带宽</td>
+  </tr>
 </table>
 
 <div class="tip">
